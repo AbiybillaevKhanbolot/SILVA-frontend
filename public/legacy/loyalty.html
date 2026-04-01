@@ -4,59 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Виртуальный сад - Silva</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
     <style>
-        .loyalty-hero {
-            padding-top: 7rem;
-            padding-bottom: 4rem;
+        /* Как .hero-section + .hero-content на главной: те же отступы и размеры, без фото и контента */
+        .loyalty-hero-banner {
+            padding: 1rem 1rem 2rem;
+            padding-top: calc(5rem + 1rem);
+            padding-bottom: 2rem;
             background: var(--color-white);
+        }
+        @media (min-width: 768px) {
+            .loyalty-hero-banner {
+                padding-top: calc(5rem + 44px);
+                padding-bottom: 2.5rem;
+            }
+        }
+        .loyalty-hero-banner-inner {
+            max-width: 1224px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .loyalty-hero-panel-empty {
+            width: 100%;
+            min-height: 380px;
+            margin: -0.5rem auto 0;
+            box-sizing: border-box;
+            border-radius: 7px;
+            border: none;
+            background: var(--color-white);
+            box-shadow: none;
             overflow: hidden;
             position: relative;
         }
+        /* Затемнение слева, к правому краю сходит на нет */
+        .loyalty-hero-panel-empty::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            border-radius: inherit;
+            background: linear-gradient(
+                to right,
+                rgba(0, 0, 0, 0.58) 0%,
+                rgba(0, 0, 0, 0.28) 38%,
+                rgba(0, 0, 0, 0.08) 62%,
+                transparent 85%
+            );
+        }
         @media (min-width: 768px) {
-            .loyalty-hero {
-                padding-top: 9rem;
-                padding-bottom: 5rem;
+            .loyalty-hero-panel-empty {
+                min-height: 580px;
+                margin: -1.25rem auto 0;
             }
         }
-        .loyalty-hero-inner {
+        .loyalty-hero-panel-empty img {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+        }
+        .loyalty-hero-panel-copy {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 2;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            justify-content: center;
             align-items: flex-start;
+            max-width: min(100%, 26rem);
+            padding: 1.5rem 1.25rem 2.25rem 1.5rem;
+            box-sizing: border-box;
+            pointer-events: none;
         }
         @media (min-width: 768px) {
-            .loyalty-hero-inner {
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                gap: 3rem;
+            .loyalty-hero-panel-copy {
+                max-width: min(100%, 32rem);
+                padding: 2rem 2rem 3.75rem 2.5rem;
             }
         }
-        .loyalty-hero-content {
-            text-align: left;
-            max-width: 48rem;
-            flex-shrink: 0;
+        .loyalty-hero-panel-copy a {
+            pointer-events: auto;
         }
-        .loyalty-hero-content .hero-description {
-            margin-bottom: 0;
+        .loyalty-hero-panel-badge {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.82);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin: 0 0 0.75rem;
         }
-        .loyalty-hero-image {
-            width: 100%;
-            max-width: 30rem;
-        }
-        .loyalty-hero-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-            object-fit: cover;
+        .loyalty-hero-panel-heading {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 600;
+            font-size: 1.75rem;
+            line-height: 1.15;
+            color: #ffffff;
+            margin: 0 0 1rem;
         }
         @media (min-width: 768px) {
-            .loyalty-hero-image {
-                flex-shrink: 0;
-                max-width: 24rem;
+            .loyalty-hero-panel-heading {
+                font-size: 2.25rem;
             }
+        }
+        @media (min-width: 1024px) {
+            .loyalty-hero-panel-heading {
+                font-size: 2.5rem;
+            }
+        }
+        .loyalty-hero-panel-lead {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 400;
+            font-size: 0.9375rem;
+            line-height: 1.55;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0 0 1.25rem;
+        }
+        @media (min-width: 768px) {
+            .loyalty-hero-panel-lead {
+                font-size: 1.0625rem;
+            }
+        }
+        @media (max-width: 767px) {
+            .loyalty-hero-panel-copy {
+                justify-content: flex-end;
+                padding-top: 1rem;
+                padding-bottom: 1.25rem;
+                max-width: 100%;
+            }
+            .loyalty-hero-panel-heading {
+                overflow-wrap: break-word;
+            }
+        }
+        /* CTA «Найти жильё» — те же классы, что «Узнать больше» на главной (.garden-section) */
+        .loyalty-hero-panel-copy .header-auth-link.header-auth-link-primary {
+            background: transparent;
+            color: #ffffff;
+            border-color: #ffffff;
+            text-decoration: none;
+        }
+        .loyalty-hero-panel-copy .header-auth-link.header-auth-link-primary:hover {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
         }
         .loyalty-progress {
             margin-top: -3rem;
@@ -156,189 +255,284 @@
             color: var(--color-emerald-700);
         }
         .how-it-works {
-            padding: 2.5rem 0 3rem;
+            padding: 4.5rem 0 4.5rem;
             background: var(--color-white);
         }
-        .how-it-works .section-header {
-            margin-bottom: 2.5rem;
+        @media (min-width: 768px) {
+            .how-it-works {
+                padding: 5rem 0 5rem;
+            }
+        }
+        .how-it-works-header {
+            text-align: center;
+            margin-bottom: 2.25rem;
+        }
+        .how-it-works-header .section-title {
+            margin-bottom: 0.5rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        @media (min-width: 768px) {
+            .how-it-works-header .section-title {
+                font-size: 2.25rem;
+            }
+        }
+        .how-it-works-subtitle {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--color-gray-600);
+            margin: 0 auto;
+            max-width: 36rem;
+            line-height: 1.5;
         }
         .how-it-works-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 2.5rem;
+            gap: 1.25rem;
         }
         @media (min-width: 768px) {
             .how-it-works-grid {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 2rem;
+                gap: 1.5rem;
+                align-items: stretch;
             }
         }
         .how-it-works-item {
-            text-align: center;
-            padding: 1.5rem 1rem;
-            border-radius: 5px;
-            background: var(--color-gray-50);
-            transition: background 0.2s;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem 1.25rem;
+            padding: 1.25rem 1.25rem;
+            box-sizing: border-box;
+            background: #ffffff;
+            border: 1px solid var(--color-gray-900);
+            border-radius: 8px;
+            text-align: left;
         }
-        .how-it-works-item:hover {
-            background: var(--color-emerald-50);
-        }
-        .how-it-works-icon {
-            width: 4rem;
-            height: 4rem;
-            background: var(--color-white);
-            border-radius: 5px;
-            border: 1px solid var(--color-emerald-100);
+        .how-it-works-step-num {
+            flex-shrink: 0;
+            width: 3.25rem;
+            height: 3.25rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.25rem;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+            border: 1px solid var(--color-gray-900);
+            border-radius: 8px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-gray-900);
+            line-height: 1;
         }
-        .how-it-works-icon svg {
-            width: 2rem;
-            height: 2rem;
-            color: var(--color-emerald-600);
+        .how-it-works-body {
+            flex: 1;
+            min-width: 0;
         }
         .how-it-works-title {
-            font-size: 1.125rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--color-gray-900);
-            margin-bottom: 0.5rem;
+            margin: 0 0 0.35rem;
+            line-height: 1.3;
         }
         .how-it-works-description {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: var(--color-gray-600);
-            font-size: 0.9375rem;
-            line-height: 1.5;
+            font-size: 0.875rem;
+            font-weight: 400;
+            line-height: 1.45;
+            margin: 0;
         }
         .levels-section {
-            padding: 3rem 0 5rem;
+            padding: 3.5rem 1rem 5rem;
+            background: var(--color-white);
+        }
+        @media (min-width: 768px) {
+            .levels-section {
+                padding: 4rem 1.5rem 5.5rem;
+            }
+        }
+        .levels-section-surface {
+            border-radius: 8px;
+            padding: 2.5rem 1.25rem 2.75rem;
+            box-sizing: border-box;
+            overflow: hidden;
+            background-color: #1c2918;
+            background-image:
+                linear-gradient(
+                    to right,
+                    rgba(0, 0, 0, 0.52) 0%,
+                    rgba(0, 0, 0, 0.32) 38%,
+                    rgba(0, 0, 0, 0.16) 65%,
+                    rgba(0, 0, 0, 0.05) 100%
+                ),
+                url('images/polyana.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        @media (min-width: 768px) {
+            .levels-section-surface {
+                padding: 2.75rem 2rem 3rem;
+                border-radius: 8px;
+            }
+        }
+        .levels-section-head {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        @media (min-width: 768px) {
+            .levels-section-head {
+                margin-bottom: 2.25rem;
+            }
+        }
+        .levels-section-badge {
+            display: block;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.55);
+            margin: 0 0 0.75rem;
+        }
+        .levels-section-title {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0 0 0.5rem;
+            line-height: 1.2;
+        }
+        @media (min-width: 768px) {
+            .levels-section-title {
+                font-size: 2.25rem;
+            }
+        }
+        .levels-section-lead {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.9375rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.5);
+            margin: 0 auto;
+            max-width: 28rem;
         }
         .levels-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: 1rem;
         }
         @media (min-width: 768px) {
             .levels-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
         @media (min-width: 1024px) {
             .levels-grid {
-                grid-template-columns: repeat(5, 1fr);
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 1.25rem;
             }
         }
-        .level-card {
-            background: var(--color-white);
-            border-radius: 5px;
-            padding: 1.5rem;
-            border: 2px solid var(--color-gray-100);
-            transition: all 0.3s;
-            position: relative;
-        }
-        .level-card:hover {
-            transform: translateY(-0.25rem);
-            border-color: var(--color-gray-200);
-        }
-        .level-card.current {
-            border-color: var(--color-emerald-500);
-            box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.2);
-        }
-        .level-card.current::before {
-            content: 'Текущий';
-            position: absolute;
-            top: -0.75rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--color-emerald-500);
-            color: var(--color-white);
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 5px;
-        }
-        .level-emoji {
-            font-size: 3rem;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        .level-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--color-gray-900);
-            text-align: center;
-            margin-bottom: 0.25rem;
-        }
-        .level-points {
-            font-size: 0.875rem;
-            color: var(--color-gray-500);
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        .level-discount-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            color: var(--color-white);
-            font-weight: 600;
-            margin: 0 auto 1rem;
-            text-align: center;
-        }
-        .level-benefits {
-            list-style: none;
-            text-align: left;
-        }
-        .level-benefit {
+        .levels-tier-card {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            color: var(--color-gray-600);
-            margin-bottom: 0.5rem;
+            flex-direction: column;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 1rem 1rem 1.15rem;
+            box-sizing: border-box;
+            min-height: 11.5rem;
+            min-width: 0;
+            aspect-ratio: 1;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
-        .level-benefit svg {
-            width: 1rem;
-            height: 1rem;
-            color: var(--color-emerald-500);
-            flex-shrink: 0;
+        .levels-tier-card--current {
+            box-shadow: 0 0 0 2px #ffffff, 0 12px 40px rgba(0, 0, 0, 0.35);
         }
-        .loyalty-cta {
-            padding: 6rem 0;
-            background: linear-gradient(to bottom right, var(--color-emerald-500), var(--color-emerald-700));
-        }
-        .loyalty-cta-content {
-            text-align: center;
-            max-width: 56rem;
-            margin: 0 auto;
-        }
-        .loyalty-cta-icon {
-            width: 3rem;
-            height: 3rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin: 0 auto 1.5rem;
-        }
-        .loyalty-cta-title {
-            font-size: 2.25rem;
+        .levels-tier-card--current::after {
+            content: "Ваш уровень";
+            position: absolute;
+            top: 0.65rem;
+            right: 0.65rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.625rem;
             font-weight: 600;
-            color: var(--color-white);
-            margin-bottom: 1.5rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--color-gray-900);
+            background: rgba(0, 0, 0, 0.06);
+            padding: 0.2rem 0.45rem;
+            border-radius: 8px;
+        }
+        .levels-tier-pct {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #111111;
+            line-height: 1;
+            letter-spacing: -0.03em;
+            align-self: flex-start;
         }
         @media (min-width: 768px) {
-            .loyalty-cta-title {
-                font-size: 3rem;
+            .levels-tier-pct {
+                font-size: 2rem;
             }
         }
-        .loyalty-cta-description {
-            font-size: 1.25rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 2.5rem;
-            max-width: 32rem;
-            margin-left: auto;
-            margin-right: auto;
+        .levels-tier-body {
+            margin-top: auto;
+            padding-top: 1rem;
+            width: 100%;
         }
-
+        .levels-tier-name {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111111;
+            margin: 0 0 0.25rem;
+            line-height: 1.25;
+        }
+        .levels-tier-threshold {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6b7280;
+            margin: 0 0 0.5rem;
+            line-height: 1.3;
+        }
+        .levels-tier-desc {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 400;
+            color: #4b5563;
+            line-height: 1.45;
+            margin: 0;
+        }
+        @media (max-width: 767px) {
+            .levels-tier-card {
+                aspect-ratio: auto;
+                min-height: 0;
+                padding: 0.85rem 0.9rem 1rem;
+            }
+            .levels-tier-pct {
+                font-size: 1.35rem;
+            }
+            .levels-tier-name {
+                font-size: 0.9375rem;
+            }
+            .levels-tier-threshold {
+                font-size: 0.6875rem;
+            }
+            .levels-tier-desc {
+                font-size: 0.75rem;
+                line-height: 1.4;
+                word-break: normal;
+                overflow-wrap: break-word;
+            }
+        }
         /* Animations */
         .anim-fade-up {
             opacity: 0;
@@ -371,113 +565,115 @@
         .anim-stagger.animate-in > *:nth-child(4) { transition-delay: 0.26s; }
         .anim-stagger.animate-in > *:nth-child(5) { transition-delay: 0.33s; }
         .anim-stagger.animate-in > *:nth-child(6) { transition-delay: 0.4s; }
-        .parallax-wrap {
-            transition: transform 0.1s ease-out;
-            will-change: transform;
+
+        /* Вся страница loyalty.html — Inter (перекрывает Exo 2 из main.css) */
+        body.loyalty-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body.loyalty-page h1,
+        body.loyalty-page h2,
+        body.loyalty-page h3,
+        body.loyalty-page h4,
+        body.loyalty-page h5,
+        body.loyalty-page h6 {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body.loyalty-page .section-badge,
+        body.loyalty-page .section-title,
+        body.loyalty-page .section-description {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body.loyalty-page input,
+        body.loyalty-page button,
+        body.loyalty-page select,
+        body.loyalty-page textarea {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        /* Разделители как на главной (.section-divider из main.css), чуть больше воздуха */
+        body.loyalty-page .section-divider {
+            margin: 2.75rem auto;
+        }
+        @media (min-width: 768px) {
+            body.loyalty-page .section-divider {
+                margin: 3.25rem auto;
+            }
         }
     </style>
 </head>
-<body>
+<body class="loyalty-page">
     <div id="header-container"></div>
-    
-    <!-- Hero Section -->
-    <section class="loyalty-hero">
-        <div class="container">
-            <div class="loyalty-hero-inner">
-                <div class="loyalty-hero-content anim-fade-up" data-animate>
-                    <h1 class="hero-title hero-title-green">Виртуальный сад</h1>
-                    <p class="hero-description">
-                        Программа лояльности для ценителей загородного отдыха.
-                        Бронируйте, копите баллы и выращивайте своё дерево для получения скидок.
+
+    <section class="loyalty-hero-banner" aria-label="Виртуальный сад">
+        <div class="loyalty-hero-banner-inner">
+            <div class="loyalty-hero-panel-empty anim-fade-up" data-animate>
+                <img src="images/virtual_sad_fon.jpg" alt="" width="1224" height="580" loading="eager" fetchpriority="high" decoding="async" role="presentation">
+                <div class="loyalty-hero-panel-copy anim-fade-up" data-animate>
+                    <p class="loyalty-hero-panel-badge">Программа лояльности</p>
+                    <h1 class="loyalty-hero-panel-heading">Виртуальный сад</h1>
+                    <p class="loyalty-hero-panel-lead">
+                        Бронируйте загородное жильё, копите баллы и «выращивайте» уровень: чем выше стадия, тем больше скидка и привилегии на следующие поездки.
                     </p>
-                </div>
-                <div class="loyalty-hero-image parallax-wrap" data-parallax>
-                    <img src="images/virtual_photo.png" alt="Виртуальный сад — природа и рост">
+                    <a href="catalog.html" class="header-auth-link header-auth-link-primary garden-btn">Найти жильё</a>
                 </div>
             </div>
         </div>
     </section>
+
+    <div class="section-divider" aria-hidden="true"></div>
     
     <!-- How It Works -->
     <section class="how-it-works" data-animate>
         <div class="container">
-            <div class="section-header anim-fade-up">
-                <span class="section-badge">Как это работает</span>
+            <header class="how-it-works-header anim-fade-up" data-animate>
                 <h2 class="section-title">Три простых шага</h2>
-            </div>
-            
+                <p class="how-it-works-subtitle">Бронируйте жильё, копите баллы и открывайте скидки на следующие поездки</p>
+            </header>
+
             <div class="how-it-works-grid anim-stagger">
                 <div class="how-it-works-item">
-                    <div class="how-it-works-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
+                    <span class="how-it-works-step-num" aria-hidden="true">1</span>
+                    <div class="how-it-works-body">
+                        <h3 class="how-it-works-title">Бронируйте</h3>
+                        <p class="how-it-works-description">Каждые потраченные 100 ₽ = 1 балл</p>
                     </div>
-                    <h3 class="how-it-works-title">Бронируйте</h3>
-                    <p class="how-it-works-description">Каждые потраченные 100 ₽ = 1 балл</p>
                 </div>
-                
                 <div class="how-it-works-item">
-                    <div class="how-it-works-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
-                        </svg>
+                    <span class="how-it-works-step-num" aria-hidden="true">2</span>
+                    <div class="how-it-works-body">
+                        <h3 class="how-it-works-title">Копите баллы</h3>
+                        <p class="how-it-works-description">Следите за прогрессом в личном кабинете</p>
                     </div>
-                    <h3 class="how-it-works-title">Копите баллы</h3>
-                    <p class="how-it-works-description">Следите за прогрессом в личном кабинете</p>
                 </div>
-                
                 <div class="how-it-works-item">
-                    <div class="how-it-works-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                        </svg>
+                    <span class="how-it-works-step-num" aria-hidden="true">3</span>
+                    <div class="how-it-works-body">
+                        <h3 class="how-it-works-title">Получайте скидки</h3>
+                        <p class="how-it-works-description">Чем выше уровень — тем больше привилегий</p>
                     </div>
-                    <h3 class="how-it-works-title">Получайте скидки</h3>
-                    <p class="how-it-works-description">Чем выше уровень — тем больше привилегий</p>
                 </div>
             </div>
         </div>
     </section>
+
+    <div class="section-divider" aria-hidden="true"></div>
     
     <!-- Levels -->
     <section class="levels-section" data-animate>
         <div class="container">
-            <div class="section-header anim-fade-up">
-                <span class="section-badge">Уровни роста</span>
-                <h2 class="section-title">Выращивайте своё дерево</h2>
-            </div>
-            
-            <div class="levels-grid anim-stagger" id="levels-grid">
-                <!-- Levels will be loaded here -->
-            </div>
-        </div>
-    </section>
-    
-    <!-- CTA -->
-    <section class="loyalty-cta" data-animate>
-        <div class="container">
-            <div class="loyalty-cta-content anim-fade-up">
-                <svg class="loyalty-cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                
-                <h2 class="loyalty-cta-title">Начните выращивать свой сад уже сегодня</h2>
-                
-                <p class="loyalty-cta-description">
-                    Каждое бронирование приближает вас к новым привилегиям и большим скидкам
-                </p>
-                
-                <a href="catalog.html" class="btn btn-white">
-                    Найти жильё
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 0.5rem;">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </a>
+            <div class="levels-section-surface anim-fade-up" data-animate>
+                <header class="levels-section-head">
+                    <span class="levels-section-badge">Уровни роста</span>
+                    <h2 class="levels-section-title">Выращивайте своё дерево</h2>
+                    <p class="levels-section-lead">Четыре стадии — от первых баллов до максимальной скидки по программе</p>
+                </header>
+                <div class="levels-grid anim-stagger" id="levels-grid" aria-live="polite">
+                    <!-- Карточки уровней подставляет loyalty.js -->
+                </div>
             </div>
         </div>
     </section>
+
+    <div class="section-divider" aria-hidden="true"></div>
     
     <div id="footer-container"></div>
     
@@ -497,18 +693,6 @@
 
         document.querySelectorAll('.anim-fade-up').forEach(function(el) { observer.observe(el); });
         document.querySelectorAll('.anim-stagger').forEach(function(el) { observer.observe(el); });
-
-        function parallax() {
-            var wrap = document.querySelector('[data-parallax]');
-            if (!wrap) return;
-            var rect = wrap.getBoundingClientRect();
-            var center = rect.top + rect.height / 2;
-            var viewCenter = window.innerHeight / 2;
-            var diff = (viewCenter - center) * 0.06;
-            wrap.style.transform = 'translateY(' + Math.round(diff) + 'px)';
-        }
-        window.addEventListener('scroll', function() { requestAnimationFrame(parallax); }, { passive: true });
-        window.addEventListener('load', parallax);
 
         setTimeout(function() {
             document.querySelectorAll('.anim-fade-up, .anim-stagger').forEach(function(el) {
