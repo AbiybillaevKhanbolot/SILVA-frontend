@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Избранное - Silva</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .favorites-empty { text-align: center; padding: 4rem 0; color: var(--color-gray-500); }
+        .favorites-empty a { color: var(--color-emerald-600); text-decoration: none; }
+        .favorites-empty a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div id="header-container"></div>
+    <main style="padding: 6rem 0;">
+        <div class="container">
+            <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Избранное</h1>
+            <p style="color: var(--color-gray-600); font-size: 0.9375rem;">Объекты, которые вы добавили в избранное.</p>
+            <div id="favorites-container" class="favorites-grid"></div>
+            <div id="favorites-empty" class="favorites-empty" style="display: none;">
+                <p style="margin-bottom: 1rem;">Пока ничего нет.</p>
+                <a href="catalog.html">Перейти в каталог</a>
+            </div>
+        </div>
+    </main>
+    <div id="footer-container"></div>
+    <script src="js/utils.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/components/property-card.js"></script>
+    <script>
+        (function() {
+            var container = document.getElementById('favorites-container');
+            var emptyBlock = document.getElementById('favorites-empty');
+
+            function render() {
+                var ids = [];
+                try {
+                    ids = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
+                } catch (e) {}
+                var properties = ids.map(function(id) {
+                    return typeof mockAPI !== 'undefined' && mockAPI.getPropertyById ? mockAPI.getPropertyById(id) : null;
+                }).filter(Boolean);
+                if (properties.length === 0) {
+                    container.style.display = 'none';
+                    container.innerHTML = '';
+                    emptyBlock.style.display = 'block';
+                } else {
+                    container.style.display = 'grid';
+                    emptyBlock.style.display = 'none';
+                    renderPropertyCards(container, properties);
+                }
+            }
+
+            render();
+            window.addEventListener('silva-favorites-changed', function(e) {
+                if (!e.detail.inFavorites) render();
+            });
+        })();
+    </script>
+</body>
+</html>

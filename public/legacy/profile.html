@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль - Silva</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        .profile-page {
+            padding-top: 5rem;
+            padding-bottom: 3rem;
+            min-height: 100vh;
+            background: var(--color-gray-50);
+        }
+        .profile-card {
+            max-width: 28rem;
+            margin: 0 auto;
+            background: var(--color-white);
+            border-radius: 5px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--color-gray-100);
+        }
+        .profile-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--color-gray-900); }
+        .profile-email { color: var(--color-gray-600); margin-bottom: 1.5rem; }
+        .btn-logout { margin-top: 0.5rem; background: var(--color-gray-100); color: var(--color-gray-700); }
+        .btn-logout:hover { background: var(--color-gray-200); }
+    </style>
+</head>
+<body>
+    <div id="header-container"></div>
+
+    <main class="profile-page">
+        <div class="profile-card anim-fade-up">
+            <h1 class="profile-title">Профиль</h1>
+            <p class="profile-email" id="profile-email">—</p>
+            <button type="button" class="btn btn-logout" id="logout-btn">Выйти</button>
+        </div>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+        if (!localStorage.getItem('silva_user')) {
+            window.location.href = 'login.html';
+        }
+        const user = JSON.parse(localStorage.getItem('silva_user') || '{}');
+        if (user.email) document.getElementById('profile-email').textContent = user.email;
+        if (user.name) document.querySelector('.profile-title').textContent = user.name;
+
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('silva_user');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

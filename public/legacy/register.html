@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Silva</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-body">
+    <div id="header-container"></div>
+    <main class="auth-page">
+        <div class="auth-wrapper anim-fade-up">
+            <a href="index.html" class="auth-back" aria-label="Назад">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Назад
+            </a>
+            <div class="auth-form-column">
+                <div class="auth-card">
+                    <h1 class="auth-title">Регистрация</h1>
+                    <p class="auth-role-label">Выберите тип аккаунта</p>
+            <div class="auth-role-options" id="role-options">
+                <label class="auth-role-option">
+                    <input type="radio" name="role" value="guest" checked>
+                    <span class="auth-role-option-text">Гость</span>
+                </label>
+                <label class="auth-role-option">
+                    <input type="radio" name="role" value="owner">
+                    <span class="auth-role-option-text">Владелец</span>
+                </label>
+            </div>
+
+            <!-- Форма гостя -->
+            <div id="guest-fields" class="auth-form-block active">
+                <form id="register-form-guest">
+                    <input type="text" class="input" name="fullname" placeholder="ФИО" required>
+                    <input type="email" class="input" name="email" placeholder="Почта" required>
+                    <input type="password" class="input" name="password" id="guest-password" placeholder="Пароль" required minlength="10">
+                    <input type="password" class="input" name="password_confirm" id="guest-password-confirm" placeholder="Подтвердите пароль" required>
+                    <div class="auth-password-hints" id="guest-hints">
+                        <span id="hint-length" class="err">Не менее 10 символов</span>
+                        <span id="hint-special" class="err">Содержит специальный символ</span>
+                    </div>
+                    <label class="auth-checkbox">
+                        <input type="checkbox" name="newsletter" id="guest-newsletter">
+                        <span>Да, я хочу получать информацию о скидках и новых функциях. Я понимаю, что могу отозвать своё согласие в любой момент.</span>
+                    </label>
+                    <div id="guest-form-error" class="auth-error" style="display: none;"></div>
+                    <button type="submit" class="btn btn-primary auth-btn-submit">Зарегистрироваться</button>
+                </form>
+            </div>
+
+            <!-- Форма владельца -->
+            <div id="owner-fields" class="auth-form-block">
+                <form id="register-form-owner">
+                    <input type="text" class="input" name="fullname" placeholder="ФИО" required>
+                    <select class="auth-select" name="property_type" required>
+                        <option value="">Тип объекта</option>
+                        <option value="cottage">Коттедж</option>
+                        <option value="glamping">Глэмпинг</option>
+                        <option value="eco_house">Эко-Дом</option>
+                        <option value="by_river">У реки</option>
+                    </select>
+                    <input type="email" class="input" name="email" placeholder="Почта" required>
+                    <input type="password" class="input" name="password" id="owner-password" placeholder="Пароль" required minlength="10">
+                    <input type="password" class="input" name="password_confirm" id="owner-password-confirm" placeholder="Подтвердите пароль" required>
+                    <div class="auth-password-hints" id="owner-hints">
+                        <span id="owner-hint-length" class="err">Не менее 10 символов</span>
+                        <span id="owner-hint-special" class="err">Содержит специальный символ</span>
+                    </div>
+                    <label class="auth-checkbox">
+                        <input type="checkbox" name="newsletter" id="owner-newsletter">
+                        <span>Да, я хочу получать информацию о скидках и новых функциях. Я понимаю, что могу отозвать своё согласие в любой момент.</span>
+                    </label>
+                    <label class="auth-checkbox">
+                        <input type="checkbox" name="business_confirm" id="owner-business" required>
+                        <span>Да, я подтверждаю, что имею право представлять данный бизнес.</span>
+                    </label>
+                    <div id="owner-form-error" class="auth-error" style="display: none;"></div>
+                    <button type="submit" class="btn btn-primary auth-btn-submit">Зарегистрироваться</button>
+                </form>
+            </div>
+
+            <p class="auth-disclaimer" id="auth-disclaimer">
+                Продолжая, Вы соглашаетесь с нашими <a href="terms.html">Условиями использования</a> и подтверждаете, что прочли нашу <a href="privacy.html">Политику конфиденциальности</a> и использование файлов cookie.
+            </p>
+                    <p class="auth-switch">Уже есть аккаунт? <a href="login.html">Войти</a></p>
+                </div>
+            </div>
+            <div class="auth-visual">
+                <div class="auth-visual-card">
+                    <img src="images/reg_photo2.jpg" alt="">
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-container"></div>
+    <script src="js/utils.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+(function() {
+    var specialRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+    function checkPassword(pwd) {
+        return { length: pwd.length >= 10, special: specialRegex.test(pwd) };
+    }
+    function updateHints(inputId, hintsId) {
+        var pwd = document.getElementById(inputId).value;
+        var hints = document.getElementById(hintsId);
+        var lengthEl = hints.children[0];
+        var specialEl = hints.children[1];
+        var r = checkPassword(pwd);
+        lengthEl.textContent = 'Не менее 10 символов';
+        lengthEl.className = r.length ? 'ok' : 'err';
+        specialEl.textContent = 'Содержит специальный символ';
+        specialEl.className = r.special ? 'ok' : 'err';
+    }
+    document.getElementById('guest-password').addEventListener('input', function() { updateHints('guest-password', 'guest-hints'); });
+    document.getElementById('owner-password').addEventListener('input', function() { updateHints('owner-password', 'owner-hints'); });
+
+    function updateRoleUI() {
+        var isOwner = document.querySelector('input[name="role"]:checked').value === 'owner';
+        document.getElementById('guest-fields').classList.toggle('active', !isOwner);
+        document.getElementById('owner-fields').classList.toggle('active', isOwner);
+    }
+    document.querySelectorAll('input[name="role"]').forEach(function(radio) {
+        radio.addEventListener('change', updateRoleUI);
+    });
+    updateRoleUI();
+
+    function showError(blockId, msg) {
+        var el = document.getElementById(blockId);
+        el.textContent = msg || '';
+        el.style.display = msg ? 'block' : 'none';
+    }
+    function validatePassword(pwd, confirmPwd) {
+        var r = checkPassword(pwd);
+        if (!r.length) return 'Пароль не менее 10 символов';
+        if (!r.special) return 'Пароль должен содержать специальный символ';
+        if (pwd !== confirmPwd) return 'Пароли не совпадают';
+        return null;
+    }
+
+    document.getElementById('register-form-guest').addEventListener('submit', function(e) {
+        e.preventDefault();
+        showError('guest-form-error', '');
+        var fullname = this.fullname.value.trim();
+        var email = this.email.value.trim();
+        var pwd = this.password.value;
+        var confirmPwd = this.password_confirm.value;
+        var err = validatePassword(pwd, confirmPwd);
+        if (err) { showError('guest-form-error', err); return; }
+        localStorage.setItem('silva_user', JSON.stringify({
+            name: fullname,
+            email: email,
+            role: 'guest',
+            newsletter: !!this.newsletter.checked
+        }));
+        window.location.href = 'index.html';
+    });
+
+    document.getElementById('register-form-owner').addEventListener('submit', function(e) {
+        e.preventDefault();
+        showError('owner-form-error', '');
+        var fullname = this.fullname.value.trim();
+        var email = this.email.value.trim();
+        var propertyType = this.property_type.value;
+        var pwd = this.password.value;
+        var confirmPwd = this.password_confirm.value;
+        var err = validatePassword(pwd, confirmPwd);
+        if (err) { showError('owner-form-error', err); return; }
+        if (!this.business_confirm.checked) { showError('owner-form-error', 'Подтвердите право представлять бизнес'); return; }
+        localStorage.setItem('silva_user', JSON.stringify({
+            name: fullname,
+            email: email,
+            role: 'owner',
+            property_type: propertyType,
+            newsletter: !!this.newsletter.checked
+        }));
+        window.location.href = 'index.html';
+    });
+})();
+    </script>
+</body>
+</html>

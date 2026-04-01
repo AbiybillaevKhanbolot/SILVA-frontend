@@ -1,0 +1,330 @@
+/* Страницы входа и регистрации: блок на весь экран */
+body.auth-body #header-container,
+body.auth-body #footer-container {
+    display: none;
+}
+
+.auth-page {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    background: var(--color-white);
+}
+
+.auth-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-white);
+    position: relative;
+}
+
+@media (min-width: 768px) {
+    .auth-wrapper {
+        flex-direction: row;
+    }
+}
+
+/* Кнопка «Назад» — простой текст слева */
+.auth-back {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0;
+    font-size: 0.8125rem;
+    color: var(--color-gray-600);
+    text-decoration: none;
+    background: none;
+    border: none;
+    transition: color 0.2s;
+}
+
+.auth-back:hover {
+    color: var(--color-gray-900);
+}
+
+.auth-back svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+}
+
+/* Правая колонка — оранжевый фон и карточка под картинку */
+.auth-visual {
+    min-height: 12rem;
+    padding: 2rem;
+    background: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .auth-visual {
+        width: 50%;
+        min-height: auto;
+        padding: 2.5rem;
+    }
+}
+
+/* Карточка с закруглёнными углами для изображения */
+.auth-visual-card {
+    width: 100%;
+    max-width: 130rem;
+    aspect-ratio: 4 / 4.7;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--color-gray-50);
+    border: 1px solid var(--color-gray-100);
+}
+
+.auth-visual-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Левая колонка — форма (поля и тексты по центру) */
+.auth-form-column {
+    flex: 1;
+    padding: 1.5rem 1.25rem;
+    background: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .auth-form-column {
+        padding: 1.75rem 2rem;
+    }
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 20rem;
+    text-align: center;
+}
+
+.auth-title {
+    font-family: 'Exo 2', sans-serif;
+    font-style: normal;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: var(--color-gray-900);
+}
+
+.auth-subtitle {
+    font-family: 'Exo 2', sans-serif;
+    font-weight: 200;
+    font-style: normal;
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.auth-page .input {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.auth-page .btn,
+.auth-page .btn-primary {
+    width: 100%;
+    margin-top: 0.35rem;
+    padding: 0.65rem 1rem;
+    font-size: 0.875rem;
+}
+
+.auth-forgot {
+    display: block;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-emerald-600);
+    text-decoration: none;
+}
+
+.auth-forgot:hover {
+    text-decoration: underline;
+    color: var(--color-emerald-700);
+}
+
+.auth-switch {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--color-gray-600);
+    text-align: center;
+}
+
+.auth-switch a {
+    color: var(--color-emerald-600);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+    color: var(--color-emerald-700);
+}
+
+/* Регистрация: доп. элементы (уменьшенные) */
+.auth-role-group {
+    margin-bottom: 0.75rem;
+}
+
+.auth-role-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.auth-role-options {
+    display: flex;
+    gap: 1.25rem;
+    margin-bottom: 0.5rem;
+    justify-content: center;
+}
+
+.auth-role-option {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    color: var(--color-gray-600);
+    transition: color 0.2s;
+}
+
+.auth-role-option input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.auth-role-option:hover,
+.auth-role-option:has(input:checked) {
+    color: var(--color-emerald-600);
+}
+
+.auth-role-option:has(input:checked) .auth-role-option-text {
+    font-weight: 600;
+}
+
+.auth-form-block {
+    display: none;
+}
+
+.auth-form-block.active {
+    display: block;
+}
+
+.auth-form-block .input {
+    margin-bottom: 0.75rem;
+}
+
+.auth-password-hints {
+    font-size: 0.7rem;
+    color: var(--color-gray-500);
+    margin-top: -0.35rem;
+    margin-bottom: 0.75rem;
+    text-align: left;
+}
+
+.auth-password-hints span {
+    display: block;
+}
+
+.auth-password-hints .ok {
+    color: var(--color-emerald-600);
+}
+
+.auth-password-hints .err {
+    color: var(--color-gray-500);
+}
+
+.auth-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    font-size: 0.7rem;
+    color: var(--color-gray-500);
+    line-height: 1.35;
+    text-align: left;
+}
+
+.auth-checkbox input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+    accent-color: var(--color-emerald-500);
+}
+
+.auth-select {
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 5px;
+    font-size: 0.875rem;
+    background: var(--color-white);
+    margin-bottom: 0.75rem;
+    box-sizing: border-box;
+}
+
+.auth-select:focus {
+    outline: none;
+    border-color: var(--color-emerald-500);
+}
+
+.auth-btn-submit {
+    width: 100%;
+    margin-top: 0.2rem;
+}
+
+.auth-disclaimer {
+    margin-top: 0.75rem;
+    font-size: 0.7rem;
+    line-height: 1.35;
+    color: var(--color-gray-500);
+    text-align: left;
+}
+
+.auth-disclaimer a {
+    color: var(--color-emerald-600);
+    text-decoration: underline;
+}
+
+.auth-disclaimer a:hover {
+    color: var(--color-emerald-700);
+}
+
+.auth-error {
+    font-size: 0.75rem;
+    color: #dc2626;
+    margin-top: 0.2rem;
+    text-align: center;
+}

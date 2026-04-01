@@ -1,0 +1,17 @@
+export const legacyRoutes = [
+  { path: "/", file: "index.html" },
+  { path: "/catalog", file: "catalog.html" },
+  { path: "/property", file: "property.html" },
+  { path: "/booking", file: "booking.html" },
+  { path: "/loyalty", file: "loyalty.html" },
+  { path: "/login", file: "login.html" },
+  { path: "/register", file: "register.html" },
+  { path: "/forgot-password", file: "forgot-password.html" },
+  { path: "/profile", file: "profile.html" },
+  { path: "/favorites", file: "favorites.html" },
+  { path: "/my-bookings", file: "my-bookings.html" },
+  { path: "/owner-dashboard", file: "owner-dashboard.html" },
+  { path: "/admin", file: "admin.html" },
+  { path: "/privacy", file: "privacy.html" },
+  { path: "/terms", file: "terms.html" },
+];

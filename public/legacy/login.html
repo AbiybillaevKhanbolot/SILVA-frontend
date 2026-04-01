@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Silva</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-body">
+    <div id="header-container"></div>
+    <main class="auth-page">
+        <div class="auth-wrapper anim-fade-up">
+            <a href="index.html" class="auth-back" aria-label="Назад">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Назад
+            </a>
+            <div class="auth-form-column">
+                <div class="auth-card">
+                    <h1 class="auth-title">Вход</h1>
+                    <p class="auth-subtitle">Войдите в аккаунт, чтобы бронировать жильё и управлять заказами.</p>
+                    <form id="login-form">
+                        <input type="email" class="input" name="email" placeholder="Почта" required>
+                        <input type="password" class="input" name="password" placeholder="Пароль" required>
+                        <button type="submit" class="btn btn-primary">Войти</button>
+                    </form>
+                    <a href="forgot-password.html" class="auth-forgot">Забыли пароль?</a>
+                    <p class="auth-switch">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+                </div>
+            </div>
+            <div class="auth-visual">
+                <div class="auth-visual-card">
+                    <img src="images/reg_photo1.jpg" alt="">
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-container"></div>
+    <script src="js/utils.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var user = { email: this.email.value };
+            try {
+                var existing = JSON.parse(localStorage.getItem('silva_user') || '{}');
+                if (existing.name) user.name = existing.name;
+                if (existing.role) user.role = existing.role;
+                if (existing.property_type) user.property_type = existing.property_type;
+            } catch (x) {}
+            localStorage.setItem('silva_user', JSON.stringify(user));
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

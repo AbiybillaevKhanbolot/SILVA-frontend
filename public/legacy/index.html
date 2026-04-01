@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silva - Уединение рядом с городом</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="header-container"></div>
+    
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-background">
+            <img src="images/lending.png" alt="Nature" class="hero-image">
+        </div>
+        
+        <div class="hero-content">
+            <!-- Search Card -->
+            <div class="search-card">
+                <div class="search-grid">
+                    <div class="search-item">
+                        <label class="search-label">Область</label>
+                        <div class="search-input-wrapper search-dropdown-wrapper">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <input type="text" placeholder="Область" class="search-input" id="region-input">
+                            <div class="search-dropdown" id="region-dropdown">
+                                <div class="search-dropdown-item" data-value="Адмиралтейский">Адмиралтейский</div>
+                                <div class="search-dropdown-item" data-value="Василеостровский">Василеостровский</div>
+                                <div class="search-dropdown-item" data-value="Выборгский">Выборгский</div>
+                                <div class="search-dropdown-item" data-value="Калининский">Калининский</div>
+                                <div class="search-dropdown-item" data-value="Кировский">Кировский</div>
+                                <div class="search-dropdown-item" data-value="Колпинский">Колпинский</div>
+                                <div class="search-dropdown-item" data-value="Красногвардейский">Красногвардейский</div>
+                                <div class="search-dropdown-item" data-value="Красносельский">Красносельский</div>
+                                <div class="search-dropdown-item" data-value="Кронштадтский">Кронштадтский</div>
+                                <div class="search-dropdown-item" data-value="Курортный">Курортный</div>
+                                <div class="search-dropdown-item" data-value="Московский">Московский</div>
+                                <div class="search-dropdown-item" data-value="Невский">Невский</div>
+                                <div class="search-dropdown-item" data-value="Петроградский">Петроградский</div>
+                                <div class="search-dropdown-item" data-value="Петродворцовый">Петродворцовый</div>
+                                <div class="search-dropdown-item" data-value="Приморский">Приморский</div>
+                                <div class="search-dropdown-item" data-value="Пушкинский">Пушкинский</div>
+                                <div class="search-dropdown-item" data-value="Фрунзенский">Фрунзенский</div>
+                                <div class="search-dropdown-item" data-value="Центральный">Центральный</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="search-item">
+                        <label class="search-label">Заезд</label>
+                        <div class="search-input-wrapper search-dropdown-wrapper">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <input type="text" placeholder="Заезд" class="search-input" id="checkin-input" readonly>
+                            <div class="search-dropdown search-calendar" id="checkin-dropdown">
+                                <div class="calendar-header">
+                                    <button type="button" class="calendar-nav-btn" id="checkin-prev-month">‹</button>
+                                    <div class="calendar-month-year" id="checkin-month-year"></div>
+                                    <button type="button" class="calendar-nav-btn" id="checkin-next-month">›</button>
+                                </div>
+                                <div class="calendar-weekdays">
+                                    <div>Пн</div>
+                                    <div>Вт</div>
+                                    <div>Ср</div>
+                                    <div>Чт</div>
+                                    <div>Пт</div>
+                                    <div>Сб</div>
+                                    <div>Вс</div>
+                                </div>
+                                <div class="calendar-days" id="checkin-calendar-days"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="search-item">
+                        <label class="search-label">Выезд</label>
+                        <div class="search-input-wrapper search-dropdown-wrapper">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <input type="text" placeholder="Выезд" class="search-input" id="checkout-input" readonly>
+                            <div class="search-dropdown search-calendar" id="checkout-dropdown">
+                                <div class="calendar-header">
+                                    <button type="button" class="calendar-nav-btn" id="checkout-prev-month">‹</button>
+                                    <div class="calendar-month-year" id="checkout-month-year"></div>
+                                    <button type="button" class="calendar-nav-btn" id="checkout-next-month">›</button>
+                                </div>
+                                <div class="calendar-weekdays">
+                                    <div>Пн</div>
+                                    <div>Вт</div>
+                                    <div>Ср</div>
+                                    <div>Чт</div>
+                                    <div>Пт</div>
+                                    <div>Сб</div>
+                                    <div>Вс</div>
+                                </div>
+                                <div class="calendar-days" id="checkout-calendar-days"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="search-item">
+                        <label class="search-label">Человек</label>
+                        <div class="search-input-wrapper search-people-wrapper">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <input type="text" placeholder="Человек" class="search-input" id="people-input" readonly>
+                            <div class="search-people-dropdown" id="people-dropdown">
+                                <div class="search-people-section">
+                                    <div class="search-people-label">Взрослые</div>
+                                    <div class="search-people-controls">
+                                        <button type="button" class="search-people-btn" data-type="adults" data-action="decrease">-</button>
+                                        <span class="search-people-count" id="adults-count">2</span>
+                                        <button type="button" class="search-people-btn" data-type="adults" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                                <div class="search-people-section">
+                                    <div class="search-people-label">Дети</div>
+                                    <div class="search-people-controls">
+                                        <button type="button" class="search-people-btn" data-type="children" data-action="decrease">-</button>
+                                        <span class="search-people-count" id="children-count">0</span>
+                                        <button type="button" class="search-people-btn" data-type="children" data-action="increase">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="search-item search-button-wrapper">
+                        <a href="catalog.html" class="btn btn-primary btn-search">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                            Найти
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-subtitle-block">
+                <p class="hero-description">
+                    Коттеджи и гостевые дома<br>
+                    для идеального отдыха на природе
+                </p>
+            </div>
+
+            <div class="hero-title-block">
+                <h1 class="hero-title hero-title-fade-chars">
+                    <span class="hero-title-fade-text">Тишина. Комфорт. Природа.</span>
+                </h1>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">
+            <div class="scroll-mouse">
+                <div class="scroll-dot"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Property Types Section -->
+    <section class="section section-white">
+        <div class="container">
+            <div class="section-header-split">
+                <div class="section-title-left-group">
+                    <h2 class="section-title-left typewriter-headline typewriter-chars-19"><span class="typewriter-text">Типы размещения</span></h2>
+                    <a href="catalog.html" class="header-auth-link header-auth-link-primary section-start-btn">Начать</a>
+                </div>
+                <p class="section-description-right">От уютных коттеджей<br>до экзотических глэмпингов.<br>Найдите идеальное место для<br>отдыха.</p>
+            </div>
+
+            <div class="ptype-grid">
+                <a href="catalog.html" class="ptype-card ptype-card--wide">
+                    <div class="ptype-img-wrap ptype-img-wrap--tall">
+                        <img src="images2/Cottedj.jpg" alt="Коттеджи">
+                    </div>
+                    <div class="ptype-info">
+                        <h3 class="ptype-name">Коттеджи</h3>
+                        <span class="ptype-count">234 объекта</span>
+                    </div>
+                </a>
+
+                <a href="catalog.html" class="ptype-card">
+                    <div class="ptype-img-wrap ptype-img-wrap--small">
+                        <img src="images2/glemping.jpg" alt="Глэмпинги">
+                    </div>
+                    <div class="ptype-info">
+                        <h3 class="ptype-name">Глэмпинги</h3>
+                        <span class="ptype-count">89 объектов</span>
+                    </div>
+                </a>
+
+                <a href="catalog.html" class="ptype-card">
+                    <div class="ptype-img-wrap ptype-img-wrap--small">
+                        <img src="images2/EkoHouse.jpg" alt="Эко-дома">
+                    </div>
+                    <div class="ptype-info">
+                        <h3 class="ptype-name">Эко-дома</h3>
+                        <span class="ptype-count">156 объектов</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider section-divider--audience"></div>
+
+    <!-- Audience Section -->
+    <section class="audience-section">
+        <div class="audience-grid">
+            <div class="audience-card">
+                <h2 class="audience-title typewriter-headline typewriter-chars-16"><span class="typewriter-text">Для соискателей</span></h2>
+                <div class="audience-img-wrap">
+                    <img src="images2/woman.png" alt="Для соискателей">
+                    <p class="audience-card-text">Быстро находите уютные коттеджи.</p>
+                    <p class="audience-card-text audience-card-text--bottom">Экологичный отдых.<br>Проверенные объекты.</p>
+                </div>
+            </div>
+            <div class="audience-card">
+                <h2 class="audience-title typewriter-headline typewriter-chars-16"><span class="typewriter-text">Для владельцев</span></h2>
+                <div class="audience-img-wrap">
+                    <img src="images2/working.png" alt="Для владельцев">
+                    <p class="audience-card-text">Удобное управления.</p>
+                    <p class="audience-card-text audience-card-text--bottom">Быстрое размещение,<br>анализ.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider section-divider--featured"></div>
+
+    <!-- Featured Properties Section -->
+    <section class="featured-section">
+        <div class="featured-header">
+            <h2 class="featured-title typewriter-headline typewriter-chars-19"><span class="typewriter-text">Популярные объекты</span></h2>
+            <a href="catalog.html" class="header-auth-link header-auth-link-primary">Смотреть все</a>
+        </div>
+        <div class="properties-grid" id="properties-container"></div>
+    </section>
+
+    <div class="section-divider section-divider--garden"></div>
+
+    <!-- Virtual Garden Section -->
+    <section class="garden-section">
+        <div class="garden-left">
+            <h2 class="garden-title typewriter-headline typewriter-chars-16"><span class="typewriter-text">Виртуальный сад</span></h2>
+            <p class="garden-desc">Бронируйте жильё, зарабатывайте баллы,<br>выращивайте своё дерево.<br>Чем выше уровень — тем больше<br>скидки и привилегий.</p>
+            <a href="loyalty.html" class="header-auth-link header-auth-link-primary garden-btn">Узнать больше</a>
+        </div>
+        <div class="garden-cards">
+            <div class="garden-card">
+                <span class="garden-card-percent">0%</span>
+                <div class="garden-card-img">🌱</div>
+            </div>
+            <div class="garden-card">
+                <span class="garden-card-percent">3%</span>
+                <div class="garden-card-img">🌿</div>
+            </div>
+            <div class="garden-card">
+                <span class="garden-card-percent">6%</span>
+                <div class="garden-card-img">🌳</div>
+            </div>
+            <div class="garden-card">
+                <span class="garden-card-percent">10%</span>
+                <div class="garden-card-img">🌲</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider section-divider--feedback"></div>
+
+    <!-- Feedback Section -->
+    <section class="feedback-section">
+        <div class="feedback-header">
+            <h2 class="feedback-title typewriter-headline typewriter-chars-15"><span class="typewriter-text">Обратная связь</span></h2>
+            <p class="feedback-desc">Напишите нам — ответим в течение <span style="white-space: nowrap;">дня.</span></p>
+        </div>
+        <form class="feedback-form" action="#" method="post">
+            <div class="feedback-form-row">
+                <input type="text" class="feedback-input" name="name" placeholder="Имя" required>
+                <input type="email" class="feedback-input" name="email" placeholder="Email" required>
+            </div>
+            <textarea class="feedback-textarea" name="message" placeholder="Сообщение" rows="4" required></textarea>
+            <button type="submit" class="feedback-btn">Отправить</button>
+        </form>
+    </section>
+
+    <div id="footer-container"></div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/components/property-card.js"></script>
+    <script src="js/home.js"></script>
+</body>
+</html>
+
