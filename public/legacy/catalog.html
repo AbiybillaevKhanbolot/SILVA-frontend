@@ -35,7 +35,6 @@
         }
         .catalog-header {
             background: var(--color-white);
-            border-bottom: 1px solid var(--color-gray-100);
             padding-top: 1rem;
             padding-bottom: 1rem;
         }
@@ -177,27 +176,19 @@
             transform: translateY(-50%);
             pointer-events: none;
         }
-        .catalog-filter-trigger {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 2.5rem;
-            height: 2.5rem;
-            border: 1px solid var(--color-gray-200);
-            border-radius: 6px;
-            background: var(--color-white);
-            color: var(--color-gray-600);
+        .page-catalog button.header-auth-link {
+            appearance: none;
+            -webkit-appearance: none;
             cursor: pointer;
+        }
+        .catalog-filter-btn {
             position: relative;
+            white-space: nowrap;
         }
-        .catalog-filter-trigger:hover {
-            color: var(--color-gray-900);
-            border-color: var(--color-gray-300);
-        }
-        .catalog-filter-trigger .filter-badge {
+        .catalog-filter-btn .filter-badge {
             position: absolute;
-            top: -4px;
-            right: -4px;
+            top: -0.35rem;
+            right: -0.35rem;
             min-width: 1.125rem;
             height: 1.125rem;
             font-size: 0.7rem;
@@ -476,7 +467,7 @@
 <body class="page-catalog">
     <div id="header-container"></div>
     
-    <div class="min-h-screen bg-gray-50" style="padding-top: 5rem;">
+    <div class="min-h-screen bg-gray-50" style="padding-top: 5rem; padding-bottom: 2rem; box-sizing: border-box;">
         <!-- Catalog Header -->
         <div class="catalog-header">
             <div class="container">
@@ -488,7 +479,7 @@
                                 <path d="m21 21-4.35-4.35"></path>
                             </svg>
                             <input type="text" id="search-input" placeholder="Поиск по названию или региону..." 
-                                   class="input" style="padding-left: 3rem; height: 3rem; border-radius: 5px;">
+                                   class="input" style="padding-left: 3rem; height: 3rem;">
                         </div>
                     </div>
                     
@@ -532,12 +523,8 @@
                             </svg>
                         </div>
                         
-                        <button class="catalog-filter-trigger" type="button" id="mobile-filter-btn" aria-label="Открыть фильтры">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="4" y1="6" x2="20" y2="6"></line>
-                                <line x1="4" y1="12" x2="20" y2="12"></line>
-                                <line x1="4" y1="18" x2="20" y2="18"></line>
-                            </svg>
+                        <button type="button" id="mobile-filter-btn" class="header-auth-link header-auth-link-primary catalog-filter-btn">
+                            Фильтры
                             <span class="filter-badge" id="filter-badge" style="display: none;">0</span>
                         </button>
                     </div>
