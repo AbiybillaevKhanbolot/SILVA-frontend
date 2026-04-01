@@ -22,15 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Scroll indicator animation
-    const scrollIndicator = document.querySelector('.scroll-indicator');
-    if (scrollIndicator) {
-        const scrollDot = scrollIndicator.querySelector('.scroll-dot');
-        if (scrollDot) {
-            // Animation is handled by CSS
-        }
-    }
-
     // Animate elements on scroll
     const observerOptions = {
         threshold: 0.1,
@@ -79,30 +70,21 @@ document.addEventListener('DOMContentLoaded', function() {
         children.forEach(function(node) { processNode(el, node, ref); });
     }
 
-    // Hero title: посимвольное появление при загрузке
-    const heroTitleFade = document.querySelector('.hero-title-fade-chars .hero-title-fade-text');
-    if (heroTitleFade) {
-        var text = heroTitleFade.textContent;
-        var chars = text.split('');
-        heroTitleFade.innerHTML = chars.map(function(ch, i) {
-            return '<span class="fade-char" style="animation-delay: ' + (i * 0.06) + 's">' + (ch === ' ' ? '\u00A0' : ch) + '</span>';
-        }).join('');
-    }
-
     // Секции и селекторы текста для посимвольной анимации при скролле (все, кроме кнопок)
     var sectionFadeSelectors = [
-        '.hero-description',
         '.section-title-left .typewriter-text',
         '.section-description-right',
         '.ptype-name',
         '.ptype-count',
         '.audience-title .typewriter-text',
-        '.audience-card-text',
         '.featured-title .typewriter-text',
         /* Карточки популярных объектов не анимируем посимвольно — при выезде панели должны быть видны гости, удобства, цена */
         '.garden-title .typewriter-text',
         '.garden-desc',
         '.garden-card-percent',
+        '.garden-card-name',
+        '.garden-card-threshold',
+        '.garden-card-desc',
         '.feedback-title .typewriter-text',
         '.feedback-desc'
     ];
@@ -144,6 +126,19 @@ document.addEventListener('DOMContentLoaded', function() {
         typewriterHeadlines.forEach(function(headline) {
             typewriterObserver.observe(headline);
         });
+    }
+
+    var gardenCardsGrid = document.querySelector('.garden-cards');
+    if (gardenCardsGrid) {
+        var gardenCardsObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('garden-cards--animated');
+                    gardenCardsObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -32px 0px' });
+        gardenCardsObserver.observe(gardenCardsGrid);
     }
 
     // Region dropdown
@@ -206,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (text) text += ', ';
             text += childrenCount + ' дет' + (childrenCount === 1 ? 'ь' : childrenCount < 5 ? 'ей' : 'ей');
         }
-        if (!text) text = 'Человек';
+        if (!text) text = 'Гости';
         peopleInput.value = text;
     }
 
