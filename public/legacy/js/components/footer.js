@@ -12,7 +12,7 @@ function initFooter() {
                     <div class="footer-brand">
                         <a href="index.html" class="footer-logo">
                             <div class="footer-logo-icon">
-                                <img src="images2/logo.svg" alt="SILVA" style="width: 100%; height: 100%; object-fit: contain;">
+                                <img src="images/logo.svg" alt="SILVA" style="width: 100%; height: 100%; object-fit: contain;">
                             </div>
                             <span class="footer-logo-text">SILVA</span>
                         </a>
