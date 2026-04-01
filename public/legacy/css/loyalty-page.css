@@ -1,0 +1,652 @@
+/**
+ * Страница «Виртуальный сад» — визуальная система Silva:
+ * Exo 2 / Inter, монохром, скругление 7px, контейнер 1280px.
+ */
+
+/* ── Hero ─────────────────────────────────────────────── */
+.vg-hero {
+    padding: 5.5rem 0 2.5rem;
+    background: var(--color-gray-50);
+}
+
+@media (min-width: 768px) {
+    .vg-hero {
+        padding: 7rem 0 3rem;
+    }
+}
+
+.vg-hero-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: center;
+    padding: 1.75rem 1.25rem;
+    border-radius: 7px;
+    border: 1px solid #000000;
+    background: url("../images/bakcgroud.png") center center / cover no-repeat;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    .vg-hero-panel {
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem;
+        padding: 2.5rem 2.5rem;
+        min-height: 320px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .vg-hero-panel {
+        min-height: 380px;
+    }
+}
+
+.vg-hero-badge {
+    display: inline-block;
+    font-family: "Exo 2", sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    padding: 0.4rem 0.85rem;
+    border-radius: 7px;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.vg-hero .hero-title {
+    text-align: left;
+    font-size: 1.75rem;
+}
+
+@media (min-width: 768px) {
+    .vg-hero .hero-title {
+        font-size: 2.25rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .vg-hero .hero-title {
+        font-size: 2.5rem;
+    }
+}
+
+.vg-hero-lead {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    color: #ffffff;
+    line-height: 1.65;
+    margin: 0 0 1.5rem;
+    max-width: 36rem;
+}
+
+@media (min-width: 768px) {
+    .vg-hero-lead {
+        font-size: 1.125rem;
+    }
+}
+
+.vg-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.vg-hero-actions .btn-primary {
+    border-radius: 7px;
+}
+
+.vg-hero-scroll {
+    font-family: "Inter", sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #ffffff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity: 0.95;
+}
+
+.vg-hero-scroll:hover {
+    opacity: 1;
+}
+
+.vg-hero-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.vg-hero-visual img {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    display: block;
+    border-radius: 7px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+@media (min-width: 768px) {
+    .vg-hero-visual img {
+        max-width: 100%;
+    }
+}
+
+/* ── Progress card (контент подставляет loyalty.js) ───── */
+.vg-progress-section {
+    margin-top: -1.5rem;
+    padding-bottom: 2.5rem;
+    background: var(--color-gray-50);
+    position: relative;
+    z-index: 1;
+}
+
+@media (min-width: 768px) {
+    .vg-progress-section {
+        margin-top: -2rem;
+        padding-bottom: 3rem;
+    }
+}
+
+.loyalty-progress-card {
+    background: var(--color-white);
+    border-radius: 7px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-gray-100);
+    max-width: 56rem;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .loyalty-progress-card {
+        padding: 2rem;
+    }
+}
+
+.loyalty-progress-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.75rem;
+}
+
+@media (min-width: 768px) {
+    .loyalty-progress-content {
+        flex-direction: row;
+        align-items: center;
+        gap: 2rem;
+    }
+}
+
+.loyalty-level-display {
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .loyalty-level-display {
+        text-align: left;
+        min-width: 10rem;
+    }
+}
+
+.loyalty-level-emoji {
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 0.75rem;
+}
+
+.loyalty-level-name {
+    font-family: "Exo 2", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+}
+
+.loyalty-level-label {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+    margin-top: 0.25rem;
+}
+
+.loyalty-progress-bar {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+}
+
+.loyalty-points-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.loyalty-points-current {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    font-variant-numeric: tabular-nums;
+}
+
+.loyalty-points-next {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+    text-align: right;
+}
+
+.progress-bar {
+    height: 0.625rem;
+    background: var(--color-gray-100);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--color-gray-600), var(--color-gray-900));
+    border-radius: 7px;
+    transition: width 0.45s ease;
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-gray-400);
+    font-variant-numeric: tabular-nums;
+}
+
+.loyalty-discount {
+    background: var(--color-gray-50);
+    border-radius: 7px;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+    border: 1px solid var(--color-gray-100);
+}
+
+@media (min-width: 768px) {
+    .loyalty-discount {
+        min-width: 8rem;
+    }
+}
+
+.loyalty-discount-label {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    margin-bottom: 0.25rem;
+}
+
+.loyalty-discount-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.loyalty-max-message {
+    font-size: 0.9375rem;
+    color: var(--color-gray-600);
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+/* ── Ступени скидок (как на главной) ─────────────────── */
+.vg-stages {
+    padding: 2.5rem 0 3rem;
+    background: var(--color-white);
+}
+
+.vg-stages .section-header {
+    margin-bottom: 2rem;
+}
+
+.vg-stages-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .vg-stages-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+    }
+}
+
+.vg-stage-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 7px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: #ffffff;
+    min-height: 140px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+@media (min-width: 640px) {
+    .vg-stage-card {
+        min-height: 180px;
+        padding: 1.25rem;
+    }
+}
+
+.vg-stage-card:hover {
+    border-color: #bdbdbd;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.vg-stage-percent {
+    font-family: "Inter", sans-serif;
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: #111111;
+}
+
+.vg-stage-emoji {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.75rem;
+    line-height: 1;
+}
+
+/* ── Как это работает ────────────────────────────────── */
+.vg-how {
+    padding: 2.5rem 0 3rem;
+    background: var(--color-gray-50);
+}
+
+.vg-how .section-header {
+    margin-bottom: 2rem;
+}
+
+.vg-how-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .vg-how-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+.vg-how-card {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    border-radius: 7px;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-100);
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.vg-how-card:hover {
+    border-color: var(--color-gray-200);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+.vg-how-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    margin: 0 auto 1rem;
+    border-radius: 7px;
+    border: 1px solid var(--color-gray-200);
+    background: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.vg-how-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--color-gray-700);
+}
+
+.vg-how-title {
+    font-family: "Exo 2", sans-serif;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin-bottom: 0.5rem;
+}
+
+.vg-how-text {
+    font-size: 0.9375rem;
+    color: var(--color-gray-600);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* ── Уровни ──────────────────────────────────────────── */
+.vg-levels {
+    padding: 3rem 0 4rem;
+    background: var(--color-white);
+}
+
+.vg-levels .section-header {
+    margin-bottom: 2.5rem;
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .levels-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .levels-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.level-card {
+    background: var(--color-white);
+    border-radius: 7px;
+    padding: 1.5rem 1.25rem;
+    border: 1px solid var(--color-gray-100);
+    transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s;
+    position: relative;
+}
+
+.level-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-gray-200);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.07);
+}
+
+.level-card.current {
+    border-color: var(--color-gray-900);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.level-card.current::before {
+    content: "Ваш уровень";
+    position: absolute;
+    top: -0.65rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-gray-900);
+    color: var(--color-white);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 7px;
+    letter-spacing: 0.02em;
+}
+
+.level-emoji {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 0.75rem;
+    line-height: 1;
+}
+
+.level-name {
+    font-family: "Exo 2", sans-serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    text-align: center;
+    margin-bottom: 0.25rem;
+}
+
+.level-points {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.level-discount-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 7px;
+    color: var(--color-white);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    margin: 0 auto 1rem;
+    width: fit-content;
+}
+
+.level-benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.level-benefit {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-gray-600);
+    margin-bottom: 0.45rem;
+}
+
+.level-benefit:last-child {
+    margin-bottom: 0;
+}
+
+.level-benefit svg {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-gray-900);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+/* ── CTA ─────────────────────────────────────────────── */
+.vg-cta {
+    padding: 4rem 0;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 50%, #000000 100%);
+}
+
+.vg-cta-inner {
+    text-align: center;
+    max-width: 40rem;
+    margin: 0 auto;
+}
+
+.vg-cta-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0 auto 1.25rem;
+}
+
+.vg-cta-title {
+    font-family: "Exo 2", sans-serif;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--color-white);
+    margin-bottom: 1rem;
+    line-height: 1.25;
+}
+
+@media (min-width: 768px) {
+    .vg-cta-title {
+        font-size: 2.25rem;
+    }
+}
+
+.vg-cta-text {
+    font-size: 1.0625rem;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.55;
+    margin: 0 0 1.75rem;
+}
+
+.vg-cta .btn-white {
+    border-radius: 7px;
+    font-weight: 600;
+}
+
+/* ── Анимации появления ──────────────────────────────── */
+.anim-fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+        opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.anim-fade-up.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.anim-stagger > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+        opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.anim-stagger.animate-in > * {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.anim-stagger.animate-in > *:nth-child(1) {
+    transition-delay: 0.05s;
+}
+.anim-stagger.animate-in > *:nth-child(2) {
+    transition-delay: 0.1s;
+}
+.anim-stagger.animate-in > *:nth-child(3) {
+    transition-delay: 0.15s;
+}
+.anim-stagger.animate-in > *:nth-child(4) {
+    transition-delay: 0.2s;
+}
+.anim-stagger.animate-in > *:nth-child(5) {
+    transition-delay: 0.25s;
+}
+
+.parallax-wrap {
+    transition: transform 0.12s ease-out;
+    will-change: transform;
+}
