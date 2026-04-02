@@ -27,6 +27,16 @@ function createPropertyCard(property) {
     const inFavorites = isPropertyInFavorites(property.id);
     const favClass = inFavorites ? ' property-card-favorite-in-favorites' : '';
 
+    const ratingMarkup = rating > 0 ? `
+        <div class="property-card-rating property-card-rating--overlay" aria-label="Рейтинг ${rating}">
+            <svg class="property-card-rating-star" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span class="property-card-rating-value">${rating}</span>
+            <span class="property-card-rating-count">(${reviewsCount})</span>
+        </div>
+    ` : '';
+
     return `
         <a href="property.html?id=${property.id}" class="property-card">
             <div class="property-card-image">
@@ -41,6 +51,7 @@ function createPropertyCard(property) {
                         </svg>
                     </div>
                 `}
+                ${ratingMarkup}
                 <button type="button" class="property-card-favorite${favClass}" aria-label="В избранное" data-property-id="${property.id}" onclick="event.preventDefault(); event.stopPropagation(); togglePropertyFavorite(this);">
                     <svg viewBox="0 0 24 24" fill="${inFavorites ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
@@ -79,16 +90,7 @@ function createPropertyCard(property) {
                         <span class="property-card-price-unit">/ночь</span>
                     </div>
                 </div>
-
-                ${rating > 0 ? `
-                    <div class="property-card-rating">
-                        <svg class="property-card-rating-star" viewBox="0 0 24 24" fill="currentColor">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        <span class="property-card-rating-value">${rating}</span>
-                        <span class="property-card-rating-count">(${reviewsCount})</span>
-                    </div>
-                ` : ''}
+                <span class="property-card-more" role="button" aria-label="Подробнее">Подробнее</span>
             </div>
         </a>
     `;
