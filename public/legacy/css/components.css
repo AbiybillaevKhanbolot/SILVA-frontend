@@ -917,6 +917,9 @@
     text-shadow: none;
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(0, 0, 0, 0.08);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .property-card-rating--overlay .property-card-rating-value {
@@ -946,6 +949,8 @@
     cursor: pointer;
     user-select: none;
     transition: all 0.2s ease, transform 0.2s ease;
+    text-decoration: none;
+    line-height: 1;
 }
 
 .property-card-more:hover {
