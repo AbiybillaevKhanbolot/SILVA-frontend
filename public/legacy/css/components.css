@@ -694,17 +694,18 @@
     border-radius: 7px;
     overflow: hidden;
     position: relative;
-    display: block;
-    aspect-ratio: 4/3;
+    display: flex;
+    flex-direction: column;
     background: var(--color-gray-100);
 }
 
 /* Full-cover image */
 .property-card-image {
-    position: absolute;
-    inset: 0;
-    border-radius: 7px;
+    position: relative;
     overflow: hidden;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--color-gray-100);
 }
 
 .property-card-image img {
@@ -728,6 +729,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
+    z-index: 1;
 }
 
 .property-card-placeholder-icon {
@@ -739,17 +741,11 @@
 /* Gradient overlay — always present, stronger on hover */
 .property-card::before {
     content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 7px;
-    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 1;
+    display: none;
 }
 
 .property-card:hover::before {
-    opacity: 1;
+    display: none;
 }
 
 /* Favorite button */
@@ -790,31 +786,24 @@
 
 /* Content panel — slides up from bottom on hover */
 .property-card-content {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1.25rem;
+    position: relative;
+    padding: 0.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    translate: 0 100%;
-    opacity: 0;
-    transition: translate 0.3s ease, opacity 0.3s ease;
+    translate: none;
+    opacity: 1;
     z-index: 2;
 }
 
-.property-card:hover .property-card-content {
-    translate: 0 0;
-    opacity: 1;
-}
+.property-card:hover .property-card-content { }
 
 .property-card-title {
     font-family: 'Inter', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 1rem;
-    color: #ffffff;
+    color: var(--color-gray-900);
     margin: 0;
     line-height: 1.3;
 }
@@ -823,7 +812,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    color: rgba(255,255,255,0.8);
+    color: var(--color-gray-600);
 }
 
 .property-card-location svg {
@@ -854,7 +843,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    color: rgba(255,255,255,0.85);
+    color: var(--color-gray-700);
     font-size: 0.8rem;
 }
 
@@ -884,11 +873,11 @@
 .property-card-price-amount {
     font-size: 1rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--color-gray-900);
 }
 
 .property-card-price-unit {
-    color: rgba(255,255,255,0.75);
+    color: var(--color-gray-600);
     font-size: 0.8rem;
 }
 
@@ -896,7 +885,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding-top: 0.25rem;
+    padding-top: 0;
 }
 
 .property-card-rating-star {
@@ -914,7 +903,60 @@
 
 .property-card-rating-count {
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.65);
+    color: rgba(255,255,255,0.75);
+}
+
+/* Rating overlay (top-left on image) */
+.property-card-rating--overlay {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 2;
+    padding: 0.15rem 0.35rem;
+    border-radius: 7px;
+    text-shadow: none;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.property-card-rating--overlay .property-card-rating-value {
+    color: var(--color-gray-900);
+}
+
+.property-card-rating--overlay .property-card-rating-count {
+    color: rgba(0, 0, 0, 0.55);
+}
+
+/* "Подробнее" link/button */
+.property-card-more {
+    align-self: flex-start;
+    margin-top: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.875rem;
+    height: 36px;
+    border-radius: 7px;
+    border: 1px solid #000000;
+    background: #ffffff;
+    color: #000000;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease, transform 0.2s ease;
+}
+
+.property-card-more:hover {
+    background: #000000;
+    color: #ffffff;
+    border-color: #000000;
+    transform: scale(1.05);
+}
+
+.property-card-more:active {
+    transform: translateY(1px);
 }
 
 /* unused but kept for compatibility */
