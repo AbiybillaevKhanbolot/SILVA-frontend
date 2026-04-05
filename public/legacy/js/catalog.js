@@ -26,7 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function initFilters() {
         const desktopFilters = document.getElementById('desktop-filters');
         const mobileFilters = document.getElementById('mobile-filters');
-        
+        const ic = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
+
         const filtersHTML = `
             <div class="filter-section">
                 <h4 class="filter-title">Тип размещения</h4>
@@ -80,34 +81,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="filter-amenities">
                     <button class="filter-amenity ${filters.amenities.includes('wifi') ? 'active' : ''}" 
                             data-amenity="wifi">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
-                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                            <line x1="12" y1="20" x2="12.01" y2="20"></line>
-                        </svg>
+                        ${ic('wifi', 22, 22)}
                         <span style="font-size: 0.875rem;">Wi-Fi</span>
                     </button>
                     <button class="filter-amenity ${filters.amenities.includes('parking') ? 'active' : ''}" 
                             data-amenity="parking">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                            <line x1="1" y1="10" x2="23" y2="10"></line>
-                        </svg>
+                        ${ic('car', 22, 22)}
                         <span style="font-size: 0.875rem;">Парковка</span>
                     </button>
                     <button class="filter-amenity ${filters.amenities.includes('kitchen') ? 'active' : ''}" 
                             data-amenity="kitchen">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 3h18v18H3zM3 9h18M9 3v18"></path>
-                        </svg>
+                        ${ic('utensils-crossed', 22, 22)}
                         <span style="font-size: 0.875rem;">Кухня</span>
                     </button>
                     <button class="filter-amenity ${filters.amenities.includes('pool') ? 'active' : ''}" 
                             data-amenity="pool">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M2 12h20M2 12c0 5.523 4.477 10 10 10s10-4.477 10-10M2 12c0-5.523 4.477-10 10-10s10 4.477 10 10"></path>
-                        </svg>
+                        ${ic('waves', 22, 22)}
                         <span style="font-size: 0.875rem;">Бассейн</span>
                     </button>
                 </div>
@@ -258,14 +247,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         if (activeFilters) {
+            const icx = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
             activeFilters.innerHTML = active.map(f => `
                 <span class="active-filter">
                     ${f.label}
                     <button class="active-filter-remove" onclick="removeFilter('${f.key}')">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
+                        ${icx('x', 12, 12)}
                     </button>
                 </span>
             `).join('');

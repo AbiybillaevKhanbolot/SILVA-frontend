@@ -474,10 +474,7 @@
                 <div class="catalog-controls">
                     <div class="catalog-search">
                         <div style="position: relative;">
-                            <svg style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 1.25rem; height: 1.25rem; color: var(--color-gray-400);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.35-4.35"></path>
-                            </svg>
+                            <span class="silva-icon" data-icon="search" data-w="20" data-h="20" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 1.25rem; height: 1.25rem; color: var(--color-gray-400);" aria-hidden="true"></span>
                             <input type="text" id="search-input" placeholder="Поиск по названию или региону..." 
                                    class="input" style="padding-left: 3rem; height: 3rem;">
                         </div>
@@ -506,9 +503,7 @@
                                 <option>Фрунзенский</option>
                                 <option>Центральный</option>
                             </select>
-                            <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
+                            <span class="silva-icon select-arrow" data-icon="chevron-down" data-w="16" data-h="16" aria-hidden="true"></span>
                         </div>
                         
                         <div class="select-wrapper" style="display: none;">
@@ -518,9 +513,7 @@
                                 <option value="-price_per_night">Сначала дороже</option>
                                 <option value="-rating">По рейтингу</option>
                             </select>
-                            <svg class="select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
+                            <span class="silva-icon select-arrow" data-icon="chevron-down" data-w="16" data-h="16" aria-hidden="true"></span>
                         </div>
                         
                         <button type="button" id="mobile-filter-btn" class="header-auth-link header-auth-link-primary catalog-filter-btn">
@@ -572,6 +565,7 @@
     
     <div id="footer-container"></div>
     
+    <script src="js/icons.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>

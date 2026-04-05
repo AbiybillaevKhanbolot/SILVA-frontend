@@ -12,6 +12,8 @@ function isPropertyInFavorites(propertyId) {
 }
 
 function createPropertyCard(property) {
+    var ic = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
+
     const propertyTypes = {
         cottage: "Коттедж",
         hotel: "Отель",
@@ -29,9 +31,7 @@ function createPropertyCard(property) {
 
     const ratingMarkup = rating > 0 ? `
         <div class="property-card-rating property-card-rating--overlay" aria-label="Рейтинг ${rating}">
-            <svg class="property-card-rating-star" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
+            ${ic('star-filled', 14, 14, { className: 'property-card-rating-star' })}
             <span class="property-card-rating-value">${rating}</span>
             <span class="property-card-rating-count">(${reviewsCount})</span>
         </div>
@@ -44,18 +44,12 @@ function createPropertyCard(property) {
                     <img src="${property.main_image}" alt="${property.title}">
                 ` : `
                     <div class="property-card-image-placeholder" aria-hidden="true">
-                        <svg class="property-card-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
+                        ${ic('image', 24, 24, { className: 'property-card-placeholder-icon', strokeWidth: 1.5 })}
                     </div>
                 `}
                 ${ratingMarkup}
                 <button type="button" class="property-card-favorite${favClass}" aria-label="В избранное" data-property-id="${property.id}" onclick="event.preventDefault(); event.stopPropagation(); togglePropertyFavorite(this);">
-                    <svg viewBox="0 0 24 24" fill="${inFavorites ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
+                    ${ic('heart', 24, 24, { fill: inFavorites ? 'currentColor' : 'none' })}
                 </button>
             </div>
 
@@ -63,22 +57,14 @@ function createPropertyCard(property) {
                 <h3 class="property-card-title">${property.title}</h3>
 
                 <div class="property-card-location">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
+                    ${ic('map-pin', 24, 24)}
                     <span class="property-card-location-text">${property.region}</span>
                 </div>
 
                 <div class="property-card-details">
                     <div class="property-card-details-left">
                         <div class="property-card-detail">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
+                            ${ic('users', 24, 24)}
                             <span>до ${property.max_guests} гостей</span>
                         </div>
                         ${property.bedrooms ? `
@@ -103,9 +89,7 @@ function renderPropertyCards(container, properties) {
         container.innerHTML = `
             <div class="text-center" style="grid-column: 1 / -1; padding: 5rem 0;">
                 <div style="width: 5rem; height: 5rem; background: var(--color-gray-100); border-radius: 5px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-400)" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7"></path>
-                    </svg>
+                    ${typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg('arrow-right', 40, 40, { extraAttrs: ' style="color: var(--color-gray-400)"' }) : ''}
                 </div>
                 <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--color-gray-900); margin-bottom: 0.5rem;">
                     Объекты не найдены

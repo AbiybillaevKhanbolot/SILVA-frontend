@@ -26,13 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const galleryDots = document.getElementById('gallery-dots');
     if (gallerySlides) {
         const slideCount = 5;
+        var galleryPh = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg('image', 24, 24, { className: 'gallery-placeholder-icon', strokeWidth: 1.5 }) : '';
         const placeholderHtml = `
             <div class="gallery-slide-placeholder">
-                <svg class="gallery-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
+                ${galleryPh}
                 <span class="gallery-placeholder-text">Здесь будет изображение</span>
             </div>`;
         let currentSlide = 0;
@@ -135,10 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="badge badge-emerald">${propertyTypes[property.property_type] || property.property_type}</span>
             ${property.eco_certified ? `
                 <span class="badge badge-green">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.25rem;">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"></path>
-                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
+                    ${typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg('leaf', 12, 12, { extraAttrs: ' style="margin-right: 0.25rem"' }) : ''}
                     Эко-сертификат
                 </span>
             ` : ''}
@@ -151,19 +145,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const propertyMeta = document.getElementById('property-meta');
     if (propertyMeta) {
+        var icMeta = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
         propertyMeta.innerHTML = `
             <div style="display: flex; align-items: center; gap: 0.25rem;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-emerald-500);">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                </svg>
+                ${icMeta('map-pin', 20, 20, { extraAttrs: ' style="color: var(--color-emerald-500)"' })}
                 <span>${property.region}</span>
             </div>
             ${property.rating ? `
                 <div style="display: flex; align-items: center; gap: 0.25rem;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color: var(--color-amber-400);">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
+                    ${icMeta('star-filled', 20, 20, { extraAttrs: ' style="color: var(--color-amber-400)"' })}
                     <span style="font-weight: 500;">${property.rating}</span>
                     <span style="color: var(--color-gray-400);">(${property.reviews_count || 0} отзывов)</span>
                 </div>
@@ -236,16 +226,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const amenitiesGrid = document.getElementById('amenities-grid');
     if (amenitiesGrid) {
         const amenities = property.amenities || ['wifi', 'parking', 'kitchen'];
-        const amenityIcons = {
-            wifi: '<path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line>',
-            parking: '<rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line>',
-            kitchen: '<path d="M3 3h18v18H3zM3 9h18M9 3v18"></path>',
-            pool: '<path d="M2 12h20M2 12c0 5.523 4.477 10 10 10s10-4.477 10-10M2 12c0-5.523 4.477-10 10-10s10 4.477 10 10"></path>',
-            transfer: '<circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path>',
-            children: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
-            pets: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><path d="M12 11v6"></path><path d="M9 14h6"></path>',
-            sauna: '<path d="M3 3h18v18H3z"></path><path d="M3 9h18"></path><path d="M3 15h18"></path>'
-        };
+        var p = typeof SilvaIcons !== 'undefined' ? SilvaIcons.paths : {};
+        var icAmenity = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
+        var amenityKey = { wifi: 'wifi', parking: 'car', kitchen: 'utensils-crossed', pool: 'waves', transfer: 'bus', children: 'baby', pets: 'paw-print', sauna: 'flame' };
         const amenityLabels = {
             wifi: 'Бесплатный интернет',
             parking: 'Парковка',
@@ -256,14 +239,15 @@ document.addEventListener('DOMContentLoaded', function() {
             pets: 'Можно с питомцами',
             sauna: 'Сауна'
         };
-        amenitiesGrid.innerHTML = amenities.map(amenity => `
-            <div class="amenity-item">
-                <svg class="amenity-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    ${amenityIcons[amenity] || '<circle cx="12" cy="12" r="10"></circle>'}
-                </svg>
-                <span>${amenityLabels[amenity] || amenity}</span>
-            </div>
-        `).join('');
+        amenitiesGrid.innerHTML = amenities.map(function (amenity) {
+            var n = amenityKey[amenity];
+            var iconName = (n && p[n]) ? n : 'circle';
+            return (
+                '<div class="amenity-item">' +
+                icAmenity(iconName, 24, 24, { className: 'amenity-icon' }) +
+                '<span>' + (amenityLabels[amenity] || amenity) + '</span></div>'
+            );
+        }).join('');
     }
 
     // Map
@@ -456,6 +440,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
         
+        const icBook = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
         bookingCard.innerHTML = `
             <div class="booking-card-content">
                 <div class="booking-left">
@@ -542,10 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
                     <a href="#" id="booking-btn" class="btn btn-primary" style="width: 100%; height: 3.5rem; font-size: 1.125rem; border-radius: 5px;">
                 Забронировать
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 0.5rem;">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
+                ${icBook('arrow-right', 20, 20, { extraAttrs: ' style="margin-left: 0.5rem"' })}
             </a>
             
                     <p style="text-align: center; font-size: 0.875rem; color: var(--color-gray-500); margin-top: 0;">
