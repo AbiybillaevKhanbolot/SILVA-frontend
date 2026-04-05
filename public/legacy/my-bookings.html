@@ -6,19 +6,58 @@
     <title>Мои бронирования - Silva</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/account-pages.css">
 </head>
 <body>
     <div id="header-container"></div>
-    <main style="padding: 6rem 0; text-align: center;">
-        <div class="container">
-            <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">Мои бронирования</h1>
-            <p style="color: var(--color-gray-600);">Здесь будут ваши бронирования.</p>
+
+    <main class="account-page account-page--profile">
+        <div class="account-page-inner account-page-inner--profile">
+            <div class="account-main account-main--full">
+                <h1 class="account-page-title">Мои бронирования</h1>
+                <p class="account-page-lead">
+                    Здесь отображаются брони, оформленные на сайте. После успешной оплаты они сохраняются в вашем браузере (демо-режим).
+                </p>
+
+                <div id="booking-success-banner" class="account-banner account-banner--success" style="display: none;" role="status">
+                    <span class="silva-icon" data-icon="shield-check" data-w="22" data-h="22" aria-hidden="true"></span>
+                    <div>
+                        <strong>Бронирование принято.</strong>
+                        <div style="font-size:0.875rem;margin-top:0.25rem;opacity:0.95;">
+                            Мы отправили детали на указанный email. Ниже вы можете посмотреть условия проживания на странице объекта.
+                        </div>
+                    </div>
+                </div>
+
+                <div id="bookings-list" class="bookings-list" style="display: none;"></div>
+
+                <div id="bookings-empty" class="bookings-empty" style="display: none;">
+                    <p>У вас пока нет бронирований. Выберите коттедж, глэмпинг или дом в каталоге и оформите поездку за пару минут.</p>
+                    <a href="catalog.html" class="btn btn-primary">Открыть каталог</a>
+                </div>
+            </div>
         </div>
     </main>
+
+    <div id="booking-cancel-modal" class="profile-modal-overlay" aria-hidden="true" role="presentation">
+        <div class="profile-modal booking-cancel-modal" role="dialog" aria-modal="true" aria-labelledby="booking-cancel-modal-title">
+            <button type="button" class="profile-modal-close" id="booking-cancel-modal-x" aria-label="Закрыть">×</button>
+            <h2 id="booking-cancel-modal-title" class="profile-modal-title">Удалить бронирование?</h2>
+            <p class="booking-cancel-modal__text">Удалить это бронирование из списка?</p>
+            <div class="booking-cancel-modal__actions">
+                <button type="button" class="btn btn-ghost booking-cancel-modal__cancel" id="booking-cancel-modal-dismiss">Отмена</button>
+                <button type="button" class="btn booking-cancel-modal__delete" id="booking-cancel-modal-confirm">Удалить</button>
+            </div>
+        </div>
+    </div>
+
     <div id="footer-container"></div>
+
+    <script src="js/icons.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
     <script src="js/components/footer.js"></script>
+    <script src="js/my-bookings.js"></script>
 </body>
 </html>

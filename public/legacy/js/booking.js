@@ -64,21 +64,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const propertyRegion = document.getElementById('property-region');
     
     if (propertyImage) {
+        var icB = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
         propertyImage.innerHTML = `
             <div class="booking-property-image-placeholder" style="position: absolute; inset: 0; background: var(--color-gray-100); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
-                <svg style="width: 3.5rem; height: 3.5rem; color: var(--color-gray-400);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
+                ${icB('image', 56, 56, { strokeWidth: 1.5, extraAttrs: ' style="color: var(--color-gray-400)"' })}
                 <span style="font-size: 0.75rem; color: var(--color-gray-400);">Здесь будет изображение</span>
             </div>
             ${property.eco_certified ? `
                 <span class="badge badge-emerald" style="position: absolute; top: 1rem; left: 1rem; z-index: 2;">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 0.25rem;">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"></path>
-                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
+                    ${icB('leaf', 12, 12, { extraAttrs: ' style="margin-right: 0.25rem"' })}
                     Эко
                 </span>
             ` : ''}
@@ -178,7 +172,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const amountToPay = payAmount === '30' ? total30 : total;
-        
+        const loyaltyPointsToAward = Math.floor(amountToPay / 100);
+
         const btn = document.getElementById('booking-submit-btn');
         if (btn) {
             btn.disabled = true;
@@ -186,8 +181,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         setTimeout(() => {
-            window.location.href = `booking-success.html?property=${propertyId}&total=${amountToPay}`;
+            try {
+                var phone = document.getElementById('guest-phone') && document.getElementById('guest-phone').value
+                    ? document.getElementById('guest-phone').value.trim()
+                    : '';
+                var booking = {
+                    id: 'b' + Date.now(),
+                    propertyId: parseInt(propertyId, 10),
+                    propertyTitle: property.title,
+                    propertyRegion: property.region,
+                    mainImage: property.main_image || '',
+                    checkIn: fromDateStr || formatDateYMD(checkIn),
+                    checkOut: toDateStr || formatDateYMD(checkOut),
+                    nights: nights,
+                    adults: adults,
+                    children: children,
+                    totalRub: amountToPay,
+                    payType: payAmount,
+                    status: 'confirmed',
+                    createdAt: new Date().toISOString(),
+                    guestName: name,
+                    guestEmail: email,
+                    guestPhone: phone,
+                    loyaltyPointsAwarded: loyaltyPointsToAward
+                };
+                var list = JSON.parse(localStorage.getItem('silva_bookings') || '[]');
+                if (!Array.isArray(list)) list = [];
+                list.unshift(booking);
+                localStorage.setItem('silva_bookings', JSON.stringify(list));
+                var cur = parseInt(localStorage.getItem('silva_loyalty_points') || '0', 10) || 0;
+                localStorage.setItem('silva_loyalty_points', String(cur + loyaltyPointsToAward));
+            } catch (e) {}
+            window.location.href = 'my-bookings.html?success=1';
         }, 2000);
     };
+
+    function formatDateYMD(d) {
+        var y = d.getFullYear();
+        var m = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + day;
+    }
 });
 
