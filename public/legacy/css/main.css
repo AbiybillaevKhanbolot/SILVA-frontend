@@ -1,5 +1,5 @@
-/* Шрифт Exo 2 */
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,200;0,400;0,600;1,200;1,400;1,600&display=swap');
+/* Основной шрифт Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* Reset and Base Styles */
 * {
@@ -34,7 +34,7 @@ html {
 }
 
 body {
-    font-family: 'Exo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     line-height: 1.6;
     color: var(--color-gray-900);
@@ -47,7 +47,7 @@ body {
 
 /* Typography: без наклонного начертания */
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-style: normal;
     line-height: 1.2;
@@ -293,7 +293,7 @@ em, i {
 
 .section-badge {
     display: block;
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-weight: 500;
     color: var(--color-gray-700);
@@ -302,7 +302,7 @@ em, i {
 }
 
 .section-title {
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-size: 2.25rem;
     font-weight: 600;
@@ -321,7 +321,7 @@ em, i {
 }
 
 .section-description {
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 200;
     font-style: normal;
     font-size: 1.25rem;
@@ -415,6 +415,12 @@ em, i {
 .hero-content > * {
     position: relative;
     z-index: 2;
+}
+
+/* Карточка поиска должна быть выше .hero-content-main: иначе выпадающие списки
+   оказываются под блоком с заголовком (тот же z-index, порядок в DOM), клики не доходят. */
+.hero-content .search-card {
+    z-index: 10;
 }
 
 @media (min-width: 768px) {
@@ -1308,7 +1314,7 @@ em, i {
 }
 
 .benefit-title {
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-size: 1.125rem;
     font-weight: 600;
@@ -1317,7 +1323,7 @@ em, i {
 }
 
 .benefit-description {
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 200;
     font-style: normal;
     color: var(--color-gray-500);
@@ -1640,7 +1646,7 @@ em, i {
 }
 
 .cta-title {
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-size: 2.25rem;
     font-weight: 600;
@@ -1656,7 +1662,7 @@ em, i {
 }
 
 .cta-description {
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 200;
     font-style: normal;
     font-size: 1.25rem;
