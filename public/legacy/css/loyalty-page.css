@@ -1,6 +1,6 @@
 /**
  * Страница «Виртуальный сад» — визуальная система Silva:
- * Exo 2 / Inter, монохром, скругление 7px, контейнер 1280px.
+ * Inter, монохром, скругление 7px, контейнер 1280px.
  */
 
 /* ── Hero ─────────────────────────────────────────────── */
@@ -44,7 +44,7 @@
 
 .vg-hero-badge {
     display: inline-block;
-    font-family: "Exo 2", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 0.8125rem;
     font-weight: 500;
     color: var(--color-gray-700);
@@ -201,7 +201,7 @@
 }
 
 .loyalty-level-name {
-    font-family: "Exo 2", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--color-gray-900);
@@ -416,7 +416,7 @@
 }
 
 .vg-how-title {
-    font-family: "Exo 2", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1.0625rem;
     font-weight: 600;
     color: var(--color-gray-900);
@@ -501,7 +501,7 @@
 }
 
 .level-name {
-    font-family: "Exo 2", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--color-gray-900);
@@ -577,7 +577,7 @@
 }
 
 .vg-cta-title {
-    font-family: "Exo 2", sans-serif;
+    font-family: "Inter", sans-serif;
     font-size: 1.75rem;
     font-weight: 600;
     color: var(--color-white);
