@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* Header Component */
 .header {
@@ -108,8 +108,15 @@
 .header-nav {
     display: none;
     flex: 0 0 auto;
+    flex-direction: row;
     align-items: center;
-    gap: 5rem;
+    justify-content: center;
+    gap: 0;
+    padding: 0.1875rem 0.5rem;
+    background: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 8px;
+    box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
@@ -118,28 +125,38 @@
     }
 }
 
+.header-nav-sep {
+    flex-shrink: 0;
+    width: 1px;
+    height: 0.9375rem;
+    background: #000000;
+    align-self: center;
+}
+
 .header-nav-link {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 1rem; /* 16px */
-    font-weight: 500;   /* Inter Medium */
-    color: var(--color-gray-900);
+    font-size: 1rem;
+    font-weight: 500;
+    color: #000000;
     text-decoration: none;
-    transition: color 0.2s, transform 0.2s ease;
+    padding: 0.1875rem 1rem;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .header-nav-link:hover {
-    color: var(--color-gray-900);
-    transform: scale(1.05);
+    color: #000000;
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .header-nav-link-white {
-    color: rgba(255, 255, 255, 0.8);
-    transition: color 0.2s, transform 0.2s ease;
+    color: #000000;
 }
 
 .header-nav-link-white:hover {
-    color: var(--color-white);
-    transform: scale(1.05);
+    color: #000000;
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 
@@ -429,6 +446,38 @@
     align-items: center;
     text-align: center;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.mobile-menu-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 20rem;
+    background: #ffffff;
+    border: 1px solid #000000;
+    border-radius: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.mobile-menu-nav-sep {
+    flex-shrink: 0;
+    height: 1px;
+    margin: 0 1rem;
+    background: #000000;
+}
+
+.mobile-menu-nav .mobile-menu-link {
+    max-width: none;
+    width: 100%;
+    box-sizing: border-box;
+    color: #000000;
+}
+
+.mobile-menu-nav .mobile-menu-link:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #000000;
 }
 
 .mobile-menu-auth {
@@ -1080,6 +1129,7 @@
 }
 
 .auth-required-modal {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--color-white);
     border-radius: 7px;
     padding: 1.5rem 1.75rem;
@@ -1097,6 +1147,7 @@
     height: 2rem;
     border: none;
     background: none;
+    font-family: inherit;
     font-size: 1.5rem;
     line-height: 1;
     color: var(--color-gray-500);
@@ -1109,7 +1160,9 @@
 }
 
 .auth-required-text {
+    font-family: inherit;
     font-size: 1rem;
+    font-weight: 400;
     color: var(--color-gray-700);
     line-height: 1.5;
     margin-bottom: 1.25rem;
@@ -1123,9 +1176,125 @@
 }
 
 .auth-required-actions .btn {
+    font-family: inherit;
     flex: 1;
     min-width: 0;
     text-align: center;
     text-decoration: none;
+}
+
+/* Подтверждение выхода из аккаунта (меню «Профиль» в шапке) */
+.header-logout-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(17, 24, 39, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+.header-logout-modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.header-logout-modal-dialog {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 26rem;
+    margin: 0 auto;
+    flex-shrink: 0;
+    background: var(--color-white);
+    border-radius: 8px;
+    border: 1px solid var(--color-gray-200);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+    padding: 2.25rem 1.75rem 2.25rem;
+    min-height: 12.5rem;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.header-logout-modal-dialog .header-logout-modal__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0 2.75rem;
+    flex-shrink: 0;
+    color: var(--color-gray-900);
+    text-align: center;
+}
+
+.header-logout-modal-dialog .header-logout-modal__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 17.5rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+}
+
+.header-logout-modal-dialog .header-logout-modal__actions .btn {
+    width: 100%;
+    min-height: 2.75rem;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.header-logout-modal__close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    background: var(--color-gray-100);
+    border-radius: 5px;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--color-gray-600);
+    transition: background 0.15s, color 0.15s;
+}
+
+.header-logout-modal__close:hover {
+    background: var(--color-gray-200);
+    color: var(--color-gray-900);
+}
+
+.header-logout-modal__btn-cancel {
+    border: 1px solid #000000;
+}
+
+.header-logout-modal__btn-cancel:hover {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-color: #000000;
+}
+
+.header-logout-modal__btn-confirm {
+    background-color: var(--color-gray-900);
+    color: var(--color-white);
+    border: 1px solid var(--color-gray-900);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+    font-weight: 600;
+    transition: all 0.2s ease, transform 0.2s ease;
+}
+
+.header-logout-modal__btn-confirm:hover {
+    background: #000000;
+    color: #ffffff;
+    border-color: #000000;
+    box-shadow: none;
+    transform: scale(1.05);
 }
 

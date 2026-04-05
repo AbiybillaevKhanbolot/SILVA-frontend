@@ -1,4 +1,33 @@
 // Header Component
+/** Модалка подтверждения выхода: шапка (меню Профиль) и личный кабинет */
+function silvaCloseLogoutConfirmModal() {
+    var m = document.getElementById('header-logout-modal');
+    if (m) {
+        m.classList.remove('is-open');
+        m.setAttribute('aria-hidden', 'true');
+    }
+    document.body.style.overflow = '';
+}
+
+function silvaOpenLogoutConfirmModal() {
+    var dd = document.getElementById('header-profile-dropdown');
+    var pb = document.getElementById('header-profile-btn');
+    if (dd) dd.classList.remove('open');
+    if (pb) pb.setAttribute('aria-expanded', 'false');
+    var modal = document.getElementById('header-logout-modal');
+    if (!modal) return;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}
+
+function silvaPerformLogout() {
+    localStorage.removeItem('silva_user');
+    window.location.href = 'index.html';
+}
+
+window.silvaOpenLogoutConfirmModal = silvaOpenLogoutConfirmModal;
+
 function initHeader() {
     const headerContainer = document.getElementById('header-container');
     if (!headerContainer) return;
@@ -36,19 +65,19 @@ function initHeader() {
         const headerClass = (isScrolled || !isHomePage) ? 'header-scrolled' : 'header-scrolled';
         const textClass = '';
         const iconClass = '';
-        const navClass = '';
         const userClass = '';
         const menuClass = '';
 
         const isOwner = user.role === 'owner';
+        const ic = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
         const ownerLinksHtml = isOwner
             ? `
                                 <a href="owner-dashboard.html" class="header-dropdown-link">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                    ${ic('layout-dashboard', 18, 18)}
                                     Панель владельца
                                 </a>
                                 <a href="admin.html" class="header-dropdown-link">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    ${ic('shield-check', 18, 18)}
                                     Администрирование
                                 </a>`
             : '';
@@ -56,10 +85,7 @@ function initHeader() {
             ? `
                         <div class="header-user-menu" id="header-user-menu">
                             <button type="button" class="header-user-btn ${userClass}" id="header-profile-btn" aria-haspopup="true" aria-expanded="false">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
+                                ${ic('user-round', 20, 20)}
                                 <span class="header-user-name">Профиль</span>
                             </button>
                             <div class="header-profile-dropdown" id="header-profile-dropdown">
@@ -69,25 +95,21 @@ function initHeader() {
                                 </div>
                                 <div class="header-dropdown-divider"></div>
                                 <a href="profile.html" class="header-dropdown-link">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                    ${ic('circle-user', 18, 18)}
                                     Личный кабинет
                                 </a>
                                 <a href="my-bookings.html" class="header-dropdown-link">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                    ${ic('calendar-days', 18, 18)}
                                     Мои бронирования
                                 </a>
                                 <a href="favorites.html" class="header-dropdown-link">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                    ${ic('heart', 18, 18)}
                                     Избранное
-                                </a>
-                                <a href="loyalty.html" class="header-dropdown-link">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                                    Виртуальный сад
                                 </a>
                                 ${ownerLinksHtml}
                                 <div class="header-dropdown-divider"></div>
                                 <button type="button" class="header-dropdown-logout" id="header-logout-btn">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                    ${ic('log-out', 18, 18)}
                                     Выйти
                                 </button>
                             </div>
@@ -110,21 +132,19 @@ function initHeader() {
                         </a>
                     </div>
 
-                    <nav class="header-nav">
-                        <a href="index.html" class="header-nav-link ${navClass}">Главная</a>
-                        <a href="catalog.html" class="header-nav-link ${navClass}">Каталог</a>
-                        <a href="loyalty.html" class="header-nav-link ${navClass}">Виртуальный сад</a>
+                    <nav class="header-nav" aria-label="Основная навигация">
+                        <a href="index.html" class="header-nav-link">Главная</a>
+                        <span class="header-nav-sep" aria-hidden="true"></span>
+                        <a href="catalog.html" class="header-nav-link">Каталог</a>
+                        <span class="header-nav-sep" aria-hidden="true"></span>
+                        <a href="loyalty.html" class="header-nav-link">Виртуальный сад</a>
                     </nav>
 
                     <div class="header-right">
                         ${authHtml}
 
                         <button class="header-menu-btn ${menuClass}" id="mobile-menu-btn" aria-label="Меню">
-                            <svg id="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="3" y1="6" x2="21" y2="6"></line>
-                                <line x1="3" y1="12" x2="21" y2="12"></line>
-                                <line x1="3" y1="18" x2="21" y2="18"></line>
-                            </svg>
+                            ${typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg('menu', 20, 20, { id: 'menu-icon' }) : '<svg id="menu-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>'}
                         </button>
                     </div>
                 </div>
@@ -132,15 +152,30 @@ function initHeader() {
 
             <div class="mobile-menu" id="mobile-menu">
                 <div class="mobile-menu-content">
-                    <a href="index.html" class="mobile-menu-link">Главная</a>
-                    <a href="catalog.html" class="mobile-menu-link">Каталог</a>
-                    <a href="loyalty.html" class="mobile-menu-link">Виртуальный сад</a>
+                    <div class="mobile-menu-nav" role="group" aria-label="Основная навигация">
+                        <a href="index.html" class="mobile-menu-link">Главная</a>
+                        <span class="mobile-menu-nav-sep" aria-hidden="true"></span>
+                        <a href="catalog.html" class="mobile-menu-link">Каталог</a>
+                        <span class="mobile-menu-nav-sep" aria-hidden="true"></span>
+                        <a href="loyalty.html" class="mobile-menu-link">Виртуальный сад</a>
+                    </div>
                     <div class="mobile-menu-auth">${loggedIn
                         ? '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>'
                         : '<a href="login.html" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="register.html" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
                     }</div>
                 </div>
             </div>
+            ${loggedIn ? `
+            <div id="header-logout-modal" class="header-logout-modal-overlay" aria-hidden="true" role="presentation">
+                <div class="header-logout-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="header-logout-modal-title">
+                    <button type="button" class="header-logout-modal__close" id="header-logout-modal-x" aria-label="Закрыть">×</button>
+                    <h2 id="header-logout-modal-title" class="header-logout-modal__title">Вы уверены, что хотите выйти?</h2>
+                    <div class="header-logout-modal__actions">
+                        <button type="button" class="btn btn-ghost header-logout-modal__btn-cancel" id="header-logout-modal-cancel">Отмена</button>
+                        <button type="button" class="btn header-logout-modal__btn-confirm" id="header-logout-modal-confirm">Да</button>
+                    </div>
+                </div>
+            </div>` : ''}
         `;
 
         // Mobile menu toggle
@@ -148,20 +183,12 @@ function initHeader() {
         const mobileMenu = document.getElementById('mobile-menu');
         const menuIcon = document.getElementById('menu-icon');
 
-        if (menuBtn && mobileMenu) {
+        if (menuBtn && mobileMenu && menuIcon) {
+            var paths = typeof SilvaIcons !== 'undefined' ? SilvaIcons.paths : null;
             menuBtn.addEventListener('click', () => {
                 mobileMenu.classList.toggle('open');
-                if (mobileMenu.classList.contains('open')) {
-                    menuIcon.innerHTML = `
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    `;
-                } else {
-                    menuIcon.innerHTML = `
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    `;
+                if (paths) {
+                    menuIcon.innerHTML = mobileMenu.classList.contains('open') ? paths.x : paths.menu;
                 }
             });
         }
@@ -171,6 +198,7 @@ function initHeader() {
         const profileDropdown = document.getElementById('header-profile-dropdown');
         const userMenuWrap = document.getElementById('header-user-menu');
         const logoutBtn = document.getElementById('header-logout-btn');
+        const logoutModal = document.getElementById('header-logout-modal');
 
         if (profileBtn && profileDropdown && userMenuWrap) {
             function showDropdown() {
@@ -198,11 +226,33 @@ function initHeader() {
             });
 
             if (logoutBtn) {
-                logoutBtn.addEventListener('click', function() {
-                    localStorage.removeItem('silva_user');
-                    window.location.href = 'index.html';
+                logoutBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    silvaOpenLogoutConfirmModal();
                 });
             }
+        }
+
+        if (logoutModal) {
+            logoutModal.addEventListener('click', function (e) {
+                if (e.target === logoutModal) silvaCloseLogoutConfirmModal();
+            });
+            var lx = document.getElementById('header-logout-modal-x');
+            var lc = document.getElementById('header-logout-modal-cancel');
+            var lok = document.getElementById('header-logout-modal-confirm');
+            if (lx) lx.addEventListener('click', silvaCloseLogoutConfirmModal);
+            if (lc) lc.addEventListener('click', silvaCloseLogoutConfirmModal);
+            if (lok) lok.addEventListener('click', silvaPerformLogout);
+        }
+
+        if (!headerContainer.dataset.logoutEscapeBound) {
+            headerContainer.dataset.logoutEscapeBound = '1';
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                var m = document.getElementById('header-logout-modal');
+                if (m && m.classList.contains('is-open')) silvaCloseLogoutConfirmModal();
+            });
         }
     }
 
