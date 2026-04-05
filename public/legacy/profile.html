@@ -3,62 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль - Silva</title>
+    <title>Личный кабинет - Silva</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/animations.css">
-    <style>
-        .profile-page {
-            padding-top: 5rem;
-            padding-bottom: 3rem;
-            min-height: 100vh;
-            background: var(--color-gray-50);
-        }
-        .profile-card {
-            max-width: 28rem;
-            margin: 0 auto;
-            background: var(--color-white);
-            border-radius: 5px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            border: 1px solid var(--color-gray-100);
-        }
-        .profile-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--color-gray-900); }
-        .profile-email { color: var(--color-gray-600); margin-bottom: 1.5rem; }
-        .btn-logout { margin-top: 0.5rem; background: var(--color-gray-100); color: var(--color-gray-700); }
-        .btn-logout:hover { background: var(--color-gray-200); }
-    </style>
+    <link rel="stylesheet" href="css/account-pages.css">
 </head>
-<body>
+<body class="profile-body-inter">
     <div id="header-container"></div>
 
-    <main class="profile-page">
-        <div class="profile-card anim-fade-up">
-            <h1 class="profile-title">Профиль</h1>
-            <p class="profile-email" id="profile-email">—</p>
-            <button type="button" class="btn btn-logout" id="logout-btn">Выйти</button>
+    <main class="account-page account-page--profile">
+        <div class="account-page-inner account-page-inner--profile">
+            <div class="account-main account-main--full">
+                <div class="account-profile-head">
+                    <div>
+                        <h1 class="account-page-title">Личный кабинет</h1>
+                        <p class="account-page-lead">
+                            Просматривайте данные профиля и баллы «Виртуального сада». Чтобы изменить контакты или фото, нажмите «Редактировать».
+                        </p>
+                    </div>
+                    <button type="button" class="account-profile-logout" id="profile-logout-btn" aria-label="Выйти из аккаунта">
+                        <span class="silva-icon" data-icon="log-out" data-w="18" data-h="18" aria-hidden="true"></span>
+                        Выйти
+                    </button>
+                </div>
+
+                <div id="profile-saved" class="account-banner account-banner--success" style="display: none;" role="status">
+                    <span class="silva-icon" data-icon="shield-check" data-w="20" data-h="20" aria-hidden="true"></span>
+                    <span>Изменения сохранены.</span>
+                </div>
+
+                <div class="profile-cards-grid">
+                    <section class="account-card profile-data-card">
+                        <h2 class="account-card-title profile-data-card-title">
+                            <span class="silva-icon" data-icon="circle-user" data-w="20" data-h="20" aria-hidden="true"></span>
+                            Контактные данные
+                        </h2>
+
+                        <div class="profile-summary-layout">
+                            <div class="profile-avatar-wrap" aria-hidden="false">
+                                <div class="profile-avatar" id="profile-view-avatar"></div>
+                                <p class="profile-avatar-hint">Фото видно только вам в этом браузере</p>
+                            </div>
+                            <div class="profile-summary-main">
+                                <div id="profile-view-fields" class="profile-view-fields"></div>
+                                <div class="profile-card-edit-row">
+                                    <button type="button" class="btn btn-primary" id="profile-open-edit">Редактировать</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="account-card profile-loyalty-card">
+                        <h2 class="account-card-title loyalty-card-heading">
+                            <span class="silva-icon" data-icon="sprout" data-w="20" data-h="20" aria-hidden="true"></span>
+                            Виртуальный сад
+                        </h2>
+
+                        <div class="loyalty-dashboard">
+                            <div class="loyalty-dashboard-top">
+                                <div class="loyalty-dashboard-stats">
+                                    <div class="loyalty-dashboard-points-line">
+                                        <span class="loyalty-dashboard-points" id="loyalty-card-points">0</span>
+                                        <span class="loyalty-dashboard-points-unit">баллов</span>
+                                    </div>
+                                    <div class="loyalty-dashboard-level-row">
+                                        <span class="loyalty-dashboard-level-name" id="loyalty-card-level">Семечко</span>
+                                        <span class="loyalty-dashboard-discount" id="loyalty-discount-wrap">скидка <span id="loyalty-card-discount">0</span>%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="loyalty-dashboard-progress">
+                                <p class="loyalty-dashboard-progress-text" id="loyalty-card-next-text"></p>
+                                <div class="loyalty-dashboard-bar">
+                                    <div class="loyalty-dashboard-bar-fill" id="loyalty-card-bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="loyalty-perks-block">
+                            <h3 class="loyalty-perks-heading">Привилегии уровня</h3>
+                            <ul class="loyalty-perks-list" id="loyalty-card-benefits"></ul>
+                        </div>
+
+                        <div class="loyalty-dashboard-footer">
+                            <p class="loyalty-dashboard-footnote" id="loyalty-card-short"></p>
+                            <a href="loyalty.html" class="btn btn-primary loyalty-dashboard-cta">Программа лояльности</a>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
     </main>
 
+    <div id="profile-edit-modal" class="profile-modal-overlay" aria-hidden="true" role="presentation">
+        <div class="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
+            <button type="button" class="profile-modal-close" id="profile-modal-x" aria-label="Закрыть">×</button>
+            <h2 id="profile-modal-title" class="profile-modal-title">Редактировать профиль</h2>
+
+            <div class="profile-modal-photo-section">
+                <p class="profile-modal-photo-label">Фото профиля</p>
+                <div class="profile-modal-photo-row">
+                    <div class="profile-modal-preview" id="modal-avatar-preview"></div>
+                    <div class="profile-modal-photo-btns">
+                        <input type="file" id="modal-avatar-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+                        <button type="button" class="btn btn-ghost" id="modal-btn-photo">Добавить фото</button>
+                        <button type="button" class="btn btn-ghost profile-modal-btn-danger" id="modal-btn-remove-photo" style="display: none;">Удалить фото</button>
+                    </div>
+                </div>
+                <p class="profile-modal-hint">JPG, PNG, WebP или GIF, до 2 МБ</p>
+            </div>
+
+            <form id="profile-modal-form" class="profile-modal-form">
+                <div class="account-form-grid">
+                    <div class="account-field">
+                        <label for="modal-name">Имя и фамилия</label>
+                        <input type="text" id="modal-name" class="input" name="name" autocomplete="name" required>
+                    </div>
+                    <div class="account-field">
+                        <label for="modal-email">Электронная почта</label>
+                        <input type="email" id="modal-email" class="input" name="email" autocomplete="email" required>
+                    </div>
+                    <div class="account-field" style="grid-column: 1 / -1;">
+                        <label for="modal-phone">Телефон</label>
+                        <input type="tel" id="modal-phone" class="input" name="phone" autocomplete="tel" placeholder="+7 (999) 000-00-00">
+                    </div>
+                    <div class="account-field" style="grid-column: 1 / -1;">
+                        <label class="account-checkbox-row" style="margin:0;cursor:pointer;">
+                            <input type="checkbox" id="modal-newsletter" name="newsletter">
+                            <span>Новости Silva и спецпредложения на почту</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="profile-modal-actions">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="footer-container"></div>
 
+    <script src="js/icons.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
     <script src="js/components/footer.js"></script>
     <script src="js/animations.js"></script>
-    <script>
-        if (!localStorage.getItem('silva_user')) {
-            window.location.href = 'login.html';
-        }
-        const user = JSON.parse(localStorage.getItem('silva_user') || '{}');
-        if (user.email) document.getElementById('profile-email').textContent = user.email;
-        if (user.name) document.querySelector('.profile-title').textContent = user.name;
-
-        document.getElementById('logout-btn').addEventListener('click', function() {
-            localStorage.removeItem('silva_user');
-            window.location.href = 'index.html';
-        });
-    </script>
+    <script src="js/profile-page.js"></script>
 </body>
 </html>
