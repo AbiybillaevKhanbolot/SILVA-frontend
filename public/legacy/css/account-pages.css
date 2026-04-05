@@ -1,0 +1,1028 @@
+/* Личный кабинет: бронирования, избранное, профиль — в духе выпадающего меню профиля */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.account-page {
+    padding-top: 5rem;
+    padding-bottom: 3rem;
+    min-height: 100vh;
+    background: var(--color-gray-50);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.account-page h1,
+.account-page h2,
+.account-page h3,
+.account-page h4,
+.account-page .account-page-title,
+.account-page .account-card-title,
+.account-page .btn,
+.account-page .input,
+.account-page input,
+.account-page button,
+.account-page textarea,
+.account-page select {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.account-page-inner {
+    max-width: 1224px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* Профиль на полную ширину контейнера */
+.account-page-inner--profile {
+    max-width: 1224px;
+}
+
+.account-main--full {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Больше воздуха под фиксированной шапкой */
+.account-page.account-page--profile {
+    padding-top: 7rem;
+}
+
+@media (min-width: 768px) {
+    .account-page.account-page--profile {
+        padding-top: 8.5rem;
+    }
+}
+
+.profile-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+@media (min-width: 960px) {
+    .profile-cards-grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: stretch;
+    }
+}
+
+.profile-card-edit-row {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.profile-summary-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (min-width: 560px) {
+    .profile-summary-layout {
+        grid-template-columns: auto 1fr;
+    }
+}
+
+.profile-avatar-wrap {
+    text-align: center;
+}
+
+@media (min-width: 560px) {
+    .profile-avatar-wrap {
+        text-align: center;
+    }
+}
+
+.profile-avatar {
+    width: 8.5rem;
+    height: 8.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto;
+    background: var(--color-gray-100);
+    border: 3px solid var(--color-white);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-avatar-placeholder {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-500);
+    user-select: none;
+}
+
+.profile-avatar-hint {
+    font-size: 0.75rem;
+    color: var(--color-gray-500);
+    margin-top: 0.5rem;
+    max-width: 11rem;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.35;
+}
+
+.profile-view-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.profile-view-row {
+    display: grid;
+    gap: 0.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.profile-view-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.profile-view-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-gray-500);
+}
+
+.profile-view-value {
+    font-size: 1rem;
+    color: var(--color-gray-900);
+    line-height: 1.45;
+    user-select: text;
+}
+
+/* Модальное окно редактирования профиля */
+.profile-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(17, 24, 39, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+.profile-modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.profile-modal {
+    position: relative;
+    width: 100%;
+    max-width: 28rem;
+    margin: auto;
+    background: var(--color-white);
+    border-radius: 8px;
+    border: 1px solid var(--color-gray-200);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+    padding: 1.5rem 1.5rem 1.25rem;
+    margin: 0 auto;
+    flex-shrink: 0;
+}
+
+.profile-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 2.5rem 1rem 0;
+    color: var(--color-gray-900);
+}
+
+.profile-modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    background: var(--color-gray-100);
+    border-radius: 5px;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--color-gray-600);
+    transition: background 0.15s, color 0.15s;
+}
+
+.profile-modal-close:hover {
+    background: var(--color-gray-200);
+    color: var(--color-gray-900);
+}
+
+.profile-modal-photo-section {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.profile-modal-photo-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin-bottom: 0.75rem;
+}
+
+.profile-modal-photo-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.profile-modal-preview {
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--color-gray-100);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-modal-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-modal-avatar-placeholder {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-gray-500);
+}
+
+.profile-modal-photo-btns {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.profile-modal-btn-danger {
+    color: #dc2626 !important;
+}
+
+.profile-modal-btn-danger:hover {
+    background: rgba(220, 38, 38, 0.08) !important;
+}
+
+#modal-btn-photo {
+    border: 1px solid #000000;
+}
+
+#modal-btn-photo:hover {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-color: #000000;
+}
+
+.profile-modal-hint {
+    font-size: 0.75rem;
+    color: var(--color-gray-500);
+    margin-top: 0.75rem;
+}
+
+.profile-modal-form .account-form-grid {
+    gap: 1rem;
+}
+
+.profile-modal-actions {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-gray-100);
+}
+
+/* Подтверждение удаления бронирования (страница «Мои бронирования») */
+.booking-cancel-modal .profile-modal-title {
+    margin-bottom: 0.75rem;
+}
+
+.booking-cancel-modal__text {
+    font-size: 0.9375rem;
+    color: var(--color-gray-600);
+    margin: 0 0 1.25rem;
+    line-height: 1.5;
+}
+
+.booking-cancel-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.booking-cancel-modal__cancel {
+    border: 1px solid #000000;
+}
+
+.booking-cancel-modal__cancel:hover {
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-color: #000000;
+}
+
+.booking-cancel-modal__delete {
+    background: #ffffff;
+    color: #dc2626;
+    border: 1px solid #dc2626;
+    box-shadow: none;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.2s ease;
+}
+
+.booking-cancel-modal__delete:hover {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Карточка «Виртуальный сад» — компактная панель + список + CTA */
+.profile-loyalty-card .loyalty-card-heading {
+    margin-bottom: 1.25rem;
+}
+
+.loyalty-dashboard {
+    background: linear-gradient(180deg, var(--color-gray-50) 0%, var(--color-white) 100%);
+    border: 1px solid var(--color-gray-100);
+    border-radius: 8px;
+    padding: 1.25rem 1.25rem 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.loyalty-dashboard-top {
+    margin-bottom: 1.25rem;
+}
+
+.loyalty-dashboard-stats {
+    min-width: 0;
+}
+
+.loyalty-dashboard-points-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.loyalty-dashboard-points {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.loyalty-dashboard-points-unit {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-gray-500);
+}
+
+.loyalty-dashboard-level-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.loyalty-dashboard-level-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+}
+
+.loyalty-dashboard-discount {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-gray-700);
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+}
+
+.loyalty-dashboard-progress {
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.loyalty-dashboard-progress-text {
+    font-size: 0.8125rem;
+    color: var(--color-gray-600);
+    line-height: 1.4;
+    margin: 0 0 0.5rem;
+}
+
+.loyalty-dashboard-bar {
+    height: 6px;
+    border-radius: 5px;
+    background: var(--color-gray-200);
+    overflow: hidden;
+}
+
+.loyalty-dashboard-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: var(--color-gray-900);
+    width: 0%;
+    transition: width 0.35s ease;
+}
+
+.loyalty-perks-block {
+    margin-bottom: 1.5rem;
+}
+
+.loyalty-perks-heading {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-gray-500);
+    margin: 0 0 0.75rem;
+}
+
+.loyalty-perks-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.loyalty-perk-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    font-size: 0.9375rem;
+    color: var(--color-gray-800);
+    line-height: 1.4;
+}
+
+.loyalty-perk-mark {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.1rem;
+    border-radius: 50%;
+    background: var(--color-gray-100);
+    border: 1px solid var(--color-gray-200);
+    position: relative;
+}
+
+.loyalty-perk-mark::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    width: 0.28rem;
+    height: 0.5rem;
+    border: solid var(--color-gray-700);
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.loyalty-perk-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.loyalty-dashboard-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.loyalty-dashboard-footnote {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    line-height: 1.45;
+    margin: 0;
+    max-width: 36rem;
+}
+
+.loyalty-dashboard-cta {
+    align-self: flex-start;
+    width: 100%;
+    max-width: 16rem;
+    text-align: center;
+    justify-content: center;
+}
+
+@media (min-width: 900px) {
+    .account-page-inner:not(.account-page-inner--profile) {
+        grid-template-columns: 280px 1fr;
+        align-items: start;
+    }
+}
+
+.account-nav-card {
+    background: var(--color-white);
+    border-radius: 5px;
+    border: 1px solid var(--color-gray-100);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.account-nav-user {
+    padding: 1rem 1rem 0.75rem;
+}
+
+.account-nav-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-gray-900);
+    line-height: 1.3;
+}
+
+.account-nav-email {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    margin-top: 0.25rem;
+    word-break: break-word;
+}
+
+.account-nav-divider {
+    height: 1px;
+    background: var(--color-gray-100);
+    margin: 0.5rem 0;
+}
+
+.account-nav-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem 0;
+}
+
+.account-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9375rem;
+    color: var(--color-gray-700);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.account-nav-link:hover {
+    background: var(--color-gray-50);
+    color: var(--color-gray-900);
+}
+
+.account-nav-link svg {
+    flex-shrink: 0;
+    color: var(--color-gray-500);
+}
+
+.account-nav-link--active {
+    background: var(--color-gray-50);
+    color: var(--color-gray-900);
+    font-weight: 500;
+}
+
+.account-nav-link--active svg {
+    color: var(--color-gray-700);
+}
+
+.account-nav-logout {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.5rem 1rem 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #dc2626;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.account-nav-logout:hover {
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.account-nav-logout svg {
+    flex-shrink: 0;
+    color: #dc2626;
+}
+
+.account-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.account-page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0 0 0.25rem;
+}
+
+.account-page-lead {
+    font-size: 0.9375rem;
+    color: var(--color-gray-600);
+    margin: 0 0 1rem;
+    max-width: 40rem;
+}
+
+.account-profile-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.account-profile-head .account-page-title {
+    margin-bottom: 0.25rem;
+}
+
+.account-profile-head .account-page-lead {
+    margin-bottom: 0;
+}
+
+.account-profile-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #dc2626;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.account-profile-logout:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #ffffff;
+}
+
+.account-profile-logout svg {
+    flex-shrink: 0;
+    color: #dc2626;
+}
+
+.account-profile-logout:hover svg {
+    color: #ffffff;
+}
+
+/* Профиль: primary-кнопки при hover как «Регистрация» в шапке (.header-auth-link-primary:hover) */
+body.profile-body-inter .account-page .btn.btn-primary:hover,
+body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: 1px solid #000000;
+    box-shadow: none;
+    transform: scale(1.05);
+    transition: all 0.2s ease, transform 0.2s ease;
+}
+
+.account-card {
+    background: var(--color-white);
+    border-radius: 5px;
+    border: 1px solid var(--color-gray-100);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+}
+
+.account-card-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.account-card-title svg {
+    flex-shrink: 0;
+    color: var(--color-gray-500);
+}
+
+.account-form-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .account-form-grid--2 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.account-field label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: 0.35rem;
+}
+
+.account-field .input,
+.account-field input.input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.account-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+}
+
+.account-checkbox-row input {
+    margin-top: 0.2rem;
+}
+
+.account-save-row {
+    margin-top: 1.25rem;
+}
+
+.account-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 5px;
+    background: var(--color-gray-100);
+    border: 1px solid var(--color-gray-200);
+    font-size: 0.9375rem;
+    color: var(--color-gray-800);
+    margin-bottom: 0.5rem;
+}
+
+.account-banner--success {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+}
+
+.account-banner svg {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.account-loyalty-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.account-loyalty-points {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.account-loyalty-meta {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+}
+
+.account-link-inline {
+    color: var(--color-gray-700);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 0.9375rem;
+}
+
+.account-link-inline:hover {
+    text-decoration: underline;
+}
+
+.account-muted {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+    line-height: 1.5;
+}
+
+/* Бронирования */
+.bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.booking-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--color-gray-100);
+    border-radius: 5px;
+    background: var(--color-white);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+@media (min-width: 640px) {
+    .booking-card {
+        grid-template-columns: 140px 1fr auto;
+        align-items: center;
+    }
+}
+
+.booking-card-image {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 5px;
+    overflow: hidden;
+    background: var(--color-gray-100);
+}
+
+.booking-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.booking-card-body h3 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+}
+
+.booking-card-body h3 a {
+    color: var(--color-gray-900);
+    text-decoration: none;
+}
+
+.booking-card-body h3 a:hover {
+    text-decoration: underline;
+}
+
+.booking-card-meta {
+    font-size: 0.875rem;
+    color: var(--color-gray-600);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.booking-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.booking-card-meta svg {
+    flex-shrink: 0;
+    color: var(--color-gray-400);
+}
+
+.booking-card-side {
+    text-align: left;
+}
+
+@media (min-width: 640px) {
+    .booking-card-side {
+        text-align: right;
+    }
+}
+
+.booking-status {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.booking-status--confirmed {
+    background: var(--color-gray-100);
+    color: var(--color-gray-700);
+}
+
+.booking-status--completed {
+    background: #e5e7eb;
+    color: var(--color-gray-600);
+}
+
+.booking-total {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+}
+
+.booking-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.btn-text-danger {
+    background: none;
+    border: none;
+    color: #dc2626;
+    font-size: 0.875rem;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.btn-text-danger:hover {
+    color: #b91c1c;
+}
+
+.bookings-empty,
+.favorites-empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--color-gray-500);
+    background: var(--color-white);
+    border: 1px dashed var(--color-gray-200);
+    border-radius: 5px;
+}
+
+.bookings-empty p,
+.favorites-empty-state p {
+    margin-bottom: 1rem;
+    max-width: 22rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.favorites-grid-wrap {
+    margin-top: 0.5rem;
+}
+
+.favorites-grid-wrap .favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Профиль: Inter на всей странице (шапка, подвал, контент) */
+body.profile-body-inter {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body.profile-body-inter h1,
+body.profile-body-inter h2,
+body.profile-body-inter h3,
+body.profile-body-inter h4,
+body.profile-body-inter h5,
+body.profile-body-inter h6 {
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+}
+
+/*
+ * Отступ под «Контактные данные»: правило в конце файла + высокая специфичность + !important,
+ * иначе ниже по файлу перебивает общий .account-card-title { margin: 0 0 1rem }.
+ * Настройка зазора под заголовком «Контактные данные».
+ */
+.account-page section.profile-data-card > h2.account-card-title.profile-data-card-title {
+    margin-bottom: 2.5rem !important;
+}
