@@ -43,8 +43,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     ];
     
-    // Mock user data - replace with actual user data
-    const userPoints = 2500;
+    // Баллы: начисляются после оплаты брони (см. booking.js) и хранятся в localStorage
+    var userPoints = 0;
+    try {
+        var lp = localStorage.getItem('silva_loyalty_points');
+        if (lp !== null && lp !== '') userPoints = parseInt(lp, 10) || 0;
+    } catch (e) {}
     const currentLevelIndex = levels.findIndex(function(l, i) {
         var next = levels[i + 1];
         return userPoints >= l.points && (!next || userPoints < next.points);

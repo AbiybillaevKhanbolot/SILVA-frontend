@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сброс демо-данных — Silva</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        .reset-demo-wrap { max-width: 28rem; margin: 6rem auto 3rem; padding: 0 1rem; font-family: 'Inter', system-ui, sans-serif; }
+        .reset-demo-card { background: var(--color-white); border: 1px solid var(--color-gray-200); border-radius: 8px; padding: 1.5rem; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+        .reset-demo-card h1 { font-size: 1.25rem; margin: 0 0 0.75rem; color: var(--color-gray-900); }
+        .reset-demo-card p { font-size: 0.9375rem; color: var(--color-gray-600); margin: 0 0 1.25rem; line-height: 1.5; }
+        .reset-demo-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    </style>
+</head>
+<body>
+    <div class="reset-demo-wrap">
+        <div class="reset-demo-card">
+            <h1>Сброс демо-данных</h1>
+            <p>
+                Будут удалены все демо-брони из этого браузера (<code>silva_bookings</code>)
+                и обнулены баллы «Виртуального сада» (<code>silva_loyalty_points</code>).
+                Профиль и избранное не трогаем.
+            </p>
+            <div class="reset-demo-actions">
+                <button type="button" class="btn btn-primary" id="reset-demo-btn">Сбросить</button>
+                <a href="profile.html" class="btn btn-ghost">Отмена</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            function runReset() {
+                try {
+                    localStorage.setItem('silva_loyalty_points', '0');
+                    localStorage.setItem('silva_bookings', '[]');
+                } catch (e) {}
+                window.location.href = 'profile.html';
+            }
+            document.getElementById('reset-demo-btn').addEventListener('click', runReset);
+        })();
+    </script>
+</body>
+</html>

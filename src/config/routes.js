@@ -10,6 +10,7 @@ export const legacyRoutes = [
   { path: "/profile", file: "profile.html" },
   { path: "/favorites", file: "favorites.html" },
   { path: "/my-bookings", file: "my-bookings.html" },
+  { path: "/reset-demo", file: "reset-demo.html" },
   { path: "/owner-dashboard", file: "owner-dashboard.html" },
   { path: "/admin", file: "admin.html" },
   { path: "/privacy", file: "privacy.html" },
