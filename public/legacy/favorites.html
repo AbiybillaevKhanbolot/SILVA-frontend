@@ -6,59 +6,83 @@
     <title>Избранное - Silva</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
-    <style>
-        .favorites-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-        .favorites-empty { text-align: center; padding: 4rem 0; color: var(--color-gray-500); }
-        .favorites-empty a { color: var(--color-emerald-600); text-decoration: none; }
-        .favorites-empty a:hover { text-decoration: underline; }
-    </style>
+    <link rel="stylesheet" href="css/account-pages.css">
 </head>
 <body>
     <div id="header-container"></div>
-    <main style="padding: 6rem 0;">
-        <div class="container">
-            <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Избранное</h1>
-            <p style="color: var(--color-gray-600); font-size: 0.9375rem;">Объекты, которые вы добавили в избранное.</p>
-            <div id="favorites-container" class="favorites-grid"></div>
-            <div id="favorites-empty" class="favorites-empty" style="display: none;">
-                <p style="margin-bottom: 1rem;">Пока ничего нет.</p>
-                <a href="catalog.html">Перейти в каталог</a>
+
+    <main class="account-page account-page--profile">
+        <div class="account-page-inner account-page-inner--profile">
+            <div class="account-main account-main--full">
+                <h1 class="account-page-title">Избранное</h1>
+                <p class="account-page-lead">
+                    Объекты, которые вы сохранили. Цены и наличие дат уточняйте при бронировании.
+                </p>
+
+                <div id="favorites-grid-wrap" class="favorites-grid-wrap">
+                    <div id="favorites-container" class="favorites-grid"></div>
+                </div>
+
+                <div id="favorites-empty" class="favorites-empty-state" style="display: none;">
+                    <p>Пока пусто — добавляйте сердечком на карточке в каталоге или на странице объекта.</p>
+                    <a href="catalog.html" class="btn btn-primary">Перейти в каталог</a>
+                </div>
             </div>
         </div>
     </main>
+
     <div id="footer-container"></div>
+
+    <script src="js/icons.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
     <script src="js/components/footer.js"></script>
     <script src="js/components/property-card.js"></script>
     <script>
-        (function() {
-            var container = document.getElementById('favorites-container');
-            var emptyBlock = document.getElementById('favorites-empty');
+        (function () {
+            function renderFavorites() {
+                var container = document.getElementById('favorites-container');
+                var emptyBlock = document.getElementById('favorites-empty');
+                var wrap = document.getElementById('favorites-grid-wrap');
+                if (!container || !emptyBlock) return;
 
-            function render() {
                 var ids = [];
                 try {
                     ids = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
                 } catch (e) {}
-                var properties = ids.map(function(id) {
-                    return typeof mockAPI !== 'undefined' && mockAPI.getPropertyById ? mockAPI.getPropertyById(id) : null;
-                }).filter(Boolean);
+
+                var properties = ids
+                    .map(function (id) {
+                        return typeof mockAPI !== 'undefined' && mockAPI.getPropertyById
+                            ? mockAPI.getPropertyById(id)
+                            : null;
+                    })
+                    .filter(Boolean);
+
                 if (properties.length === 0) {
-                    container.style.display = 'none';
-                    container.innerHTML = '';
+                    if (wrap) wrap.style.display = 'none';
                     emptyBlock.style.display = 'block';
+                    container.innerHTML = '';
                 } else {
-                    container.style.display = 'grid';
+                    if (wrap) wrap.style.display = 'block';
                     emptyBlock.style.display = 'none';
-                    renderPropertyCards(container, properties);
+                    if (typeof renderPropertyCards === 'function') {
+                        renderPropertyCards(container, properties);
+                    }
                 }
             }
 
-            render();
-            window.addEventListener('silva-favorites-changed', function(e) {
-                if (!e.detail.inFavorites) render();
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                renderFavorites();
+                window.addEventListener('silva-favorites-changed', function () {
+                    renderFavorites();
+                    if (typeof initHeader === 'function') initHeader();
+                });
             });
         })();
     </script>
