@@ -109,14 +109,16 @@
     display: none;
     flex: 0 0 auto;
     flex-direction: row;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
     gap: 0;
-    padding: 0.1875rem 0.5rem;
+    padding: 0;
+    min-height: 2rem;
     background: #ffffff;
-    border: 1px solid #000000;
-    border-radius: 8px;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 5px;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 @media (min-width: 768px) {
@@ -128,26 +130,55 @@
 .header-nav-sep {
     flex-shrink: 0;
     width: 1px;
-    height: 0.9375rem;
-    background: #000000;
-    align-self: center;
+    align-self: stretch;
+    min-height: 100%;
+    background: var(--color-gray-200);
 }
 
 .header-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 400;
     color: #000000;
     text-decoration: none;
-    padding: 0.1875rem 1rem;
-    border-radius: 8px;
+    padding: 0.3125rem 1.125rem;
+    border-radius: 0;
     white-space: nowrap;
+    box-sizing: border-box;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.header-nav-link:hover {
+.header-nav-link:hover:not(.header-nav-link--active):not([aria-current="page"]) {
     color: #000000;
     background-color: rgba(0, 0, 0, 0.05);
+}
+
+.header-nav-link.header-nav-link--active,
+.header-nav-link[aria-current="page"] {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.header-nav-link.header-nav-link--active:hover,
+.header-nav-link[aria-current="page"]:hover {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+/* Скругления активного сегмента совпадают с внутренним радиусом рамки (5px − 1px) */
+.header-nav > a.header-nav-link.header-nav-link--active:first-of-type,
+.header-nav > a.header-nav-link[aria-current="page"]:first-of-type {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.header-nav > a.header-nav-link.header-nav-link--active:last-of-type,
+.header-nav > a.header-nav-link[aria-current="page"]:last-of-type {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }
 
 .header-nav-link-white {
@@ -164,8 +195,8 @@
     display: none;
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 7px;
-    border: none;
+    border-radius: 5px;
+    border: 1px solid var(--color-gray-200);
     background: var(--color-gray-100);
     color: var(--color-gray-600);
     cursor: pointer;
@@ -188,6 +219,7 @@
 .header-search-btn-white {
     background: rgba(255, 255, 255, 0.2);
     color: var(--color-white);
+    border-color: rgba(255, 255, 255, 0.45);
 }
 
 .header-search-btn-white:hover {
@@ -203,20 +235,20 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    border-radius: 7px;
-    border: none;
-    background: var(--color-gray-100);
+    border-radius: 5px;
+    border: 1px solid var(--color-gray-200);
+    background: transparent;
     color: var(--color-gray-700);
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: var(--silva-btn-font-size-sm, 0.8125rem);
+    font-weight: var(--silva-btn-font-weight, 400);
     text-decoration: none;
     font-family: inherit;
 }
 
 .header-user-btn:hover {
-    background: var(--color-gray-200);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 /* Выпадающее меню профиля */
@@ -271,7 +303,8 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 1rem;
-    font-size: 0.9375rem;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
     color: var(--color-gray-700);
     text-decoration: none;
     transition: background 0.15s;
@@ -293,8 +326,8 @@
     gap: 0.75rem;
     width: 100%;
     padding: 0.5rem 1rem;
-    font-size: 0.9375rem;
-    font-weight: 500;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
     color: #dc2626;
     background: none;
     border: none;
@@ -316,6 +349,7 @@
 .header-user-btn-white {
     background: rgba(255, 255, 255, 0.2);
     color: var(--color-white);
+    border-color: rgba(255, 255, 255, 0.45);
 }
 
 .header-user-btn-white:hover {
@@ -351,44 +385,53 @@
 .header-auth-link {
     display: inline-flex;
     align-items: center;
-    padding: 0 0.875rem;
-    height: 36px;
-    border-radius: 7px;
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    border-radius: 5px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 1rem;
-    font-weight: 600; /* Inter SemiBold */
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
     text-decoration: none;
+    line-height: 1;
     background: #000000; /* Вход — чёрная кнопка */
     color: #ffffff;
-    border: 1px solid #000000;
-    transition: all 0.2s ease, transform 0.2s ease;
+    border: 1px solid var(--color-gray-300);
+    box-sizing: border-box;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
 }
 
 .header-auth-link:hover {
     background: #111111;
-    border-color: #111111;
-    transform: scale(1.05);
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
+    transform: none;
 }
 
 .header-auth-link-primary {
     background: #ffffff;    /* Регистрация — белая кнопка */
     color: #000000;
-    border-color: #000000;
+    border: 1px solid var(--color-gray-300); /* серый контур */
 }
 
 .header-auth-link-primary:hover {
     background: #000000;
     color: #ffffff;
-    border-color: #000000;
-    transform: scale(1.05);
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
+    transform: none;
 }
 
 .header-menu-btn {
     display: flex;
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 7px;
-    border: none;
+    border-radius: 5px;
+    border: 1px solid var(--color-gray-200);
     background: var(--color-gray-100);
     color: var(--color-gray-600);
     cursor: pointer;
@@ -405,6 +448,7 @@
 .header-menu-btn-white {
     background: rgba(255, 255, 255, 0.2);
     color: var(--color-white);
+    border-color: rgba(255, 255, 255, 0.45);
 }
 
 /* Mobile Menu — на всю ширину экрана (inset-x не валиден в CSS) */
@@ -455,8 +499,8 @@
     width: 100%;
     max-width: 20rem;
     background: #ffffff;
-    border: 1px solid #000000;
-    border-radius: 8px;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 5px;
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -465,7 +509,7 @@
     flex-shrink: 0;
     height: 1px;
     margin: 0 1rem;
-    background: #000000;
+    background: var(--color-gray-200);
 }
 
 .mobile-menu-nav .mobile-menu-link {
@@ -478,6 +522,18 @@
 .mobile-menu-nav .mobile-menu-link:hover {
     background-color: rgba(0, 0, 0, 0.05);
     color: #000000;
+}
+
+.mobile-menu-nav .mobile-menu-link.mobile-menu-link--active,
+.mobile-menu-nav .mobile-menu-link[aria-current="page"] {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+.mobile-menu-nav .mobile-menu-link.mobile-menu-link--active:hover,
+.mobile-menu-nav .mobile-menu-link[aria-current="page"]:hover {
+    background-color: #000000;
+    color: #ffffff;
 }
 
 .mobile-menu-auth {
@@ -986,31 +1042,77 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0 0.875rem;
-    height: 36px;
-    border-radius: 7px;
-    border: 1px solid #000000;
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    border-radius: 5px;
+    border: 1px solid var(--color-gray-200);
     background: #ffffff;
     color: #000000;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
     cursor: pointer;
     user-select: none;
-    transition: all 0.2s ease, transform 0.2s ease;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
     text-decoration: none;
     line-height: 1;
+    box-sizing: border-box;
+    filter: none;
 }
 
 .property-card-more:hover {
     background: #000000;
     color: #ffffff;
-    border-color: #000000;
-    transform: scale(1.05);
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
+    transform: none;
 }
 
 .property-card-more:active {
-    transform: translateY(1px);
+    transform: none;
+    opacity: 0.92;
+}
+
+/* Owner cabinet: catalog card layout, custom actions */
+.property-card--owner {
+    text-decoration: none;
+    color: inherit;
+}
+
+.property-card-owner-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-top: 0.25rem;
+}
+
+/* В паре с кнопкой «Удалить» не тянуть «Просмотр» вниз (у .property-card-more иначе margin-top + align-self: flex-start) */
+.property-card-owner-actions .property-card-more {
+    align-self: center;
+    margin-top: 0;
+}
+
+.property-card-delete {
+    background: none;
+    border: none;
+    padding: 0.35rem 0;
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    color: var(--color-gray-600);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.property-card-delete:hover {
+    color: var(--color-gray-900);
+    text-decoration: underline;
 }
 
 /* unused but kept for compatibility */
@@ -1256,7 +1358,7 @@
     right: 0.75rem;
     width: 2.25rem;
     height: 2.25rem;
-    border: none;
+    border: 1px solid var(--color-gray-200);
     background: var(--color-gray-100);
     border-radius: 5px;
     font-size: 1.35rem;
@@ -1272,29 +1374,59 @@
 }
 
 .header-logout-modal__btn-cancel {
-    border: 1px solid #000000;
+    border: 1px solid var(--color-gray-200);
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
 }
 
 .header-logout-modal__btn-cancel:hover {
     background: #000000 !important;
     color: #ffffff !important;
-    border-color: #000000;
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
 }
 
 .header-logout-modal__btn-confirm {
     background-color: var(--color-gray-900);
     color: var(--color-white);
-    border: 1px solid var(--color-gray-900);
+    border: 1px solid var(--color-gray-300);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
-    font-weight: 600;
-    transition: all 0.2s ease, transform 0.2s ease;
+    min-height: var(--silva-btn-fill-height, 36px);
+    height: var(--silva-btn-fill-height, 36px);
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    line-height: 1;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    box-sizing: border-box;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
 }
 
 .header-logout-modal__btn-confirm:hover {
     background: #000000;
     color: #ffffff;
-    border-color: #000000;
-    box-shadow: none;
-    transform: scale(1.05);
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
+    transform: none;
+}
+
+/*
+ * Главная (body.page-home): серый контур «В каталог», «Смотреть все», «Отправить».
+ * Должно идти ПОСЛЕ .header-auth-link { border: ... }, иначе shorthand перебивает только border-color из main.css.
+ */
+body.page-home .section.section-white .section-start-btn.header-auth-link-primary,
+body.page-home .featured-section .featured-header > .header-auth-link-primary,
+body.page-home .feedback-section .feedback-form button.header-auth-link-primary {
+    border: 1px solid var(--color-gray-200) !important;
+}
+
+body.page-home .section.section-white .section-start-btn.header-auth-link-primary:hover,
+body.page-home .featured-section .featured-header > .header-auth-link-primary:hover,
+body.page-home .feedback-section .feedback-form button.header-auth-link-primary:hover {
+    border-color: var(--color-gray-300) !important;
 }
 

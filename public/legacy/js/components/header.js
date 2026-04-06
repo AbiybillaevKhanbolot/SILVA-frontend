@@ -36,6 +36,16 @@ function initHeader() {
                       window.location.pathname.endsWith('index.html') ||
                       window.location.pathname.endsWith('/');
 
+    const pathLower = (window.location.pathname || '').toLowerCase();
+    let navActive = null;
+    if (pathLower.indexOf('catalog.html') !== -1) {
+        navActive = 'catalog';
+    } else if (pathLower.indexOf('loyalty.html') !== -1) {
+        navActive = 'loyalty';
+    } else if (isHomePage) {
+        navActive = 'home';
+    }
+
     let isScrolled = false;
 
     function updateHeader() {
@@ -75,6 +85,18 @@ function initHeader() {
                                 <a href="owner-dashboard.html" class="header-dropdown-link">
                                     ${ic('layout-dashboard', 18, 18)}
                                     Панель владельца
+                                </a>
+                                <a href="owner-properties.html" class="header-dropdown-link">
+                                    ${ic('house', 18, 18)}
+                                    Мои объекты
+                                </a>
+                                <a href="owner-bookings.html" class="header-dropdown-link">
+                                    ${ic('calendar-days', 18, 18)}
+                                    Брони гостей
+                                </a>
+                                <a href="owner-reviews.html" class="header-dropdown-link">
+                                    ${ic('star-filled', 18, 18)}
+                                    Отзывы
                                 </a>
                                 <a href="admin.html" class="header-dropdown-link">
                                     ${ic('shield-check', 18, 18)}
@@ -133,11 +155,11 @@ function initHeader() {
                     </div>
 
                     <nav class="header-nav" aria-label="Основная навигация">
-                        <a href="index.html" class="header-nav-link">Главная</a>
+                        <a href="index.html" class="header-nav-link${navActive === 'home' ? ' header-nav-link--active' : ''}"${navActive === 'home' ? ' aria-current="page"' : ''}>Главная</a>
                         <span class="header-nav-sep" aria-hidden="true"></span>
-                        <a href="catalog.html" class="header-nav-link">Каталог</a>
+                        <a href="catalog.html" class="header-nav-link${navActive === 'catalog' ? ' header-nav-link--active' : ''}"${navActive === 'catalog' ? ' aria-current="page"' : ''}>Каталог</a>
                         <span class="header-nav-sep" aria-hidden="true"></span>
-                        <a href="loyalty.html" class="header-nav-link">Виртуальный сад</a>
+                        <a href="loyalty.html" class="header-nav-link${navActive === 'loyalty' ? ' header-nav-link--active' : ''}"${navActive === 'loyalty' ? ' aria-current="page"' : ''}>Виртуальный сад</a>
                     </nav>
 
                     <div class="header-right">
@@ -153,14 +175,16 @@ function initHeader() {
             <div class="mobile-menu" id="mobile-menu">
                 <div class="mobile-menu-content">
                     <div class="mobile-menu-nav" role="group" aria-label="Основная навигация">
-                        <a href="index.html" class="mobile-menu-link">Главная</a>
+                        <a href="index.html" class="mobile-menu-link${navActive === 'home' ? ' mobile-menu-link--active' : ''}"${navActive === 'home' ? ' aria-current="page"' : ''}>Главная</a>
                         <span class="mobile-menu-nav-sep" aria-hidden="true"></span>
-                        <a href="catalog.html" class="mobile-menu-link">Каталог</a>
+                        <a href="catalog.html" class="mobile-menu-link${navActive === 'catalog' ? ' mobile-menu-link--active' : ''}"${navActive === 'catalog' ? ' aria-current="page"' : ''}>Каталог</a>
                         <span class="mobile-menu-nav-sep" aria-hidden="true"></span>
-                        <a href="loyalty.html" class="mobile-menu-link">Виртуальный сад</a>
+                        <a href="loyalty.html" class="mobile-menu-link${navActive === 'loyalty' ? ' mobile-menu-link--active' : ''}"${navActive === 'loyalty' ? ' aria-current="page"' : ''}>Виртуальный сад</a>
                     </div>
                     <div class="mobile-menu-auth">${loggedIn
-                        ? '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>'
+                        ? (isOwner
+                            ? '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="owner-dashboard.html" class="mobile-menu-link">Панель владельца</a><a href="owner-properties.html" class="mobile-menu-link">Мои объекты</a><a href="owner-bookings.html" class="mobile-menu-link">Брони гостей</a><a href="owner-reviews.html" class="mobile-menu-link">Отзывы</a>'
+                            : '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>')
                         : '<a href="login.html" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="register.html" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
                     }</div>
                 </div>

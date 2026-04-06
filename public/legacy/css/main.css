@@ -18,15 +18,42 @@
     --color-gray-50: #f9fafb;
     --color-gray-100: #f3f4f6;
     --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
     --color-gray-400: #9ca3af;
     --color-gray-500: #6b7280;
     --color-gray-600: #4b5563;
     --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
     --color-gray-900: #111827;
     --color-white: #ffffff;
     --color-black: #000000;
     --color-amber-400: #fbbf24;
     --color-amber-500: #f59e0b;
+    /* Залитые чёрным/primary: как «Подробнее» в каталоге; hover без scale — соседи не смещаются */
+    --silva-btn-fill-height: 36px;
+    --silva-btn-fill-pad-x: 0.875rem;
+    /* Лёгкая «живая» анимация: только filter + тень (не влияют на раскладку) */
+    --silva-btn-fill-hover-filter: brightness(1.14);
+    --silva-btn-fill-hover-transition: background-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.34s cubic-bezier(0.34, 1.15, 0.64, 1),
+        filter 0.34s cubic-bezier(0.34, 1.15, 0.64, 1),
+        opacity 0.2s ease;
+    --silva-btn-fill-hover-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.11);
+    --silva-btn-fill-hover-shadow-strong: 0 8px 26px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    /* Кегль кнопок (заливка и контур) — единая шкала */
+    --silva-btn-font-size: 0.875rem;
+    --silva-btn-font-size-sm: 0.8125rem;
+    --silva-btn-font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --silva-btn-fill-hover-filter: brightness(1);
+        --silva-btn-fill-hover-transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+            box-shadow 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+    }
 }
 
 html {
@@ -578,10 +605,18 @@ em, i {
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.22s ease, border-color 0.22s ease,
+            color 0.22s ease, box-shadow 0.34s cubic-bezier(0.34, 1.15, 0.64, 1),
+            filter 0.34s cubic-bezier(0.34, 1.15, 0.64, 1)),
+        transform 0.2s ease;
 }
 
-.hero-mini-card--black:hover {
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+/* Как у «Добавить объект» на панели владельца: тень + brightness, без сдвига */
+.hero-mini-card.hero-mini-card--black:hover {
+    transform: none;
+    box-shadow: var(--silva-btn-fill-hover-shadow-strong, 0 8px 26px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.12));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.14));
 }
 
 .hero-mini-card--black .hero-mini-card-kicker {
@@ -760,7 +795,7 @@ em, i {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 0.875rem;
     border: 1px solid var(--color-gray-200);
-    border-radius: 7px;
+    border-radius: 5px;
     transition: all 0.2s;
 }
 
@@ -834,14 +869,15 @@ em, i {
 .calendar-nav-btn {
     width: 2rem;
     height: 2rem;
-    border: none;
+    border: 1px solid var(--color-gray-200);
     background: var(--color-gray-100);
-    border-radius: 7px;
+    border-radius: 5px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
+    font-weight: var(--silva-btn-font-weight, 400);
     color: var(--color-gray-700);
     transition: all 0.2s;
 }
@@ -849,6 +885,7 @@ em, i {
 .calendar-nav-btn:hover {
     background: var(--color-gray-200);
     color: var(--color-gray-900);
+    border-color: var(--color-gray-300);
 }
 
 .calendar-month-year {
@@ -967,14 +1004,15 @@ em, i {
     width: 2rem;
     height: 2rem;
     border: 1px solid var(--color-gray-300);
-    border-radius: 7px;
+    border-radius: 5px;
     background: var(--color-white);
     color: var(--color-gray-700);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.125rem;
+    font-size: 1rem;
+    font-weight: var(--silva-btn-font-weight, 400);
     transition: all 0.2s;
 }
 
@@ -996,18 +1034,26 @@ em, i {
     color: var(--color-gray-900);
 }
 
+/* Нативные кнопки форм — тот же вес текста, что у .btn (Regular) */
+button,
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+    font-weight: var(--silva-btn-font-weight, 400);
+}
 
-/* Buttons */
+/* Кнопки: закругление 5px; контур — серый */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    border-radius: 7px;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    border-radius: 5px;
     border: none;
+    box-sizing: border-box;
     cursor: pointer;
     transition: all 0.3s;
     text-decoration: none;
@@ -1017,68 +1063,113 @@ em, i {
 .btn-primary {
     background-color: var(--color-gray-900);
     color: var(--color-white);
+    border: 1px solid var(--color-gray-300);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    line-height: 1;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
 }
 
 .btn-primary:hover {
     background-color: #000000;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 6px 20px rgba(0, 0, 0, 0.3));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.14));
+    transform: none;
 }
 
 .btn-search {
     width: 100%;
     height: 2.5rem;
-    font-size: 0.875rem;
-    border-radius: 7px;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    border-radius: 5px;
     padding: 0.5rem 2rem;
 }
 
-/* Специальный стиль для кнопки "Найти" в поисковой карточке */
+/* Кнопка «Найти» в hero на главной — только здесь (.search-card в проекте одна) */
 .search-card .btn-search {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-weight: 600;
+    font-weight: var(--silva-btn-font-weight, 400);
     background-color: #000000;
-    border: 1px solid #000000;
+    border: 1px solid var(--color-gray-200);
     color: #ffffff;
     white-space: nowrap;
     min-width: 120px;
-    transition: background-color 0.2s, border-color 0.2s, transform 0.2s ease;
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    line-height: 1;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        box-shadow 0.2s ease, filter 0.2s ease);
 }
 
 .search-card .btn-search:hover {
     background-color: #111111;
-    border-color: #111111;
-    transform: scale(1.05);
+    border-color: var(--color-gray-300);
+    box-shadow: var(--silva-btn-fill-hover-shadow-strong, 0 8px 26px rgba(0, 0, 0, 0.42));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.14));
+    transform: none;
+}
+
+/* Карточка бронирования (property.js) и booking.html: плоский дефолт — при hover тень и filter заметны */
+#booking-btn.btn-primary,
+#booking-submit-btn.btn-primary {
+    box-shadow: none;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
+}
+
+#booking-btn.btn-primary:hover,
+#booking-submit-btn.btn-primary:hover {
+    background-color: #000000;
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 6px 20px rgba(0, 0, 0, 0.3));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.14));
+    transform: none;
 }
 
 .btn-ghost {
     background: transparent;
     color: var(--color-gray-700);
     padding: 0.5rem 1rem;
+    border: 1px solid var(--color-gray-200);
 }
 
 .btn-ghost:hover {
     background: var(--color-gray-100);
     color: var(--color-gray-900);
+    border-color: var(--color-gray-300);
 }
 
 .btn-white {
     background-color: var(--color-white);
     color: var(--color-gray-900);
+    border: 1px solid var(--color-gray-200);
 }
 
 .btn-white:hover {
     background-color: var(--color-gray-100);
+    border-color: var(--color-gray-300);
 }
 
 .btn-outline-white {
     background: transparent;
     color: var(--color-black);
-    border: 1px solid rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--color-gray-200);
 }
 
 .btn-outline-white:hover {
     background: rgba(0, 0, 0, 0.05);
+    border-color: var(--color-gray-300);
 }
 
 /* Новые карточки типов размещения */
@@ -1796,6 +1887,8 @@ em, i {
     }
 }
 
+/* Чёрный контур кнопок главной — см. конец components.css (после .header-auth-link) */
+
 /* ── Audience Section ─────────────────────────────────── */
 .section-divider--audience {
     max-width: 1224px;
@@ -1946,14 +2039,18 @@ em, i {
     padding: 2rem 0 3rem;
 }
 
-.garden-layout {
+/* Панель внутри .container — та же ширина, что у .header-content; внутренние поля, чтобы контент не прилипал к краям */
+.garden-panel {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 2rem;
     border-radius: 8px;
-    padding: 2rem 1.25rem 2.5rem;
+    padding: 1.75rem 1.25rem 2rem;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     box-sizing: border-box;
     overflow: hidden;
     background-color: #1c2918;
@@ -1972,8 +2069,8 @@ em, i {
 }
 
 @media (min-width: 768px) {
-    .garden-layout {
-        padding: 2.5rem 1.5rem 3rem;
+    .garden-panel {
+        padding: 2.25rem 1.5rem 2.75rem;
     }
 }
 
@@ -1982,10 +2079,12 @@ em, i {
         padding: 3rem 0 4rem;
     }
 
-    .garden-layout {
+    .garden-panel {
         flex-direction: row;
-        gap: 4rem;
-        padding: 3rem 2rem 3.5rem;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: clamp(2rem, 4vw, 3.5rem);
+        padding: 2.75rem 2rem 3.5rem;
     }
 }
 
@@ -2000,7 +2099,7 @@ em, i {
 
 @media (min-width: 1024px) {
     .garden-left {
-        flex: 0 0 340px;
+        flex: 0 0 min(340px, 32%);
         max-width: 340px;
     }
 }
@@ -2034,25 +2133,35 @@ em, i {
     margin-top: 0.5rem;
 }
 
+/* «Узнать больше» в блоке Виртуальный сад на главной — белый контур */
 .garden-section .header-auth-link-primary {
     background: transparent;
     color: #ffffff;
-    border-color: #ffffff;
+    border: 1px solid #ffffff;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
 }
 
 .garden-section .header-auth-link-primary:hover {
     background: #ffffff;
     color: #000000;
-    border-color: #ffffff;
+    border: 1px solid #ffffff;
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 6px 20px rgba(0, 0, 0, 0.3));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.14));
+    transform: none;
 }
 
+/* Четыре отдельные белые карточки; на десктопе — на всю ширину правой колонки (как у левого текста — отступы только padding у .garden-panel) */
 .garden-cards {
-    flex: 0 0 auto;
+    flex: 1 1 0;
+    min-width: 0;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
     width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
 }
 
 @media (max-width: 767px) {
@@ -2060,6 +2169,7 @@ em, i {
         grid-template-columns: 1fr;
         gap: 0.65rem;
         width: 100%;
+        max-width: 100%;
     }
 
     .garden-card {
@@ -2091,22 +2201,8 @@ em, i {
         font-size: 0.75rem;
         line-height: 1.4;
         word-break: normal;
-        overflow-wrap: break-word;
+        overflow-wrap: normal;
         hyphens: none;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-    .garden-cards {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        width: 100%;
-    }
-}
-
-@media (min-width: 1024px) {
-    .garden-cards {
-        grid-template-columns: repeat(2, 300px);
-        width: auto;
     }
 }
 
@@ -2235,6 +2331,16 @@ em, i {
     color: #4b5563;
     line-height: 1.45;
     margin: 0;
+}
+
+/* Перенос по пробелам, без разрыва слова посередине (русский текст) */
+.garden-card-name,
+.garden-card-threshold,
+.garden-card-desc {
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+    -webkit-hyphens: none;
 }
 
 /* ── Feedback Section ───────────────────────────────── */
