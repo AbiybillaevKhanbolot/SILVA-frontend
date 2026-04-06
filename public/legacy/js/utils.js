@@ -12,6 +12,10 @@ function createPageUrl(pageName) {
         'MyBookings': 'my-bookings.html',
         'Favorites': 'favorites.html',
         'OwnerDashboard': 'owner-dashboard.html',
+        'OwnerProperties': 'owner-properties.html',
+        'OwnerPropertyEdit': 'owner-property-edit.html',
+        'OwnerBookings': 'owner-bookings.html',
+        'OwnerReviews': 'owner-reviews.html',
         'AdminPanel': 'admin.html'
     };
     return pages[pageName] || 'index.html';
@@ -60,6 +64,43 @@ function isInViewport(element) {
     );
 }
 
+/**
+ * Геокодирование адреса через Nominatim (OSM). Нужна сеть; для демо без своего бэкенда.
+ * @param {string} addressLine улица, дом и т.д.
+ * @param {string} [district] район СПб из формы
+ * @returns {Promise<{lat:number,lng:number}|null>}
+ */
+function geocodeSilvaAddress(addressLine, district) {
+    var q = String(addressLine || '').trim();
+    if (!q) return Promise.resolve(null);
+    var tail = ['Санкт-Петербург', 'Россия'];
+    if (district && String(district).trim()) {
+        tail.unshift(String(district).trim() + ' район');
+    }
+    var query = q + ', ' + tail.join(', ');
+    var url =
+        'https://nominatim.openstreetmap.org/search?' +
+        new URLSearchParams({ format: 'json', limit: '1', q: query }).toString();
+    return fetch(url, {
+        method: 'GET',
+        headers: { 'Accept-Language': 'ru-RU,ru;q=0.9' },
+        mode: 'cors'
+    })
+        .then(function (r) {
+            return r.json();
+        })
+        .then(function (arr) {
+            if (!arr || !arr.length) return null;
+            var lat = parseFloat(arr[0].lat);
+            var lng = parseFloat(arr[0].lon);
+            if (isNaN(lat) || isNaN(lng)) return null;
+            return { lat: lat, lng: lng };
+        })
+        .catch(function () {
+            return null;
+        });
+}
+
 // Animate on scroll
 function animateOnScroll() {
     const elements = document.querySelectorAll('.fade-in-up');
@@ -72,6 +113,7 @@ function animateOnScroll() {
 
 // Initialize scroll animations
 if (typeof window !== 'undefined') {
+    window.geocodeSilvaAddress = geocodeSilvaAddress;
     window.addEventListener('scroll', debounce(animateOnScroll, 100));
     animateOnScroll();
 }
@@ -100,6 +142,7 @@ const mockAPI = {
             rating: 4.8,
             reviews_count: 24,
             main_image: 'images/1card.png',
+            gallery_images: ['images/1card.png', 'images/2card.jpg', 'images/3card.jpg'],
             eco_certified: true,
             is_featured: true,
             description: 'Просторный коттедж с панорамными окнами и террасой. Идеален для семейного отдыха. Полностью оборудованная кухня, камин, сауна. Тихое место в 15 минутах от метро.\n\nВ доме три спальни, две ванные комнаты, гостиная-кухня и терраса с мангалом. Бесплатный Wi-Fi на всей территории. Дети приветствуются, предоставляем детскую кроватку по запросу.',
@@ -123,6 +166,7 @@ const mockAPI = {
             rating: 4.9,
             reviews_count: 18,
             main_image: 'images/2card.jpg',
+            gallery_images: ['images/2card.jpg', 'images/3card.jpg', 'images/1card.png'],
             eco_certified: true,
             is_featured: true,
             description: 'Уединённый глэмпинг с видом на лес. Панорамные окна, комфортная кровать, душ и туалет в номере. Завтрак доставляется в домик. Идеально для романтического отдыха и любителей природы.',
@@ -146,6 +190,7 @@ const mockAPI = {
             rating: 4.7,
             reviews_count: 31,
             main_image: 'images/3card.jpg',
+            gallery_images: ['images/3card.jpg', 'images/1card.png', 'images/2card.jpg'],
             eco_certified: true,
             is_featured: true,
             description: 'Большой эко-дом из натуральных материалов. Солнечные батареи, система сбора дождевой воды. Четыре спальни, три ванные, кухня-гостиная и веранда. Подходит для больших компаний и семей с детьми. Рядом парк и конюшня.',
@@ -240,17 +285,77 @@ const mockAPI = {
         6: []
     },
 
-    getReviewsForProperty: function(propertyId) {
-        const id = parseInt(propertyId);
-        const stored = typeof localStorage !== 'undefined' && localStorage.getItem('silva_reviews_' + id);
+    _getReviewsRaw: function(propertyId) {
+        const id = parseInt(propertyId, 10);
+        if (isNaN(id)) return [];
+        const stored =
+            typeof localStorage !== 'undefined' && localStorage.getItem('silva_reviews_' + id);
         const saved = stored ? JSON.parse(stored) : [];
         const base = this._reviewsByProperty[id] || [];
-        return [...base, ...saved];
+        return [...base, ...(Array.isArray(saved) ? saved : [])];
+    },
+
+    getReviewResponseOverrides: function(propertyId) {
+        const id = parseInt(propertyId, 10);
+        if (isNaN(id)) return {};
+        try {
+            const raw = localStorage.getItem('silva_review_responses_' + id);
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            return {};
+        }
+    },
+
+    getReviewsForProperty: function(propertyId) {
+        const id = parseInt(propertyId, 10);
+        if (isNaN(id)) return [];
+        const raw = this._getReviewsRaw(id);
+        const overrides = this.getReviewResponseOverrides(id);
+        return raw.map(function (r) {
+            if (!r || r.id == null) return r;
+            const oid = String(r.id);
+            const out = Object.assign({}, r);
+            if (Object.prototype.hasOwnProperty.call(overrides, oid)) {
+                out.hotelResponse = overrides[oid];
+            }
+            return out;
+        });
+    },
+
+    updateReviewHotelResponse: function(propertyId, reviewId, hotelResponse) {
+        const id = parseInt(propertyId, 10);
+        const rid = String(reviewId);
+        if (isNaN(id)) return false;
+        const raw = this._getReviewsRaw(id);
+        const target = raw.find(function (r) {
+            return r && String(r.id) === rid;
+        });
+        if (!target) return false;
+        if (rid.indexOf('u') === 0) {
+            try {
+                var stored = JSON.parse(localStorage.getItem('silva_reviews_' + id) || '[]');
+                if (!Array.isArray(stored)) stored = [];
+                var idx = stored.findIndex(function (r) {
+                    return r && String(r.id) === rid;
+                });
+                if (idx !== -1) {
+                    stored[idx].hotelResponse = hotelResponse;
+                    localStorage.setItem('silva_reviews_' + id, JSON.stringify(stored));
+                }
+            } catch (e) {}
+        } else {
+            var o = this.getReviewResponseOverrides(id);
+            o[rid] = hotelResponse;
+            try {
+                localStorage.setItem('silva_review_responses_' + id, JSON.stringify(o));
+            } catch (e) {}
+        }
+        return true;
     },
 
     addReviewForProperty: function(propertyId, review) {
         const id = parseInt(propertyId);
-        const existing = this.getReviewsForProperty(id);
+        const raw = this._getReviewsRaw(id);
         const newReview = {
             id: 'u' + Date.now(),
             author: review.author,
@@ -266,11 +371,15 @@ const mockAPI = {
             helpfulNo: 0,
             hotelResponse: null,
             photos: review.photos || [],
-            categories: review.categories || {}
+            categories: review.categories || {},
+            avatar: review.avatar || null
         };
-        existing.push(newReview);
+        const userOnly = raw.filter(function (r) {
+            return r && String(r.id).indexOf('u') === 0;
+        });
+        userOnly.push(newReview);
         try {
-            localStorage.setItem('silva_reviews_' + id, JSON.stringify(existing.filter(r => r.id.startsWith('u'))));
+            localStorage.setItem('silva_reviews_' + id, JSON.stringify(userOnly));
         } catch (e) {}
         return newReview;
     },
@@ -296,12 +405,51 @@ const mockAPI = {
         return this.properties.filter(p => p.is_featured).slice(0, 6);
     },
 
+    getOwnerListingsFromStorage: function() {
+        try {
+            const raw = JSON.parse(localStorage.getItem('silva_owner_properties') || '[]');
+            return Array.isArray(raw) ? raw : [];
+        } catch (e) {
+            return [];
+        }
+    },
+
+    saveOwnerListingsToStorage: function(list) {
+        localStorage.setItem('silva_owner_properties', JSON.stringify(list));
+    },
+
+    nextOwnerPropertyId: function() {
+        const owner = this.getOwnerListingsFromStorage();
+        const maxOwner = owner.reduce(function (m, p) {
+            return Math.max(m, Number(p.id) || 0);
+        }, 100000);
+        return maxOwner + 1;
+    },
+
     getPropertyById: function(id) {
-        return this.properties.find(p => p.id === parseInt(id));
+        const numId = parseInt(id, 10);
+        if (isNaN(numId)) return null;
+        const base = this.properties.find(p => p.id === numId);
+        if (base) return base;
+        const ownerList = this.getOwnerListingsFromStorage();
+        return ownerList.find(p => Number(p.id) === numId) || null;
     },
 
     getProperties: function(filters = {}) {
-        let result = [...this.properties];
+        const ownerPublished = this.getOwnerListingsFromStorage().filter(function (p) {
+            return p.status === 'published';
+        });
+        let result = ownerPublished.slice();
+        try {
+            const u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            if (u && u.role === 'owner' && u.email) {
+                result = result.filter(function (p) {
+                    return p.ownerEmail === u.email;
+                });
+            }
+        } catch (e) {
+            /* ignore */
+        }
         
         if (filters.region && filters.region !== 'Все регионы') {
             result = result.filter(p => p.region === filters.region);
@@ -313,10 +461,14 @@ const mockAPI = {
         
         if (filters.search) {
             const searchLower = filters.search.toLowerCase();
-            result = result.filter(p => 
-                p.title.toLowerCase().includes(searchLower) ||
-                p.region.toLowerCase().includes(searchLower)
-            );
+            result = result.filter(p => {
+                const addr = (p.address && String(p.address)) || '';
+                return (
+                    p.title.toLowerCase().includes(searchLower) ||
+                    p.region.toLowerCase().includes(searchLower) ||
+                    addr.toLowerCase().includes(searchLower)
+                );
+            });
         }
         
         if (filters.priceMin !== undefined) {
@@ -337,6 +489,13 @@ const mockAPI = {
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { createPageUrl, formatNumber, formatDate, getUrlParameter, mockAPI };
+    module.exports = {
+        createPageUrl,
+        formatNumber,
+        formatDate,
+        getUrlParameter,
+        mockAPI,
+        geocodeSilvaAddress
+    };
 }
 
