@@ -1,41 +1,101 @@
 /* Личный кабинет: бронирования, избранное, профиль — в духе выпадающего меню профиля */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Единый кегль ЛК: заголовки и подписи одного размера, иерархия через насыщенность */
 .account-page {
     padding-top: 5rem;
     padding-bottom: 3rem;
     min-height: 100vh;
     background: var(--color-gray-50);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.875rem;
 }
 
-.account-page h1,
+/* Заголовок страницы (.account-page-title) — отдельно, как «Типы размещения» на главной */
 .account-page h2,
 .account-page h3,
 .account-page h4,
-.account-page .account-page-title,
 .account-page .account-card-title,
-.account-page .btn,
 .account-page .input,
 .account-page input,
-.account-page button,
 .account-page textarea,
 .account-page select {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.875rem;
 }
 
+/* Кнопки ЛК — на ступень меньше полей ввода; Regular */
+.account-page .btn,
+.account-page button {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: var(--silva-btn-font-size-sm, 0.8125rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+}
+
+.account-page .account-page-title,
+.account-page .account-card-title,
+.account-page h1,
+.account-page h2,
+.account-page h3 {
+    font-weight: 600;
+}
+
+/* Primary в ЛК: как «Подробнее» в каталоге — 36px; общий кегль .account-page .btn перебиваем */
+.account-page .btn.btn-primary,
+#profile-edit-modal .btn.btn-primary {
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    line-height: 1;
+    box-sizing: border-box;
+}
+
+/* Профиль: «Редактировать» и «Программа лояльности» — без тени в покое, как «Добавить объект», чтобы hover был заметен */
+body.profile-body-inter .account-page .profile-cards-grid .btn.btn-primary {
+    box-shadow: none;
+    border: 1px solid var(--color-gray-200);
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
+}
+
+body.profile-body-inter #profile-edit-modal .btn.btn-primary {
+    box-shadow: none;
+    border: 1px solid var(--color-gray-200);
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
+}
+
+/* Как .container в main.css и .header-content — одна сетка с шапкой и основным сайтом */
 .account-page-inner {
-    max-width: 1224px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 0 1rem;
+    width: 100%;
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
 }
 
-/* Профиль на полную ширину контейнера */
+@media (min-width: 768px) {
+    .account-page-inner {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .account-page-inner {
+        padding: 0 2rem;
+    }
+}
+
+/* Профиль — та же ширина и отступы, что у остальных страниц ЛК */
 .account-page-inner--profile {
-    max-width: 1224px;
+    max-width: 1280px;
 }
 
 .account-main--full {
@@ -118,14 +178,14 @@
 }
 
 .profile-avatar-placeholder {
-    font-size: 2rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--color-gray-500);
     user-select: none;
 }
 
 .profile-avatar-hint {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--color-gray-500);
     margin-top: 0.5rem;
     max-width: 11rem;
@@ -153,7 +213,7 @@
 }
 
 .profile-view-label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -161,7 +221,7 @@
 }
 
 .profile-view-value {
-    font-size: 1rem;
+    font-size: 0.875rem;
     color: var(--color-gray-900);
     line-height: 1.45;
     user-select: text;
@@ -203,7 +263,7 @@
 }
 
 .profile-modal-title {
-    font-size: 1.25rem;
+    font-size: 0.875rem;
     font-weight: 600;
     margin: 0 2.5rem 1rem 0;
     color: var(--color-gray-900);
@@ -215,10 +275,10 @@
     right: 0.75rem;
     width: 2.25rem;
     height: 2.25rem;
-    border: none;
+    border: 1px solid var(--color-gray-200);
     background: var(--color-gray-100);
     border-radius: 5px;
-    font-size: 1.35rem;
+    font-size: 0.875rem;
     line-height: 1;
     cursor: pointer;
     color: var(--color-gray-600);
@@ -237,7 +297,7 @@
 }
 
 .profile-modal-photo-label {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-gray-700);
     margin-bottom: 0.75rem;
@@ -269,7 +329,7 @@
 }
 
 .profile-modal-avatar-placeholder {
-    font-size: 1.25rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--color-gray-500);
 }
@@ -290,17 +350,23 @@
 }
 
 #modal-btn-photo {
-    border: 1px solid #000000;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 5px;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
 }
 
 #modal-btn-photo:hover {
     background: #000000 !important;
     color: #ffffff !important;
-    border-color: #000000;
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
 }
 
 .profile-modal-hint {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--color-gray-500);
     margin-top: 0.75rem;
 }
@@ -321,7 +387,7 @@
 }
 
 .booking-cancel-modal__text {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     color: var(--color-gray-600);
     margin: 0 0 1.25rem;
     line-height: 1.5;
@@ -335,13 +401,18 @@
 }
 
 .booking-cancel-modal__cancel {
-    border: 1px solid #000000;
+    border: 1px solid var(--color-gray-200);
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
 }
 
 .booking-cancel-modal__cancel:hover {
     background: #000000 !important;
     color: #ffffff !important;
-    border-color: #000000;
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
 }
 
 .booking-cancel-modal__delete {
@@ -349,15 +420,16 @@
     color: #dc2626;
     border: 1px solid #dc2626;
     box-shadow: none;
-    font-weight: 600;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.2s ease;
+    font-weight: var(--silva-btn-font-weight, 400);
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
 }
 
 .booking-cancel-modal__delete:hover {
     background: #dc2626;
     color: #ffffff;
     border-color: #dc2626;
-    transform: scale(1.05);
+    transform: none;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
 }
 
 /* Карточка «Виртуальный сад» — компактная панель + список + CTA */
@@ -389,7 +461,7 @@
 }
 
 .loyalty-dashboard-points {
-    font-size: 2.5rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--color-gray-900);
     line-height: 1;
@@ -397,7 +469,7 @@
 }
 
 .loyalty-dashboard-points-unit {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--color-gray-500);
 }
@@ -411,13 +483,13 @@
 }
 
 .loyalty-dashboard-level-name {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-gray-900);
 }
 
 .loyalty-dashboard-discount {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-gray-700);
     background: var(--color-white);
@@ -432,7 +504,7 @@
 }
 
 .loyalty-dashboard-progress-text {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--color-gray-600);
     line-height: 1.4;
     margin: 0 0 0.5rem;
@@ -458,7 +530,7 @@
 }
 
 .loyalty-perks-heading {
-    font-size: 0.6875rem;
+    font-size: 0.875rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -479,7 +551,7 @@
     display: flex;
     align-items: flex-start;
     gap: 0.65rem;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     color: var(--color-gray-800);
     line-height: 1.4;
 }
@@ -521,7 +593,7 @@
 }
 
 .loyalty-dashboard-footnote {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--color-gray-500);
     line-height: 1.45;
     margin: 0;
@@ -557,13 +629,13 @@
 
 .account-nav-name {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.875rem;
     color: var(--color-gray-900);
     line-height: 1.3;
 }
 
 .account-nav-email {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     color: var(--color-gray-500);
     margin-top: 0.25rem;
     word-break: break-word;
@@ -586,7 +658,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 1rem;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     color: var(--color-gray-700);
     text-decoration: none;
     transition: background 0.15s, color 0.15s;
@@ -618,7 +690,7 @@
     gap: 0.75rem;
     width: 100%;
     padding: 0.5rem 1rem 0.75rem;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: #dc2626;
     background: none;
@@ -642,18 +714,34 @@
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+    min-width: 0;
+    width: 100%;
 }
 
+/* Как блок «Типы размещения» на главной (.section-title-left) */
 .account-page-title {
-    font-size: 1.5rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 2rem;
     font-weight: 600;
+    font-style: normal;
     color: var(--color-gray-900);
+    line-height: 1.2;
     margin: 0 0 0.25rem;
 }
 
+@media (max-width: 767px) {
+    .account-page-title {
+        font-size: 1.625rem;
+    }
+}
+
+/* Как описание справа у «Типы размещения» на главной (.section-description-right) */
 .account-page-lead {
-    font-size: 0.9375rem;
-    color: var(--color-gray-600);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    color: #9e9e9e;
+    line-height: 1.5;
     margin: 0 0 1rem;
     max-width: 40rem;
 }
@@ -668,20 +756,22 @@
 }
 
 .account-profile-head .account-page-title {
-    margin-bottom: 0.25rem;
+    margin-bottom: 1rem;
 }
 
 .account-profile-head .account-page-lead {
     margin-bottom: 0;
 }
 
-.account-profile-logout {
+.account-profile-logout,
+.account-page .booking-cancel-btn,
+.account-page .property-card--owner .property-card-delete {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
     padding: 0.5rem 0.75rem;
-    font-size: 0.9375rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    font-weight: var(--silva-btn-font-weight, 400);
     color: #dc2626;
     background: var(--color-white);
     border: 1px solid var(--color-gray-200);
@@ -689,12 +779,18 @@
     cursor: pointer;
     font-family: inherit;
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    text-decoration: none;
+    line-height: 1.25;
+    box-sizing: border-box;
 }
 
-.account-profile-logout:hover {
+.account-profile-logout:hover,
+.account-page .booking-cancel-btn:hover,
+.account-page .property-card--owner .property-card-delete:hover {
     background: #dc2626;
     border-color: #dc2626;
     color: #ffffff;
+    text-decoration: none;
 }
 
 .account-profile-logout svg {
@@ -706,16 +802,18 @@
     color: #ffffff;
 }
 
-/* Профиль: primary-кнопки при hover как «Регистрация» в шапке (.header-auth-link-primary:hover) */
+/* Профиль: primary при hover — как остальные залитые кнопки: без scale, заметная тень */
 body.profile-body-inter .account-page .btn.btn-primary:hover,
 body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
     background: #000000 !important;
     background-color: #000000 !important;
     color: #ffffff !important;
-    border: 1px solid #000000;
-    box-shadow: none;
-    transform: scale(1.05);
-    transition: all 0.2s ease, transform 0.2s ease;
+    border: 1px solid var(--color-gray-300);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 6px 20px rgba(0, 0, 0, 0.3)) !important;
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.14)) !important;
+    transform: none !important;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease) !important;
 }
 
 .account-card {
@@ -727,7 +825,7 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
 }
 
 .account-card-title {
-    font-size: 1.0625rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-gray-900);
     margin: 0 0 1rem;
@@ -755,7 +853,7 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
 
 .account-field label {
     display: block;
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--color-gray-700);
     margin-bottom: 0.35rem;
@@ -791,7 +889,7 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
     border-radius: 5px;
     background: var(--color-gray-100);
     border: 1px solid var(--color-gray-200);
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     color: var(--color-gray-800);
     margin-bottom: 0.5rem;
 }
@@ -800,6 +898,12 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
     background: #ecfdf5;
     border-color: #a7f3d0;
     color: #065f46;
+}
+
+.account-banner--error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
 }
 
 .account-banner svg {
@@ -816,7 +920,7 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
 }
 
 .account-loyalty-points {
-    font-size: 1.75rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--color-gray-900);
 }
@@ -830,7 +934,7 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
     color: var(--color-gray-700);
     font-weight: 500;
     text-decoration: none;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
 }
 
 .account-link-inline:hover {
@@ -883,7 +987,7 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
 }
 
 .booking-card-body h3 {
-    font-size: 1.0625rem;
+    font-size: 0.875rem;
     font-weight: 600;
     margin: 0 0 0.35rem;
 }
@@ -928,7 +1032,7 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
 
 .booking-status {
     display: inline-block;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -942,13 +1046,23 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
     color: var(--color-gray-700);
 }
 
+.booking-status--pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
 .booking-status--completed {
     background: #e5e7eb;
     color: var(--color-gray-600);
 }
 
+.booking-status--cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 .booking-total {
-    font-size: 1.125rem;
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-gray-900);
 }
@@ -960,11 +1074,39 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
     gap: 0.5rem;
 }
 
+/* «Объект»: серый контур, при наведении — заливка чёрным, текст белый */
+.account-page .booking-card-property-btn.btn {
+    font-size: var(--silva-btn-font-size-sm, 0.8125rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    padding: 0.35rem 0.75rem;
+    background: transparent;
+    color: #000000;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 5px;
+    box-shadow: none;
+    box-sizing: border-box;
+    text-decoration: none;
+    cursor: pointer;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, color 0.2s ease,
+        border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
+}
+
+.account-page .booking-card-property-btn.btn:hover {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
+}
+
 .btn-text-danger {
     background: none;
     border: none;
     color: #dc2626;
-    font-size: 0.875rem;
+    font-size: var(--silva-btn-font-size-sm, 0.8125rem);
+    font-weight: var(--silva-btn-font-weight, 400);
     cursor: pointer;
     font-family: inherit;
     padding: 0;
@@ -1006,9 +1148,11 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
 /* Профиль: Inter на всей странице (шапка, подвал, контент) */
 body.profile-body-inter {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.875rem;
 }
 
-body.profile-body-inter h1,
+/* h1 с .account-page-title не трогаем — иначе снова 0.875rem вместо кегля «Типы размещения» */
+body.profile-body-inter h1:not(.account-page-title),
 body.profile-body-inter h2,
 body.profile-body-inter h3,
 body.profile-body-inter h4,
@@ -1016,6 +1160,8 @@ body.profile-body-inter h5,
 body.profile-body-inter h6 {
     font-family: 'Inter', sans-serif;
     font-style: normal;
+    font-size: 0.875rem;
+    font-weight: 600;
 }
 
 /*
@@ -1025,4 +1171,1149 @@ body.profile-body-inter h6 {
  */
 .account-page section.profile-data-card > h2.account-card-title.profile-data-card-title {
     margin-bottom: 2.5rem !important;
+}
+
+/* Кабинет владельца */
+.owner-subnav-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.25rem;
+    margin: 0 0 1.5rem;
+    min-height: 2.5rem;
+}
+
+.owner-subnav-toolbar .owner-subnav {
+    flex: 1;
+    min-width: min(100%, 16rem);
+}
+
+.owner-dashboard-add-btn {
+    flex-shrink: 0;
+}
+
+/* Высота как у «Подробнее» в каталоге (36px) */
+.owner-dashboard-add-btn.btn.btn-primary {
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    line-height: 1;
+    border-radius: 5px;
+    box-shadow: none;
+    border: 1px solid var(--color-gray-200);
+    box-sizing: border-box;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
+}
+
+body.profile-body-inter .account-page .owner-dashboard-add-btn.btn.btn-primary:hover {
+    transform: none !important;
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22)) !important;
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07)) !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border-color: var(--color-gray-300) !important;
+}
+
+.owner-subnav-wrap {
+    margin: 0 0 1.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.owner-subnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Как «Подробнее» у карточек каталога (.property-card-more в components.css) */
+.account-page .owner-subnav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.875rem;
+    height: 36px;
+    min-height: 36px;
+    border-radius: 5px;
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #000000;
+    text-decoration: none;
+    border: 1px solid var(--color-gray-200);
+    background: #ffffff;
+    white-space: nowrap;
+    line-height: 1;
+    box-sizing: border-box;
+    user-select: none;
+    cursor: pointer;
+    gap: 0.35rem;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, border-color 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
+}
+
+.account-page .owner-subnav-link:hover {
+    background: #000000;
+    color: #ffffff;
+    border-color: var(--color-gray-400);
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
+    transform: none;
+}
+
+.account-page .owner-subnav-link--active {
+    color: #ffffff;
+    background: #000000;
+    border-color: var(--color-gray-400);
+    box-shadow: none;
+}
+
+.account-page .owner-subnav-link--active:hover {
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
+    transform: none;
+}
+
+.owner-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.owner-stat-grid--full {
+    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 0;
+}
+
+/* Счётчики на «Мои объекты» — отступ до списка карточек */
+.owner-properties-stats.owner-stat-grid--full {
+    margin-bottom: 1.5rem;
+}
+
+.owner-stat-grid--full .owner-stat-card {
+    min-height: 6.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.25rem 1.35rem;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    background: linear-gradient(180deg, var(--color-white) 0%, #fafbfc 100%);
+}
+
+@media (max-width: 960px) {
+    .owner-stat-grid--full {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .owner-stat-grid--full {
+        grid-template-columns: 1fr;
+    }
+
+    .owner-subnav-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .owner-dashboard-add-btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+}
+
+.owner-stat-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 5px;
+    padding: 1rem 1.1rem;
+}
+
+.owner-stat-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1.2;
+}
+
+.owner-stat-label {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+    margin-top: 0.25rem;
+}
+
+.owner-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.owner-properties-grid {
+    margin-top: 1.5rem;
+}
+
+.owner-property-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.owner-property-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+}
+
+@media (min-width: 640px) {
+    .owner-property-card {
+        grid-template-columns: 1fr auto;
+        align-items: center;
+    }
+}
+
+.owner-property-card-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0 0 0.35rem;
+}
+
+.owner-property-card-meta {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+}
+
+.owner-status {
+    display: inline-block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.45rem;
+    border-radius: 4px;
+}
+
+.owner-status--draft {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.owner-status--published {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.owner-property-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Брони гостей: карточки-строки, скругление 5px */
+.owner-guest-bookings-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+.owner-guest-bookings {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 56rem;
+}
+
+.owner-guest-booking-card {
+    display: grid;
+    grid-template-columns:
+        minmax(5.5rem, 1fr) minmax(4.5rem, 0.85fr) minmax(8.5rem, 1.15fr) minmax(6rem, 0.9fr) minmax(7rem, 1fr)
+        minmax(3.25rem, 0.5fr) minmax(4.25rem, 0.65fr) minmax(8.5rem, 1.1fr);
+    gap: 0.5rem 0.65rem;
+    align-items: start;
+    padding: 1rem;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-100);
+    border-radius: 5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    font-size: 0.875rem;
+    box-sizing: border-box;
+    color: var(--color-gray-900);
+    line-height: 1.35;
+}
+
+.owner-guest-booking-card .owner-guest-booking-cell {
+    word-break: break-word;
+}
+
+.owner-guest-booking-card--head {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0 1rem 0.15rem;
+    color: var(--color-gray-500);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.owner-guest-booking-cell--strong {
+    font-weight: 600;
+    color: var(--color-gray-900);
+}
+
+.owner-guest-booking-cell--muted {
+    color: var(--color-gray-600);
+    font-size: 0.8125rem;
+}
+
+.owner-guest-booking-cell--sum {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.owner-guest-booking-cell--status {
+    min-width: 0;
+}
+
+.account-page .owner-booking-status-select.input {
+    width: 100%;
+    max-width: 11rem;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: 5px;
+    margin: 0;
+}
+
+.owner-table-wrap {
+    overflow-x: auto;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+}
+
+.owner-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.owner-table th,
+.owner-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-gray-100);
+    vertical-align: top;
+}
+
+.owner-table th {
+    font-weight: 600;
+    color: var(--color-gray-600);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.owner-table tr:last-child td {
+    border-bottom: none;
+}
+
+.owner-review-block {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+    margin-bottom: 0.75rem;
+}
+
+.owner-review-block h3 {
+    font-size: 0.875rem;
+    margin: 0 0 1.75rem;
+    color: var(--color-gray-900);
+}
+
+.owner-review-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.85rem 0 0;
+    margin-top: 0.85rem;
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.owner-review-item:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.owner-review-avatar {
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--color-gray-100);
+    border: 1px solid var(--color-gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.owner-review-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.owner-review-avatar-placeholder {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-gray-500);
+    user-select: none;
+}
+
+.owner-review-item-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.owner-review-item-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+}
+
+.owner-review-guest-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+}
+
+.owner-review-guest-meta {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    margin-top: 0.15rem;
+    line-height: 1.35;
+}
+
+.owner-review-item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+/* Как «Подробнее» в каталоге (.property-card-more в components.css) */
+.owner-review-item-actions .property-card-more {
+    margin-top: 0;
+    align-self: center;
+}
+
+/* Кегль как у «Подробнее» в каталоге */
+.account-page .owner-review-item-actions .property-card-more {
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+}
+
+.account-page .owner-review-item-actions button.property-card-more {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.owner-review-hotel-reply {
+    font-size: 0.8125rem;
+    color: var(--color-gray-600);
+    margin: 0.65rem 0 0;
+    line-height: 1.45;
+}
+
+.owner-review-hotel-reply-label {
+    font-weight: 600;
+    color: var(--color-gray-700);
+}
+
+.owner-review-reply-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: 0.35rem;
+}
+
+.owner-review-reply-textarea {
+    width: 100%;
+    min-height: 7rem;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.owner-review-reply-dialog {
+    max-width: 26rem;
+}
+
+.owner-form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 720px) {
+    .owner-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.owner-form-grid .owner-form-field--full {
+    grid-column: 1 / -1;
+}
+
+.owner-form-field label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+    margin-bottom: 0.35rem;
+}
+
+.owner-form-field .input,
+.owner-form-field select,
+.owner-form-field textarea {
+    width: 100%;
+}
+
+/* Поле «Описание»: тот же кегль и вес подписи, что у остальных полей */
+.owner-form-field--description label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-gray-700);
+}
+
+body.profile-body-inter .owner-form-field--description textarea.owner-description-textarea,
+body.profile-body-inter .owner-form-field--description textarea#op-desc {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.owner-amenities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+}
+
+.owner-amenities-grid label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-weight: 400;
+    margin: 0;
+    cursor: pointer;
+}
+
+.owner-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-gray-100);
+}
+
+/* Страница: новый / редактирование объекта — на всю ширину, фото слева, детали справа */
+.owner-property-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+.owner-property-page-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    padding: 1.25rem 1.35rem 1.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* Тексты карточки — чёрные; значения в полях задаём отдельно */
+    --owner-card-text: #000000;
+}
+
+.owner-property-page__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.owner-property-page__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--owner-card-text, #000000);
+    line-height: 1.2;
+}
+
+.owner-property-page__lead {
+    font-size: 0.875rem;
+    color: var(--owner-card-text, #000000);
+    margin: 0;
+    line-height: 1.35;
+    flex: 1 1 10rem;
+    text-align: right;
+}
+
+@media (max-width: 520px) {
+    .owner-property-page__lead {
+        text-align: left;
+        flex-basis: 100%;
+    }
+}
+
+.owner-property-page__banner {
+    margin-bottom: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 5px;
+}
+
+.owner-property-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    align-content: start;
+    justify-items: stretch;
+}
+
+.owner-property-layout__left {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+@media (min-width: 992px) {
+    .owner-property-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(19rem, 26rem);
+        gap: 1.5rem 2.25rem;
+    }
+
+    .owner-property-layout__left {
+        align-self: start;
+    }
+
+    .owner-property-layout__secondary {
+        position: sticky;
+        top: 5.5rem;
+        place-self: start stretch;
+        height: max-content;
+        /* Визуально выравниваем с блоком «Фото» — поднимаем карточку выше */
+        margin-top: -5.50rem;
+    }
+}
+
+.owner-property-layout__secondary {
+    position: relative;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* «Виза и въезд» — под двухколоночной сеткой, на всю ширину белой карточки */
+.owner-property-page-form .owner-property-visa-field {
+    width: 100%;
+    min-width: 0;
+    margin-top: 1rem;
+    box-sizing: border-box;
+}
+
+.owner-property-page-form .owner-property-visa-field select#op-visa {
+    width: 100%;
+    max-width: 100%;
+}
+
+.owner-property-photos-block {
+    position: relative;
+}
+
+/* Первая строка: название и адрес пополам, как на макете */
+.owner-property-title-address-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.85rem 1.25rem;
+    margin-bottom: 0.85rem;
+}
+
+.owner-property-title-address-row .owner-form-field {
+    min-width: 0;
+}
+
+.owner-property-title-address-row .owner-form-field label {
+    font-weight: 600;
+}
+
+@media (max-width: 639px) {
+    .owner-property-title-address-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.owner-property-dense-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+}
+
+@media (min-width: 640px) {
+    .owner-property-dense-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.owner-property-dense-grid .owner-form-field--full {
+    grid-column: 1 / -1;
+}
+
+.owner-property-page-form .owner-form-field label {
+    font-size: 0.875rem;
+    margin-bottom: 0.45rem;
+    font-weight: 500;
+    color: var(--owner-card-text, #000000);
+}
+
+.owner-property-layout__secondary .owner-form-field label {
+    margin-bottom: 0.4rem;
+}
+
+.owner-property-page-form .owner-form-field .input,
+.owner-property-page-form .owner-form-field select,
+.owner-property-page-form .owner-form-field textarea {
+    font-size: 0.875rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 7px;
+    min-height: 2.5rem;
+    /* Текст внутри полей — серый (как было по смыслу формы) */
+    color: var(--color-gray-600);
+}
+
+.owner-property-page-form .owner-form-field select option {
+    color: var(--color-gray-800);
+}
+
+.owner-property-page-form .owner-form-field textarea {
+    min-height: auto;
+}
+
+.owner-property-eco-row {
+    padding: 0.65rem 0.75rem;
+    background: var(--color-gray-50);
+    border-radius: 6px;
+    border: 1px solid var(--color-gray-100);
+}
+
+/* Под сеткой удобств — длинная полоса на всю ширину колонки */
+.owner-property-page-form .owner-property-eco-row--aside {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    box-sizing: border-box;
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+}
+
+.owner-property-page-form .owner-property-eco-row--aside .owner-property-eco-label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.owner-property-page-form .owner-property-eco-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--owner-card-text, #000000);
+    margin: 0;
+    cursor: pointer;
+}
+
+.owner-property-section {
+    margin: 0;
+}
+
+.owner-property-layout__secondary .owner-property-section {
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+/* Как у подписей полей слева (.owner-form-field label), без uppercase — иначе визуально «крупнее» */
+.owner-property-page-form .owner-property-section__label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--owner-card-text, #000000);
+    margin: 0 0 0.45rem;
+    line-height: 1.35;
+}
+
+/* Удобства: 2 колонки × 4 ряда, снизу — эко на всю ширину */
+.owner-property-page-form .owner-amenities-grid--chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 0.75rem;
+    width: 100%;
+}
+
+.owner-property-page-form .owner-amenities-grid--chips label.owner-amenity-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    min-height: 2.35rem;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 8px;
+    background: var(--color-white);
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--owner-card-text, #000000);
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.owner-property-page-form .owner-amenities-grid--chips label.owner-amenity-chip:hover {
+    border-color: var(--color-gray-300);
+}
+
+.owner-property-page-form .owner-amenities-grid--chips label.owner-amenity-chip:has(input:checked) {
+    border-color: var(--color-gray-400);
+    background: var(--color-gray-50);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.owner-property-page-form .owner-amenities-grid--chips label.owner-amenity-chip input[type='checkbox'] {
+    width: 0.875rem;
+    height: 0.875rem;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: var(--color-gray-700);
+}
+
+.owner-amenity-chip__text {
+    line-height: 1.3;
+}
+
+.owner-property-rules-inline {
+    margin: 0;
+}
+
+.owner-property-page-form .owner-property-rules-inline .owner-property-section__label {
+    margin-bottom: 0.4rem;
+}
+
+.owner-property-rules-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem 0.85rem;
+    align-items: end;
+}
+
+.owner-property-page-form .owner-form-field--description {
+    margin-top: 0;
+}
+
+.owner-property-page-form .owner-form-field--description label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--owner-card-text, #000000);
+}
+
+body.profile-body-inter .owner-property-page-form .owner-form-field--description textarea.owner-description-textarea {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    min-height: 5.5rem;
+    color: var(--color-gray-600);
+}
+
+.owner-property-photos-file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.owner-property-photos-card {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 0.35rem;
+    box-shadow: none;
+}
+
+.owner-property-photos-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.owner-property-page-form .owner-property-photos-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--owner-card-text, #000000);
+    line-height: 1.35;
+}
+
+.owner-property-page-form .owner-property-photos-badge {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--owner-card-text, #000000);
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-200);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+
+.owner-property-photos-add-btn {
+    width: 100%;
+    margin-top: 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.65rem 0.85rem;
+    min-height: 2.85rem;
+    font-size: var(--silva-btn-font-size-sm, 0.8125rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+}
+
+.owner-property-photos-add-icon {
+    font-size: 0.875rem;
+    font-weight: var(--silva-btn-font-weight, 400);
+    line-height: 1;
+}
+
+/* Primary «Добавить» у фото: на всю ширину блока */
+.account-page .owner-property-photos-add-btn.btn.btn-primary {
+    border: 1px solid var(--color-gray-200);
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 0.55rem;
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    font-size: var(--silva-btn-font-size, 0.875rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    line-height: 1;
+}
+
+/* «Добавить» внизу формы: та же высота, что у «К списку» (36px) */
+.account-page .owner-property-page__actions .owner-property-page__submit.btn.btn-primary {
+    border: 1px solid var(--color-gray-200);
+    box-sizing: border-box;
+    width: auto;
+    margin-top: 0;
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    font-size: var(--silva-btn-font-size-sm, 0.8125rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.owner-property-photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3.5rem, 1fr));
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+}
+
+.owner-property-photo-tile {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid var(--color-gray-200);
+    background: var(--color-gray-100);
+}
+
+.owner-property-photo-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.owner-property-photo-remove {
+    position: absolute;
+    top: 0.15rem;
+    right: 0.15rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    padding: 0;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 0.875rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.owner-property-photo-remove:hover {
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.owner-property-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-top: 1.25rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.owner-property-page__actions .btn.btn-ghost[href] {
+    text-decoration: none;
+}
+
+/* «К списку»: серая обводка; фиксированная высота как у primary рядом */
+.owner-property-page__actions #owner-property-form-cancel.btn.btn-ghost {
+    border: 1px solid var(--color-gray-200);
+    color: #000000;
+    background: transparent;
+    box-sizing: border-box;
+    height: var(--silva-btn-fill-height, 36px);
+    min-height: var(--silva-btn-fill-height, 36px);
+    padding: 0 var(--silva-btn-fill-pad-x, 0.875rem);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    filter: none;
+    transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, color 0.2s ease,
+        border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
+}
+
+body.profile-body-inter .account-page .owner-property-page__actions #owner-property-form-cancel.btn.btn-ghost:hover {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border-color: var(--color-gray-400) !important;
+    box-shadow: var(--silva-btn-fill-hover-shadow, 0 4px 14px rgba(0, 0, 0, 0.22));
+    filter: var(--silva-btn-fill-hover-filter, brightness(1.07));
+    transform: none;
+}
+
+.owner-property-page__delete {
+    color: #dc2626 !important;
+}
+
+.owner-property-page__delete:hover {
+    background: rgba(220, 38, 38, 0.08) !important;
+}
+
+.owner-add-property-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.owner-add-property-btn::before {
+    content: '+';
+    font-weight: var(--silva-btn-font-weight, 400);
+    font-size: 0.875rem;
+    line-height: 1;
+    opacity: 0.95;
+}
+
+.owner-property-edit-page .owner-property-edit-page-main {
+    min-height: min(60vh, 24rem);
+}
+
+.owner-property-edit-page-back {
+    margin: 0 0 0.75rem;
+}
+
+.owner-property-edit-page-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    text-decoration: none;
+    color: var(--color-gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.owner-property-edit-page-back-link:hover {
+    color: var(--color-gray-900);
+}
+
+.review-snippet {
+    font-size: 0.875rem;
+    color: var(--color-gray-700);
+    line-height: 1.45;
+    margin: 0.35rem 0 0;
 }
