@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отзывы - Silva</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/account-pages.css">
+</head>
+<body class="profile-body-inter" data-owner-page="reviews">
+    <div id="header-container"></div>
+
+    <main class="account-page account-page--profile">
+        <div class="account-page-inner account-page-inner--profile">
+            <div class="account-main account-main--full">
+                <h1 class="account-page-title">Отзывы</h1>
+                <p class="account-page-lead">
+                    Отзывы гостей по вашим объектам (демо-данные и отзывы из этого браузера).
+                </p>
+
+                <div class="owner-subnav-toolbar">
+                    <nav class="owner-subnav" aria-label="Разделы владельца">
+                        <a href="owner-properties.html" class="owner-subnav-link" data-key="properties">Мои объекты</a>
+                        <a href="owner-bookings.html" class="owner-subnav-link" data-key="bookings">Брони гостей</a>
+                        <a href="owner-reviews.html" class="owner-subnav-link" data-key="reviews">Отзывы</a>
+                    </nav>
+                    <a href="owner-property-edit.html" class="btn btn-primary owner-dashboard-add-btn owner-add-property-btn">Добавить объект</a>
+                </div>
+
+                <div id="owner-reviews-content"></div>
+                <div id="owner-reviews-empty" class="bookings-empty" style="display: none;">
+                    <p>Отзывов по вашим объектам пока нет.</p>
+                    <a href="catalog.html" class="btn btn-primary">Каталог</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="owner-review-reply-modal" class="profile-modal-overlay" aria-hidden="true" role="presentation">
+        <div class="profile-modal owner-review-reply-dialog" role="dialog" aria-modal="true" aria-labelledby="owner-review-reply-title">
+            <button type="button" class="profile-modal-close" id="owner-review-reply-close" aria-label="Закрыть">×</button>
+            <h2 id="owner-review-reply-title" class="profile-modal-title">Ответ на отзыв</h2>
+            <p class="account-muted" style="margin: 0 0 0.75rem; font-size: 0.875rem;">Текст будет виден гостям на странице объекта.</p>
+            <label for="owner-review-reply-text" class="owner-review-reply-label">Ваш ответ</label>
+            <textarea id="owner-review-reply-text" class="input owner-review-reply-textarea" rows="5" placeholder="Напишите ответ гостю…"></textarea>
+            <div class="profile-modal-actions" style="margin-top: 1rem;">
+                <button type="button" class="btn btn-ghost" id="owner-review-reply-cancel">Отмена</button>
+                <button type="button" class="btn btn-primary" id="owner-review-reply-save">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+    <script src="js/icons.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/owner-api.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/owner-reviews.js"></script>
+</body>
+</html>
