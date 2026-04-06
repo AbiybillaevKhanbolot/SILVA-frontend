@@ -18,7 +18,8 @@
         <div class="reset-demo-card">
             <h1>Сброс демо-данных</h1>
             <p>
-                Будут удалены все демо-брони из этого браузера (<code>silva_bookings</code>)
+                Будут удалены демо-брони (<code>silva_bookings</code>),
+                объекты владельца (<code>silva_owner_properties</code>)
                 и обнулены баллы «Виртуального сада» (<code>silva_loyalty_points</code>).
                 Профиль и избранное не трогаем.
             </p>
@@ -34,6 +35,7 @@
                 try {
                     localStorage.setItem('silva_loyalty_points', '0');
                     localStorage.setItem('silva_bookings', '[]');
+                    localStorage.removeItem('silva_owner_properties');
                 } catch (e) {}
                 window.location.href = 'profile.html';
             }
