@@ -150,12 +150,106 @@ body.auth-body textarea {
     box-sizing: border-box;
 }
 
+/* Вход: скругление полей */
+body.auth-body--login .auth-login-input {
+    border-radius: 5px;
+}
+
+/* Регистрация: скругление всех текстовых полей и селектов */
+body.auth-body--register .auth-register-input,
+body.auth-body--register select.auth-select {
+    border-radius: 5px;
+}
+
+/* Вход и регистрация: переключатель видимости пароля */
+body.auth-body--login .auth-password-field,
+body.auth-body--register .auth-password-field {
+    position: relative;
+    margin-bottom: 0.75rem;
+}
+
+body.auth-body--login .auth-password-field .input,
+body.auth-body--register .auth-password-field .input {
+    margin-bottom: 0;
+    padding-right: 2.75rem;
+}
+
+body.auth-body--login .auth-password-toggle,
+body.auth-body--register .auth-password-toggle {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+body.auth-body--login .auth-password-toggle:hover,
+body.auth-body--register .auth-password-toggle:hover {
+    color: var(--color-gray-900);
+    background: var(--color-gray-100);
+}
+
+body.auth-body--login .auth-password-toggle:focus-visible,
+body.auth-body--register .auth-password-toggle:focus-visible {
+    outline: 2px solid var(--color-gray-900);
+    outline-offset: 2px;
+}
+
+body.auth-body--login .auth-pw-icon--hidden,
+body.auth-body--register .auth-pw-icon--hidden {
+    display: none !important;
+}
+
+body.auth-body--login .auth-password-toggle svg,
+body.auth-body--register .auth-password-toggle svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+body.auth-body--login #login-form .auth-login-submit.btn-primary {
+    height: auto;
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+body.auth-body--register .auth-card .auth-btn-submit.btn-primary {
+    height: auto;
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
 .auth-page .btn,
 .auth-page .btn-primary {
     width: 100%;
     margin-top: 0.35rem;
     padding: 0.65rem 1rem;
-    font-size: 0.875rem;
+    font-size: var(--silva-btn-font-size-sm, 0.8125rem);
+    font-weight: var(--silva-btn-font-weight, 400);
+}
+
+.auth-page .btn-primary {
+    filter: none;
 }
 
 .auth-forgot {
@@ -227,7 +321,7 @@ body.auth-body textarea {
     min-width: 0;
     cursor: pointer;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: var(--silva-btn-font-weight, 400);
     color: var(--color-gray-600);
     -webkit-tap-highlight-color: transparent;
 }
@@ -263,7 +357,7 @@ body.auth-body textarea {
 .auth-role-option:has(input:checked) .auth-role-option-text {
     background-color: var(--color-gray-900);
     color: #ffffff;
-    font-weight: 600;
+    font-weight: var(--silva-btn-font-weight, 400);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 

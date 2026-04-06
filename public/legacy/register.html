@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/auth.css">
 </head>
-<body class="auth-body">
+<body class="auth-body auth-body--register">
     <div id="header-container"></div>
     <main class="auth-page">
         <div class="auth-wrapper anim-fade-up">
@@ -35,10 +35,22 @@
             <!-- Форма гостя -->
             <div id="guest-fields" class="auth-form-block active">
                 <form id="register-form-guest">
-                    <input type="text" class="input" name="fullname" placeholder="ФИО" required>
-                    <input type="email" class="input" name="email" placeholder="Почта" required>
-                    <input type="password" class="input" name="password" id="guest-password" placeholder="Пароль" required minlength="10">
-                    <input type="password" class="input" name="password_confirm" id="guest-password-confirm" placeholder="Подтвердите пароль" required>
+                    <input type="text" class="input auth-register-input" name="fullname" placeholder="ФИО" required autocomplete="name">
+                    <input type="email" class="input auth-register-input" name="email" placeholder="Почта" required autocomplete="email">
+                    <div class="auth-password-field">
+                        <input type="password" class="input auth-register-input" name="password" id="guest-password" placeholder="Пароль" required minlength="10" autocomplete="new-password">
+                        <button type="button" class="auth-password-toggle" data-password-for="guest-password" aria-label="Показать пароль" aria-pressed="false">
+                            <span class="silva-icon auth-pw-icon auth-pw-icon--off" data-icon="eye-off" data-w="18" data-h="18" aria-hidden="true"></span>
+                            <span class="silva-icon auth-pw-icon auth-pw-icon--on auth-pw-icon--hidden" data-icon="eye" data-w="18" data-h="18" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div class="auth-password-field">
+                        <input type="password" class="input auth-register-input" name="password_confirm" id="guest-password-confirm" placeholder="Подтвердите пароль" required autocomplete="new-password">
+                        <button type="button" class="auth-password-toggle" data-password-for="guest-password-confirm" aria-label="Показать пароль" aria-pressed="false">
+                            <span class="silva-icon auth-pw-icon auth-pw-icon--off" data-icon="eye-off" data-w="18" data-h="18" aria-hidden="true"></span>
+                            <span class="silva-icon auth-pw-icon auth-pw-icon--on auth-pw-icon--hidden" data-icon="eye" data-w="18" data-h="18" aria-hidden="true"></span>
+                        </button>
+                    </div>
                     <div class="auth-password-hints" id="guest-hints">
                         <span id="hint-length" class="err">Не менее 10 символов</span>
                         <span id="hint-special" class="err">Содержит специальный символ</span>
@@ -55,17 +67,22 @@
             <!-- Форма владельца -->
             <div id="owner-fields" class="auth-form-block">
                 <form id="register-form-owner">
-                    <input type="text" class="input" name="fullname" placeholder="ФИО" required>
-                    <select class="auth-select" name="property_type" required>
-                        <option value="">Тип объекта</option>
-                        <option value="cottage">Коттедж</option>
-                        <option value="glamping">Глэмпинг</option>
-                        <option value="eco_house">Эко-Дом</option>
-                        <option value="by_river">У реки</option>
-                    </select>
-                    <input type="email" class="input" name="email" placeholder="Почта" required>
-                    <input type="password" class="input" name="password" id="owner-password" placeholder="Пароль" required minlength="10">
-                    <input type="password" class="input" name="password_confirm" id="owner-password-confirm" placeholder="Подтвердите пароль" required>
+                    <input type="text" class="input auth-register-input" name="fullname" placeholder="ФИО" required autocomplete="name">
+                    <input type="email" class="input auth-register-input" name="email" placeholder="Почта" required autocomplete="email">
+                    <div class="auth-password-field">
+                        <input type="password" class="input auth-register-input" name="password" id="owner-password" placeholder="Пароль" required minlength="10" autocomplete="new-password">
+                        <button type="button" class="auth-password-toggle" data-password-for="owner-password" aria-label="Показать пароль" aria-pressed="false">
+                            <span class="silva-icon auth-pw-icon auth-pw-icon--off" data-icon="eye-off" data-w="18" data-h="18" aria-hidden="true"></span>
+                            <span class="silva-icon auth-pw-icon auth-pw-icon--on auth-pw-icon--hidden" data-icon="eye" data-w="18" data-h="18" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <div class="auth-password-field">
+                        <input type="password" class="input auth-register-input" name="password_confirm" id="owner-password-confirm" placeholder="Подтвердите пароль" required autocomplete="new-password">
+                        <button type="button" class="auth-password-toggle" data-password-for="owner-password-confirm" aria-label="Показать пароль" aria-pressed="false">
+                            <span class="silva-icon auth-pw-icon auth-pw-icon--off" data-icon="eye-off" data-w="18" data-h="18" aria-hidden="true"></span>
+                            <span class="silva-icon auth-pw-icon auth-pw-icon--on auth-pw-icon--hidden" data-icon="eye" data-w="18" data-h="18" aria-hidden="true"></span>
+                        </button>
+                    </div>
                     <div class="auth-password-hints" id="owner-hints">
                         <span id="owner-hint-length" class="err">Не менее 10 символов</span>
                         <span id="owner-hint-special" class="err">Содержит специальный символ</span>
@@ -123,6 +140,22 @@
     document.getElementById('guest-password').addEventListener('input', function() { updateHints('guest-password', 'guest-hints'); });
     document.getElementById('owner-password').addEventListener('input', function() { updateHints('owner-password', 'owner-hints'); });
 
+    document.querySelectorAll('.auth-password-toggle[data-password-for]').forEach(function (toggle) {
+        var id = toggle.getAttribute('data-password-for');
+        var pwd = document.getElementById(id);
+        if (!pwd) return;
+        toggle.addEventListener('click', function () {
+            var show = pwd.type === 'password';
+            pwd.type = show ? 'text' : 'password';
+            toggle.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
+            toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+            var off = toggle.querySelector('.auth-pw-icon--off');
+            var on = toggle.querySelector('.auth-pw-icon--on');
+            if (off) off.classList.toggle('auth-pw-icon--hidden', show);
+            if (on) on.classList.toggle('auth-pw-icon--hidden', !show);
+        });
+    });
+
     function updateRoleUI() {
         var isOwner = document.querySelector('input[name="role"]:checked').value === 'owner';
         document.getElementById('guest-fields').classList.toggle('active', !isOwner);
@@ -169,7 +202,6 @@
         showError('owner-form-error', '');
         var fullname = this.fullname.value.trim();
         var email = this.email.value.trim();
-        var propertyType = this.property_type.value;
         var pwd = this.password.value;
         var confirmPwd = this.password_confirm.value;
         var err = validatePassword(pwd, confirmPwd);
@@ -179,10 +211,9 @@
             name: fullname,
             email: email,
             role: 'owner',
-            property_type: propertyType,
             newsletter: !!this.newsletter.checked
         }));
-        window.location.href = 'index.html';
+        window.location.href = 'owner-dashboard.html';
     });
 })();
     </script>

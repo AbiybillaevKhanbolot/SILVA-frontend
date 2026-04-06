@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/animations.css">
     <link rel="stylesheet" href="css/auth.css">
 </head>
-<body class="auth-body">
+<body class="auth-body auth-body--login">
     <div id="header-container"></div>
     <main class="auth-page">
         <div class="auth-wrapper anim-fade-up">
@@ -22,9 +22,15 @@
                     <h1 class="auth-title">Вход</h1>
                     <p class="auth-subtitle">Войдите в аккаунт, чтобы бронировать жильё и управлять заказами.</p>
                     <form id="login-form">
-                        <input type="email" class="input" name="email" placeholder="Почта" required>
-                        <input type="password" class="input" name="password" placeholder="Пароль" required>
-                        <button type="submit" class="btn btn-primary">Войти</button>
+                        <input type="email" class="input auth-login-input" name="email" placeholder="Почта" required autocomplete="email">
+                        <div class="auth-password-field">
+                            <input type="password" class="input auth-login-input" name="password" id="login-password" placeholder="Пароль" required autocomplete="current-password">
+                            <button type="button" class="auth-password-toggle" id="login-password-toggle" aria-label="Показать пароль" aria-pressed="false">
+                                <span class="silva-icon auth-pw-icon auth-pw-icon--off" data-icon="eye-off" data-w="18" data-h="18" aria-hidden="true"></span>
+                                <span class="silva-icon auth-pw-icon auth-pw-icon--on auth-pw-icon--hidden" data-icon="eye" data-w="18" data-h="18" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <button type="submit" class="btn btn-primary auth-login-submit">Войти</button>
                     </form>
                     <a href="forgot-password.html" class="auth-forgot">Забыли пароль?</a>
                     <p class="auth-switch">Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
@@ -45,6 +51,22 @@
     <script src="js/components/footer.js"></script>
     <script src="js/animations.js"></script>
     <script>
+        (function () {
+            var pwd = document.getElementById('login-password');
+            var toggle = document.getElementById('login-password-toggle');
+            if (pwd && toggle) {
+                toggle.addEventListener('click', function () {
+                    var show = pwd.type === 'password';
+                    pwd.type = show ? 'text' : 'password';
+                    toggle.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
+                    toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+                    var off = toggle.querySelector('.auth-pw-icon--off');
+                    var on = toggle.querySelector('.auth-pw-icon--on');
+                    if (off) off.classList.toggle('auth-pw-icon--hidden', show);
+                    if (on) on.classList.toggle('auth-pw-icon--hidden', !show);
+                });
+            }
+        })();
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             var user = { email: this.email.value };
