@@ -6,20 +6,57 @@
     <title>Панель владельца - Silva</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/account-pages.css">
 </head>
-<body>
+<body class="profile-body-inter" data-owner-page="dashboard">
     <div id="header-container"></div>
-    <main style="padding: 6rem 0; text-align: center;">
-        <div class="container">
-            <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">Панель владельца</h1>
-            <p style="color: var(--color-gray-600);">Управление объектами размещения.</p>
+
+    <main class="account-page account-page--profile">
+        <div class="account-page-inner account-page-inner--profile">
+            <div class="account-main account-main--full">
+                <h1 class="account-page-title">Панель владельца</h1>
+                <p class="account-page-lead">
+                    Управляйте объявлениями, смотрите брони гостей и отзывы. Данные хранятся в этом браузере (демо).
+                </p>
+
+                <div class="owner-subnav-toolbar">
+                    <nav class="owner-subnav" aria-label="Разделы владельца">
+                        <a href="owner-properties.html" class="owner-subnav-link" data-key="properties">Мои объекты</a>
+                        <a href="owner-bookings.html" class="owner-subnav-link" data-key="bookings">Брони гостей</a>
+                        <a href="owner-reviews.html" class="owner-subnav-link" data-key="reviews">Отзывы</a>
+                    </nav>
+                    <a href="owner-property-edit.html" class="btn btn-primary owner-dashboard-add-btn owner-add-property-btn">Добавить объект</a>
+                </div>
+
+                <div class="owner-stat-grid owner-stat-grid--full" id="owner-stat-grid">
+                    <div class="owner-stat-card">
+                        <div class="owner-stat-value" id="stat-listings">0</div>
+                        <div class="owner-stat-label">объектов всего</div>
+                    </div>
+                    <div class="owner-stat-card">
+                        <div class="owner-stat-value" id="stat-published">0</div>
+                        <div class="owner-stat-label">в каталоге</div>
+                    </div>
+                    <div class="owner-stat-card">
+                        <div class="owner-stat-value" id="stat-bookings">0</div>
+                        <div class="owner-stat-label">броней по вашим объектам</div>
+                    </div>
+                    <div class="owner-stat-card">
+                        <div class="owner-stat-value" id="stat-reviews">0</div>
+                        <div class="owner-stat-label">отзывов</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
+
     <div id="footer-container"></div>
     <script src="js/icons.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/owner-api.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
     <script src="js/components/footer.js"></script>
+    <script src="js/owner-dashboard.js"></script>
 </body>
 </html>
