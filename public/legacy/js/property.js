@@ -20,100 +20,45 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         return;
     }
+
+    if (property.is_owner_listing && property.status === 'draft') {
+        let u = {};
+        try {
+            u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+        } catch (e) {}
+        if (u.role !== 'owner' || u.email !== property.ownerEmail) {
+            window.location.href = 'catalog.html';
+            return;
+        }
+    }
     
-    // Render gallery slider (плейсхолдеры под изображения)
-    const gallerySlides = document.getElementById('gallery-slides');
-    const galleryDots = document.getElementById('gallery-dots');
-    if (gallerySlides) {
-        const slideCount = 5;
-        var galleryPh = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg('image', 24, 24, { className: 'gallery-placeholder-icon', strokeWidth: 1.5 }) : '';
-        const placeholderHtml = `
-            <div class="gallery-slide-placeholder">
-                ${galleryPh}
-                <span class="gallery-placeholder-text">Здесь будет изображение</span>
-            </div>`;
-        let currentSlide = 0;
-        
-        // Render slides (плейсхолдеры)
-        gallerySlides.innerHTML = Array(slideCount).fill(0).map((_, index) => `
-            <div class="gallery-slide">${placeholderHtml}</div>
-        `).join('');
-        
-        // Render dots
-        if (galleryDots) {
-            galleryDots.innerHTML = Array(slideCount).fill(0).map((_, index) => `
-                <button class="gallery-dot ${index === 0 ? 'active' : ''}" data-slide="${index}" aria-label="Slide ${index + 1}"></button>
-            `).join('');
-        }
-        
-        // Update slider position
-        const updateSlider = () => {
-            gallerySlides.style.transform = `translateX(-${currentSlide * 100}%)`;
-            if (galleryDots) {
-                const dots = galleryDots.querySelectorAll('.gallery-dot');
-                dots.forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentSlide);
-                });
-            }
-        };
-        
-        // Navigation functions
-        const nextSlide = () => {
-            currentSlide = (currentSlide + 1) % slideCount;
-            updateSlider();
-        };
-        
-        const prevSlide = () => {
-            currentSlide = (currentSlide - 1 + slideCount) % slideCount;
-            updateSlider();
-        };
-        
-        const goToSlide = (index) => {
-            if (index >= 0 && index < slideCount) {
-                currentSlide = index;
-                updateSlider();
-            }
-        };
-        
-        // Event listeners
-        const prevBtn = document.getElementById('gallery-prev');
-        const nextBtn = document.getElementById('gallery-next');
-        
-        if (prevBtn) prevBtn.addEventListener('click', prevSlide);
-        if (nextBtn) nextBtn.addEventListener('click', nextSlide);
-        
-        if (galleryDots) {
-            galleryDots.querySelectorAll('.gallery-dot').forEach((dot, index) => {
-                dot.addEventListener('click', () => goToSlide(index));
-            });
-        }
-        
-        // Touch/swipe support
-        let touchStartX = 0;
-        let touchEndX = 0;
-        
-        gallerySlides.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
+    // Галерея: главное фото + 4 миниатюры, ротация стрелками (см. property-gallery-widget.js)
+    var galleryMainSlot = document.getElementById('gallery-main-slot');
+    var galleryThumbsRoot = document.getElementById('property-gallery-thumbs');
+    var galleryDots = document.getElementById('gallery-dots');
+    var gallerySliderEl = document.getElementById('gallery-slider');
+    if (galleryMainSlot && typeof silvaInitRotatingGallery === 'function') {
+        var galleryUrls =
+            typeof silvaGetGalleryUrlsFromProperty === 'function'
+                ? silvaGetGalleryUrlsFromProperty(property)
+                : [];
+        var thumbEls = galleryThumbsRoot
+            ? Array.prototype.slice.call(galleryThumbsRoot.querySelectorAll('.gallery-thumb-slot'))
+            : [];
+        var galleryApi = silvaInitRotatingGallery({
+            mainEl: galleryMainSlot,
+            thumbEls: thumbEls,
+            prevBtn: document.getElementById('gallery-prev'),
+            nextBtn: document.getElementById('gallery-next'),
+            dotsEl: galleryDots,
+            swipeEl: gallerySliderEl,
+            urls: galleryUrls,
+            alt: property.title || '',
+            placeholderSlots: 5
         });
-        
-        gallerySlides.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        });
-        
-        const handleSwipe = () => {
-            if (touchEndX < touchStartX - 50) {
-                nextSlide();
-            }
-            if (touchEndX > touchStartX + 50) {
-                prevSlide();
-            }
-        };
-        
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') prevSlide();
-            if (e.key === 'ArrowRight') nextSlide();
+        document.addEventListener('keydown', function propertyGalleryKeydown(e) {
+            if (e.key === 'ArrowLeft') galleryApi.prev();
+            if (e.key === 'ArrowRight') galleryApi.next();
         });
     }
     
@@ -146,11 +91,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const propertyMeta = document.getElementById('property-meta');
     if (propertyMeta) {
         var icMeta = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
+        var addrStr = (property.address || '').trim();
+        var escAddr = addrStr
+            ? addrStr
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/"/g, '&quot;')
+            : '';
         propertyMeta.innerHTML = `
             <div style="display: flex; align-items: center; gap: 0.25rem;">
                 ${icMeta('map-pin', 20, 20, { extraAttrs: ' style="color: var(--color-emerald-500)"' })}
                 <span>${property.region}</span>
             </div>
+            ${
+                escAddr
+                    ? `<div style="display:flex;align-items:flex-start;gap:0.25rem;margin-top:0.35rem;max-width:100%;text-align:right;font-size:0.9375rem;font-weight:500;color:var(--color-gray-600);line-height:1.45;word-break:break-word;">${escAddr}</div>`
+                    : ''
+            }
             ${property.rating ? `
                 <div style="display: flex; align-items: center; gap: 0.25rem;">
                     ${icMeta('star-filled', 20, 20, { extraAttrs: ' style="color: var(--color-amber-400)"' })}
@@ -200,26 +157,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Favorite button
+    // Favorite button (для своего объекта владельца — ссылка «Редактировать»)
     const favoriteBtn = document.getElementById('property-favorite-btn');
     if (favoriteBtn) {
-        let favorites = [];
+        let u = {};
         try {
-            favorites = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
+            u = JSON.parse(localStorage.getItem('silva_user') || '{}');
         } catch (e) {}
-        const isFavorite = favorites.indexOf(propertyId) !== -1;
-        if (isFavorite) favoriteBtn.classList.add('in-favorites');
-        favoriteBtn.querySelector('svg').style.fill = isFavorite ? 'currentColor' : 'none';
-        favoriteBtn.addEventListener('click', function() {
-            favorites = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
-            const idx = favorites.indexOf(propertyId);
-            if (idx === -1) favorites.push(propertyId);
-            else favorites.splice(idx, 1);
-            localStorage.setItem('silva_favorites', JSON.stringify(favorites));
-            const nowFav = favorites.indexOf(propertyId) !== -1;
-            favoriteBtn.classList.toggle('in-favorites', nowFav);
-            favoriteBtn.querySelector('svg').style.fill = nowFav ? 'currentColor' : 'none';
-        });
+        const isOwnerViewingOwn =
+            property.is_owner_listing &&
+            u.role === 'owner' &&
+            u.email &&
+            property.ownerEmail &&
+            u.email === property.ownerEmail;
+
+        if (isOwnerViewingOwn) {
+            favoriteBtn.outerHTML =
+                '<a href="owner-property-edit.html?id=' +
+                encodeURIComponent(propertyId) +
+                '" class="property-favorite-btn" id="property-favorite-btn">Редактировать</a>';
+        } else {
+            let favorites = [];
+            try {
+                favorites = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
+            } catch (e) {}
+            const isFavorite = favorites.indexOf(propertyId) !== -1;
+            if (isFavorite) favoriteBtn.classList.add('in-favorites');
+            const svgEl = favoriteBtn.querySelector('svg');
+            if (svgEl) svgEl.style.fill = isFavorite ? 'currentColor' : 'none';
+            favoriteBtn.addEventListener('click', function() {
+                favorites = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
+                const idx = favorites.indexOf(propertyId);
+                if (idx === -1) favorites.push(propertyId);
+                else favorites.splice(idx, 1);
+                localStorage.setItem('silva_favorites', JSON.stringify(favorites));
+                const nowFav = favorites.indexOf(propertyId) !== -1;
+                favoriteBtn.classList.toggle('in-favorites', nowFav);
+                const s = favoriteBtn.querySelector('svg');
+                if (s) s.style.fill = nowFav ? 'currentColor' : 'none';
+            });
+        }
     }
     
     // Render amenities (extended)
@@ -943,14 +920,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 })));
             };
             let author = 'Гость';
+            let avatar = null;
             try {
                 const u = JSON.parse(localStorage.getItem('silva_user') || '{}');
-                author = u.name || u.email || author;
+                const name = (u.name && String(u.name).trim()) ? String(u.name).trim() : '';
+                author = name || 'Гость';
+                avatar = u.avatar || null;
             } catch (e) {}
             const rating = selectedStars * 2;
             readPhotos().then(photos => {
                 mockAPI.addReviewForProperty(propertyId, {
                     author: author,
+                    avatar: avatar,
                     rating: rating,
                     ratingLabel: ratingLabel(rating),
                     text: text,

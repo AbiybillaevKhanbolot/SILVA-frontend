@@ -54,6 +54,17 @@
         .property-gallery-card {
             border-radius: 5px;
             background: var(--color-gray-100);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+        }
+        .property-gallery-card > img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
         @media (max-width: 767px) {
             .property-gallery {
@@ -78,22 +89,18 @@
             width: 100%;
             height: 100%;
         }
-        .gallery-slides {
+        .gallery-main-slot {
             position: relative;
             width: 100%;
             height: 100%;
-            display: flex;
-            transition: transform 0.5s ease-in-out;
+            overflow: hidden;
+            border-radius: 5px;
         }
-        .gallery-slide {
-            min-width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        .gallery-slide img {
+        .gallery-main-slot > img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
         .gallery-slide-placeholder {
             width: 100%;
@@ -104,6 +111,15 @@
             align-items: center;
             justify-content: center;
             gap: 1rem;
+            box-sizing: border-box;
+        }
+        .gallery-slide-placeholder--thumb {
+            gap: 0.35rem;
+            padding: 0.25rem;
+        }
+        .gallery-slide-placeholder--thumb .gallery-placeholder-icon {
+            width: 2rem;
+            height: 2rem;
         }
         .gallery-placeholder-icon {
             width: 5rem;
@@ -222,6 +238,9 @@
             font-weight: 600;
             color: #000000;
             margin-bottom: 1.25rem;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            max-width: 100%;
         }
         @media (min-width: 768px) {
             .property-title {
@@ -289,6 +308,19 @@
             color: #9E9E9E;
             line-height: 1.6;
             white-space: pre-line;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            max-width: 100%;
+        }
+        .property-summary-description {
+            min-width: 0;
+            padding-right: 1rem;
+            box-sizing: border-box;
+        }
+        @media (min-width: 768px) {
+            .property-summary-description {
+                padding-right: 2rem;
+            }
         }
         .property-summary-description-title {
             font-size: 1rem;
@@ -303,6 +335,8 @@
             color: #9E9E9E;
             line-height: 1.6;
             margin-bottom: 0.75rem;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
         .property-summary-right .property-favorite-btn {
             display: inline-flex;
@@ -315,23 +349,29 @@
             margin-top: 4rem;
             background: #ffffff;
             color: #000000;
-            border: 1px solid #000000;
-            border-radius: 7px;
+            border: 1px solid var(--color-gray-200);
+            border-radius: 5px;
             font-family: "Inter", system-ui, sans-serif;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 400;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s, border-color 0.2s;
+            transition: var(--silva-btn-fill-hover-transition, background-color 0.2s ease, color 0.2s ease,
+                border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease);
+            filter: none;
+            box-shadow: none;
         }
         .property-summary-right .property-favorite-btn:hover {
             background: #000000;
             color: #ffffff;
-            border-color: #000000;
+            border-color: var(--color-gray-400);
+            box-shadow: var(--silva-btn-fill-hover-shadow, 0 6px 20px rgba(0, 0, 0, 0.3));
+            filter: var(--silva-btn-fill-hover-filter, brightness(1.14));
+            transform: none;
         }
         .property-summary-right .property-favorite-btn.in-favorites {
             background: #000000;
             color: #ffffff;
-            border-color: #000000;
+            border-color: var(--color-gray-400);
         }
         .property-summary-right .property-favorite-btn svg {
             display: none;
@@ -414,7 +454,7 @@
         .booking-card {
             background: var(--color-white);
             border-radius: 5px;
-            border: 1px solid #000000;
+            border: 1px solid var(--color-gray-200);
             padding: 1.25rem;
             box-shadow: none;
             width: 100%;
@@ -487,9 +527,19 @@
             background: var(--color-white);
             cursor: pointer;
             position: relative;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
         }
         .booking-date-input:hover {
-            border-color: var(--color-emerald-500);
+            background: #000000;
+            border-color: #000000;
+        }
+        .booking-date-input > .booking-date-label,
+        .booking-date-input > .booking-date-value {
+            transition: color 0.2s ease;
+        }
+        .booking-date-input:hover > .booking-date-label,
+        .booking-date-input:hover > .booking-date-value {
+            color: #ffffff;
         }
         .booking-date-label {
             font-size: 0.875rem;
@@ -499,6 +549,7 @@
         .booking-date-value {
             font-weight: 500;
             font-size: 1rem;
+            color: #000000;
         }
         .booking-date-dropdown {
             position: absolute;
@@ -665,17 +716,19 @@
             border-radius: 5px;
             border: 1px solid var(--color-gray-200);
             background: var(--color-white);
+            color: #000000;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.125rem;
-            transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+            font-weight: 400;
+            transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
         .booking-guests-btn:hover {
-            transform: scale(1.08);
-            background: var(--color-gray-50);
-            border-color: var(--color-gray-400);
+            background: #000000;
+            border-color: #000000;
+            color: #ffffff;
         }
         .booking-guests-btn:active {
             transform: scale(0.98);
@@ -760,17 +813,20 @@
             transition: all 0.2s;
         }
         .property-favorite-btn:hover {
-            border-color: var(--color-emerald-300);
-            background: var(--color-emerald-50);
+            border-color: var(--color-gray-400);
+            background: #000000;
+            color: #ffffff;
         }
         .property-favorite-btn.in-favorites {
-            background: var(--color-emerald-100);
-            border-color: var(--color-emerald-400);
-            color: var(--color-emerald-600);
+            background: #000000;
+            border-color: var(--color-gray-400);
+            color: #ffffff;
         }
         .property-favorite-btn svg { width: 1.25rem; height: 1.25rem; }
         .property-description-wrap {
             position: relative;
+            min-width: 0;
+            max-width: 100%;
         }
         .property-description-wrap.collapsed .property-description-full { max-height: 6rem; overflow: hidden; }
         .property-description-toggle {
@@ -800,7 +856,7 @@
         }
         .property-info-card {
             background: var(--color-white);
-            border: 1px solid #000000;
+            border: 1px solid var(--color-gray-200);
             border-radius: 5px;
             padding: 1.5rem 1.5rem;
             box-shadow: none;
@@ -810,6 +866,7 @@
         }
         .property-info-card .property-section-title {
             margin-bottom: 0.75rem;
+            font-weight: 400;
         }
         .property-info-card .property-description {
             margin: 0;
@@ -907,14 +964,19 @@
         .btn-leave-review {
             padding: 0.625rem 1.25rem;
             border-radius: 5px;
-            border: 1px solid var(--color-emerald-500);
+            border: 1px solid var(--color-gray-200);
             background: var(--color-white);
-            color: var(--color-emerald-600);
+            color: #000000;
             font-weight: 500;
             font-size: 0.9375rem;
             cursor: pointer;
+            box-sizing: border-box;
         }
-        .btn-leave-review:hover { background: var(--color-emerald-50); }
+        .btn-leave-review:hover {
+            background: #000000;
+            color: #ffffff;
+            border-color: var(--color-gray-400);
+        }
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -962,25 +1024,21 @@
                 <div class="property-gallery-layout">
                     <div class="property-gallery-main">
                         <div class="gallery-slider" id="gallery-slider">
-                            <div class="gallery-slides" id="gallery-slides">
-                                <!-- Slides will be loaded here -->
-                            </div>
+                            <div class="gallery-main-slot" id="gallery-main-slot"></div>
                             <button class="gallery-nav gallery-nav-prev" id="gallery-prev" type="button" aria-label="Предыдущее фото">
                                 <span class="silva-icon" data-icon="chevron-left" data-w="24" data-h="24" aria-hidden="true"></span>
                             </button>
                             <button class="gallery-nav gallery-nav-next" id="gallery-next" type="button" aria-label="Следующее фото">
                                 <span class="silva-icon" data-icon="chevron-right" data-w="24" data-h="24" aria-hidden="true"></span>
                             </button>
-                            <div class="gallery-dots" id="gallery-dots">
-                                <!-- Dots will be loaded here -->
-                            </div>
+                            <div class="gallery-dots" id="gallery-dots"></div>
                         </div>
                     </div>
-                    <div class="property-gallery-side">
-                        <div class="property-gallery-card"></div>
-                        <div class="property-gallery-card"></div>
-                        <div class="property-gallery-card"></div>
-                        <div class="property-gallery-card"></div>
+                    <div class="property-gallery-side" id="property-gallery-thumbs">
+                        <div class="property-gallery-card gallery-thumb-slot" data-thumb="1"></div>
+                        <div class="property-gallery-card gallery-thumb-slot" data-thumb="1"></div>
+                        <div class="property-gallery-card gallery-thumb-slot" data-thumb="1"></div>
+                        <div class="property-gallery-card gallery-thumb-slot" data-thumb="1"></div>
                     </div>
                 </div>
             </div>
@@ -1119,6 +1177,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="js/icons.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/property-gallery-widget.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
     <script src="js/components/footer.js"></script>
