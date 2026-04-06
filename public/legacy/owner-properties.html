@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои объекты - Silva</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/account-pages.css">
+</head>
+<body class="profile-body-inter" data-owner-page="properties">
+    <div id="header-container"></div>
+
+    <main class="account-page account-page--profile">
+        <div class="account-page-inner account-page-inner--profile">
+            <div class="account-main account-main--full">
+                <h1 class="account-page-title">Мои объекты</h1>
+                <p class="account-page-lead">
+                    Черновики видны только вам. Опубликованные объекты появляются в каталоге.
+                </p>
+
+                <div class="owner-subnav-toolbar">
+                    <nav class="owner-subnav" aria-label="Разделы владельца">
+                        <a href="owner-properties.html" class="owner-subnav-link" data-key="properties">Мои объекты</a>
+                        <a href="owner-bookings.html" class="owner-subnav-link" data-key="bookings">Брони гостей</a>
+                        <a href="owner-reviews.html" class="owner-subnav-link" data-key="reviews">Отзывы</a>
+                    </nav>
+                    <a href="owner-property-edit.html" class="btn btn-primary owner-dashboard-add-btn owner-add-property-btn">Добавить объект</a>
+                </div>
+
+                <div class="owner-stat-grid owner-stat-grid--full owner-properties-stats" id="owner-properties-stats" aria-label="Сводка">
+                    <div class="owner-stat-card">
+                        <div class="owner-stat-value" id="stat-listings">0</div>
+                        <div class="owner-stat-label">объектов всего</div>
+                    </div>
+                    <div class="owner-stat-card">
+                        <div class="owner-stat-value" id="stat-published">0</div>
+                        <div class="owner-stat-label">в каталоге</div>
+                    </div>
+                    <div class="owner-stat-card">
+                        <div class="owner-stat-value" id="stat-bookings">0</div>
+                        <div class="owner-stat-label">броней по вашим объектам</div>
+                    </div>
+                    <div class="owner-stat-card">
+                        <div class="owner-stat-value" id="stat-reviews">0</div>
+                        <div class="owner-stat-label">отзывов</div>
+                    </div>
+                </div>
+
+                <div id="owner-properties-list" class="properties-grid owner-properties-grid"></div>
+                <div id="owner-properties-empty" class="bookings-empty" style="display: none;">
+                    <p>У вас пока нет объектов. Создайте первое объявление — оно сохранится в этом браузере.</p>
+                    <a href="owner-property-edit.html" class="btn btn-primary owner-add-property-btn">Создать объект</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="owner-delete-property-modal" class="header-logout-modal-overlay" aria-hidden="true" role="presentation">
+        <div class="header-logout-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="owner-delete-property-modal-title">
+            <button type="button" class="header-logout-modal__close" id="owner-delete-property-modal-x" aria-label="Закрыть">×</button>
+            <h2 id="owner-delete-property-modal-title" class="header-logout-modal__title">Вы уверены, что хотите удалить объект?</h2>
+            <div class="header-logout-modal__actions">
+                <button type="button" class="btn btn-ghost header-logout-modal__btn-cancel" id="owner-delete-property-modal-cancel">Отмена</button>
+                <button type="button" class="btn header-logout-modal__btn-confirm" id="owner-delete-property-modal-confirm">Да</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container"></div>
+    <script src="js/icons.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/owner-api.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/components/property-card.js"></script>
+    <script src="js/owner-properties.js"></script>
+</body>
+</html>
