@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     children: children,
                     totalRub: amountToPay,
                     payType: payAmount,
-                    status: 'confirmed',
+                    status: 'pending',
                     createdAt: new Date().toISOString(),
                     guestName: name,
                     guestEmail: email,

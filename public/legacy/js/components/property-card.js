@@ -11,15 +11,23 @@ function isPropertyInFavorites(propertyId) {
     return getFavorites().indexOf(parseInt(propertyId, 10)) !== -1;
 }
 
+/** Одно превью для списков (каталог и т.д.): main_image или первое из gallery_images. */
+function getPropertyCardPreviewImage(property) {
+    if (!property) return null;
+    if (property.main_image) return property.main_image;
+    if (property.gallery_images && property.gallery_images.length) return property.gallery_images[0];
+    return null;
+}
+
 function createPropertyCard(property) {
     var ic = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
 
     const propertyTypes = {
-        cottage: "Коттедж",
-        hotel: "Отель",
-        guest_house: "Гостевой дом",
-        glamping: "Глэмпинг",
-        eco_house: "Эко-дом"
+        cottage: 'Коттедж',
+        hotel: 'Отель',
+        guest_house: 'Гостевой дом',
+        glamping: 'Глэмпинг',
+        eco_house: 'Эко-дом'
     };
 
     const typeLabel = propertyTypes[property.property_type] || property.property_type;
@@ -28,25 +36,33 @@ function createPropertyCard(property) {
     const reviewsCount = property.reviews_count || 0;
     const inFavorites = isPropertyInFavorites(property.id);
     const favClass = inFavorites ? ' property-card-favorite-in-favorites' : '';
+    const previewSrc = getPropertyCardPreviewImage(property);
 
-    const ratingMarkup = rating > 0 ? `
+    const ratingMarkup =
+        rating > 0
+            ? `
         <div class="property-card-rating property-card-rating--overlay" aria-label="Рейтинг ${rating}">
             ${ic('star-filled', 14, 14, { className: 'property-card-rating-star' })}
             <span class="property-card-rating-value">${rating}</span>
             <span class="property-card-rating-count">(${reviewsCount})</span>
         </div>
-    ` : '';
+    `
+            : '';
 
     return `
         <a href="property.html?id=${property.id}" class="property-card">
             <div class="property-card-image">
-                ${property.main_image ? `
-                    <img src="${property.main_image}" alt="${property.title}">
-                ` : `
+                ${
+                    previewSrc
+                        ? `
+                    <img src="${previewSrc}" alt="${property.title}">
+                `
+                        : `
                     <div class="property-card-image-placeholder" aria-hidden="true">
                         ${ic('image', 24, 24, { className: 'property-card-placeholder-icon', strokeWidth: 1.5 })}
                     </div>
-                `}
+                `
+                }
                 ${ratingMarkup}
                 <button type="button" class="property-card-favorite${favClass}" aria-label="В избранное" data-property-id="${property.id}" onclick="event.preventDefault(); event.stopPropagation(); togglePropertyFavorite(this);">
                     ${ic('heart', 24, 24, { fill: inFavorites ? 'currentColor' : 'none' })}
@@ -67,9 +83,13 @@ function createPropertyCard(property) {
                             ${ic('users', 24, 24)}
                             <span>до ${property.max_guests} гостей</span>
                         </div>
-                        ${property.bedrooms ? `
+                        ${
+                            property.bedrooms
+                                ? `
                             <span class="property-card-detail">${property.bedrooms} спален</span>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                     </div>
                     <div class="property-card-price property-card-price--inline">
                         <span class="property-card-price-amount">${price}</span>
@@ -82,9 +102,82 @@ function createPropertyCard(property) {
     `;
 }
 
+/** Кабинет владельца: та же вёрстка, без избранного; Просмотр + Удалить вместо «Подробнее». */
+function createOwnerPropertyCard(property) {
+    var ic = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
+
+    const price = property.price_per_night ? formatNumber(property.price_per_night) : '0';
+    const rating = property.rating || 0;
+    const reviewsCount = property.reviews_count || 0;
+    const previewSrc = getPropertyCardPreviewImage(property);
+
+    const ratingMarkup =
+        rating > 0
+            ? `
+        <div class="property-card-rating property-card-rating--overlay" aria-label="Рейтинг ${rating}">
+            ${ic('star-filled', 14, 14, { className: 'property-card-rating-star' })}
+            <span class="property-card-rating-value">${rating}</span>
+            <span class="property-card-rating-count">(${reviewsCount})</span>
+        </div>
+    `
+            : '';
+
+    return `
+        <div class="property-card property-card--owner" data-property-id="${property.id}">
+            <div class="property-card-image">
+                ${
+                    previewSrc
+                        ? `
+                    <img src="${previewSrc}" alt="${property.title}">
+                `
+                        : `
+                    <div class="property-card-image-placeholder" aria-hidden="true">
+                        ${ic('image', 24, 24, { className: 'property-card-placeholder-icon', strokeWidth: 1.5 })}
+                    </div>
+                `
+                }
+                ${ratingMarkup}
+            </div>
+
+            <div class="property-card-content">
+                <h3 class="property-card-title">${property.title}</h3>
+
+                <div class="property-card-location">
+                    ${ic('map-pin', 24, 24)}
+                    <span class="property-card-location-text">${property.region}</span>
+                </div>
+
+                <div class="property-card-details">
+                    <div class="property-card-details-left">
+                        <div class="property-card-detail">
+                            ${ic('users', 24, 24)}
+                            <span>до ${property.max_guests} гостей</span>
+                        </div>
+                        ${
+                            property.bedrooms
+                                ? `
+                            <span class="property-card-detail">${property.bedrooms} спален</span>
+                        `
+                                : ''
+                        }
+                    </div>
+                    <div class="property-card-price property-card-price--inline">
+                        <span class="property-card-price-amount">${price}</span>
+                        <span class="property-card-price-unit">/ночь</span>
+                    </div>
+                </div>
+                <div class="property-card-owner-actions">
+                    <a href="property.html?id=${property.id}" class="property-card-more">Просмотр</a>
+                    <button type="button" class="property-card-delete" data-property-id="${property.id}">Удалить</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function renderPropertyCards(container, properties) {
     if (!container) return;
-    
+
     if (properties.length === 0) {
         container.innerHTML = `
             <div class="text-center" style="grid-column: 1 / -1; padding: 5rem 0;">
@@ -101,7 +194,7 @@ function renderPropertyCards(container, properties) {
         `;
         return;
     }
-    
+
     container.innerHTML = properties.map(createPropertyCard).join('');
 }
 
@@ -131,11 +224,11 @@ function togglePropertyFavorite(buttonEl) {
     }
 }
 
-// Export for use in other files
 if (typeof window !== 'undefined') {
     window.createPropertyCard = createPropertyCard;
+    window.createOwnerPropertyCard = createOwnerPropertyCard;
     window.renderPropertyCards = renderPropertyCards;
     window.togglePropertyFavorite = togglePropertyFavorite;
     window.getFavorites = getFavorites;
+    window.getPropertyCardPreviewImage = getPropertyCardPreviewImage;
 }
-

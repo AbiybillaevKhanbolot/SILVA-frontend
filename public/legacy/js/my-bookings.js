@@ -145,9 +145,17 @@
 
         listEl.innerHTML = bookings
             .map(function (b) {
-                var completed = isPastStay(b.checkOut);
-                var statusClass = completed ? 'booking-status--completed' : 'booking-status--confirmed';
-                var statusText = completed ? 'Завершено' : 'Подтверждено';
+                var st = b.status === 'confirmed' || b.status === 'cancelled' || b.status === 'pending' ? b.status : 'pending';
+                var completed = st === 'confirmed' && isPastStay(b.checkOut);
+                var statusClass = 'booking-status--pending';
+                var statusText = 'В процессе';
+                if (st === 'cancelled') {
+                    statusClass = 'booking-status--cancelled';
+                    statusText = 'Отменено';
+                } else if (st === 'confirmed') {
+                    statusClass = completed ? 'booking-status--completed' : 'booking-status--confirmed';
+                    statusText = completed ? 'Завершено' : 'Подтверждено';
+                }
                 var img =
                     b.mainImage ?
                         '<img src="' +
@@ -190,8 +198,8 @@
                     '<div class="booking-actions">' +
                     '<a href="property.html?id=' +
                     encodeURIComponent(b.propertyId) +
-                    '" class="btn btn-ghost" style="font-size:0.875rem;padding:0.35rem 0.75rem;">Объект</a>' +
-                    '<button type="button" class="btn-text-danger booking-cancel-btn" data-id="' +
+                    '" class="btn booking-card-property-btn">Объект</a>' +
+                    '<button type="button" class="booking-cancel-btn" data-id="' +
                     String(b.id).replace(/"/g, '') +
                     '">Отменить бронирование</button>' +
                     '</div></div>' +
