@@ -185,8 +185,18 @@
         var saved;
         if (payload.id) {
             var upd = await sb.from('properties').update(propertyPatch).eq('id', payload.id).select('id').single();
-            if (upd.error) throw upd.error;
-            saved = upd.data;
+            if (upd.error) {
+                // If record with this id does not exist (old local id), create new one.
+                if (String(upd.error.code || '') === 'PGRST116') {
+                    var insFallback = await sb.from('properties').insert(propertyPatch).select('id').single();
+                    if (insFallback.error) throw insFallback.error;
+                    saved = insFallback.data;
+                } else {
+                    throw upd.error;
+                }
+            } else {
+                saved = upd.data;
+            }
         } else {
             var ins = await sb.from('properties').insert(propertyPatch).select('id').single();
             if (ins.error) throw ins.error;

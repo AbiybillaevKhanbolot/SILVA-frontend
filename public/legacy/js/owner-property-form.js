@@ -657,9 +657,11 @@
                         var newId = await window.silvaSupabaseAuth.saveOwnerProperty(listing);
                         listing.id = Number(newId);
                     } catch (err) {
+                        var errMessage = err && err.message ? String(err.message) : '';
                         showBanner(
                             banner,
-                            'Не удалось сохранить объект. Проверьте данные и попробуйте снова.',
+                            'Не удалось сохранить объект. ' +
+                                (errMessage ? 'Причина: ' + errMessage : 'Проверьте данные и попробуйте снова.'),
                             true
                         );
                         return;
