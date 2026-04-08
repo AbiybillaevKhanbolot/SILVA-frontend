@@ -137,6 +137,12 @@
         return match ? match[1] : null;
     }
 
+    function isUuid(value) {
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            String(value || '')
+        );
+    }
+
     async function fetchPropertiesCache() {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
@@ -229,7 +235,7 @@
             }
         }
         var saved;
-        if (payload.id) {
+        if (payload.id && isUuid(payload.id)) {
             var upd = await runSave(function (patch) {
                 return sb.from('properties').update(patch).eq('id', payload.id).select('id').single();
             });
