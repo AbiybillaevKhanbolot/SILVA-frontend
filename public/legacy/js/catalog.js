@@ -21,6 +21,67 @@ document.addEventListener('DOMContentLoaded', function() {
         guests: 1,
         amenities: []
     };
+    let smartSearch = null;
+
+    function parseSmartSearchParams() {
+        const params = new URLSearchParams(window.location.search || '');
+        if (params.get('smart') !== '1') return null;
+        const adults = Math.max(1, parseInt(params.get('adults') || '2', 10) || 2);
+        const children = Math.max(0, parseInt(params.get('children') || '0', 10) || 0);
+        const guests = Math.max(1, parseInt(params.get('guests') || String(adults + children), 10) || (adults + children));
+        const region = String(params.get('region') || '').trim();
+        const checkin = String(params.get('checkin') || '').trim();
+        const checkout = String(params.get('checkout') || '').trim();
+        return { adults, children, guests, region, checkin, checkout, enabled: true };
+    }
+
+    function smartScoreProperty(property, profile) {
+        let score = 0;
+        const pRegion = String((property && property.region) || '').trim().toLowerCase();
+        const qRegion = String((profile && profile.region) || '').trim().toLowerCase();
+        const maxGuests = Number(property && property.max_guests) || 0;
+        const requiredGuests = Number(profile && profile.guests) || 1;
+        const rating = Number(property && property.rating) || 0;
+        const reviewsCount = Number(property && property.reviews_count) || 0;
+        const price = Number(property && property.price_per_night) || 0;
+        const amenities = Array.isArray(property && property.amenities) ? property.amenities.map(function (a) { return String(a).toLowerCase(); }) : [];
+
+        // Район — главный фактор
+        if (qRegion) {
+            if (pRegion === qRegion) score += 55;
+            else if (pRegion.indexOf(qRegion) !== -1 || qRegion.indexOf(pRegion) !== -1) score += 28;
+        } else {
+            score += 10;
+        }
+
+        // Вместимость — обязательно, но с приоритетом близкого совпадения
+        if (maxGuests >= requiredGuests) {
+            score += 28;
+            const spare = maxGuests - requiredGuests;
+            score += Math.max(0, 12 - spare * 2);
+        } else {
+            score -= 120;
+        }
+
+        // Для детей мягко повышаем объекты с полезными удобствами
+        if ((profile && profile.children || 0) > 0) {
+            if (amenities.indexOf('kitchen') !== -1) score += 6;
+            if (amenities.indexOf('wifi') !== -1) score += 3;
+            if (amenities.indexOf('parking') !== -1) score += 2;
+        }
+
+        // Качество и популярность
+        score += Math.max(0, Math.min(25, rating * 5));
+        score += Math.min(12, Math.log10(reviewsCount + 1) * 6);
+
+        // Цена: небольшое преимущество более доступным вариантам
+        if (price > 0) {
+            const priceBonus = Math.max(0, 12 - price / 3000);
+            score += priceBonus;
+        }
+
+        return score;
+    }
     
     // Initialize filters UI
     function initFilters() {
@@ -224,11 +285,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function filterProperties() {
-        const filtered = mockAPI.getProperties(filters);
+        let filtered = mockAPI.getProperties(filters);
+        if (smartSearch && smartSearch.enabled) {
+            filtered = filtered
+                .map(function (p) {
+                    return { item: p, score: smartScoreProperty(p, smartSearch) };
+                })
+                .sort(function (a, b) {
+                    if (b.score !== a.score) return b.score - a.score;
+                    const br = Number(b.item && b.item.rating) || 0;
+                    const ar = Number(a.item && a.item.rating) || 0;
+                    if (br !== ar) return br - ar;
+                    return (Number(a.item && a.item.price_per_night) || 0) - (Number(b.item && b.item.price_per_night) || 0);
+                })
+                .map(function (x) { return x.item; });
+        }
         renderPropertyCards(propertiesContainer, filtered);
         
         if (resultsCount) {
-            resultsCount.innerHTML = `Найдено <strong>${filtered.length}</strong> объектов`;
+            resultsCount.innerHTML = smartSearch && smartSearch.enabled
+                ? `Подобрано <strong>${filtered.length}</strong> подходящих объектов`
+                : `Найдено <strong>${filtered.length}</strong> объектов`;
         }
     }
     
@@ -341,7 +418,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initial load
+    smartSearch = parseSmartSearchParams();
+    if (smartSearch) {
+        filters.guests = smartSearch.guests;
+        if (smartSearch.region) filters.region = smartSearch.region;
+    }
+    if (regionSelect && filters.region) regionSelect.value = filters.region;
     initFilters();
     filterProperties();
+    updateActiveFilters();
 });
 
