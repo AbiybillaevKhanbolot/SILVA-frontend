@@ -1,5 +1,5 @@
 /**
- * Личный кабинет: просмотр, модальное редактирование, аватар (data URL в silva_user.avatar)
+ * Личный кабинет: просмотр и редактирование профиля с синхронизацией в Supabase.
  */
 (function () {
     'use strict';
@@ -11,9 +11,30 @@
         { name: 'Дерево', key: 'tree', points: 7000, discount: 10, icon: '🌲', short: 'Максимальная скидка и VIP-поддержка.', benefits: ['Скидка 10%', 'Гарантия лучшей цены', 'VIP-поддержка 24/7'] }
     ];
 
+    function getCurrentUserEmail() {
+        try {
+            var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            return (u && u.email ? String(u.email) : '').trim().toLowerCase();
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function loyaltyPointsKey() {
+        var email = getCurrentUserEmail();
+        return email ? 'silva_loyalty_points_' + email : 'silva_loyalty_points';
+    }
+
+    function personalBookingsKey() {
+        var email = getCurrentUserEmail();
+        return email ? 'silva_bookings_' + email : 'silva_bookings';
+    }
+
     function getLoyaltyPoints() {
         try {
-            var raw = localStorage.getItem('silva_loyalty_points');
+            var bookings = JSON.parse(localStorage.getItem(personalBookingsKey()) || '[]');
+            if (!Array.isArray(bookings) || bookings.length === 0) return 0;
+            var raw = localStorage.getItem(loyaltyPointsKey());
             if (raw !== null && raw !== '') return parseInt(raw, 10) || 0;
         } catch (e) {}
         return 0;
@@ -250,11 +271,13 @@
     }
 
     var modalAvatarDataUrl = null;
+    var modalAvatarFile = null;
     var modalAvatarRemoved = false;
 
     function openModal() {
         var u = loadUser();
         modalAvatarDataUrl = u.avatar || null;
+        modalAvatarFile = null;
         modalAvatarRemoved = false;
 
         document.getElementById('modal-name').value = u.name || '';
@@ -335,7 +358,12 @@
         r.readAsDataURL(file);
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', async function () {
+        if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.syncLocalUserFromSupabase === 'function') {
+            try {
+                await window.silvaSupabaseAuth.syncLocalUserFromSupabase();
+            } catch (e) {}
+        }
         if (!localStorage.getItem('silva_user')) {
             window.location.href = 'login.html';
             return;
@@ -381,6 +409,7 @@
             if (!f) return;
             readFileAsDataURL(f, function (url) {
                 if (url) {
+                    modalAvatarFile = f;
                     modalAvatarDataUrl = url;
                     modalAvatarRemoved = false;
                     updateModalPhotoUI();
@@ -390,13 +419,20 @@
         });
 
         document.getElementById('modal-btn-remove-photo').addEventListener('click', function () {
+            modalAvatarFile = null;
             modalAvatarDataUrl = null;
             modalAvatarRemoved = true;
             updateModalPhotoUI();
         });
 
-        document.getElementById('profile-modal-form').addEventListener('submit', function (e) {
+        document.getElementById('profile-modal-form').addEventListener('submit', async function (e) {
             e.preventDefault();
+            var submitBtn = this.querySelector('button[type="submit"]');
+            var originalBtnText = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Сохранение...';
+            }
             var prev = loadUser();
             var next = Object.assign({}, prev, {
                 name: document.getElementById('modal-name').value.trim(),
@@ -405,27 +441,49 @@
                 newsletter: document.getElementById('modal-newsletter').checked
             });
 
-            if (modalAvatarRemoved) {
-                delete next.avatar;
-            } else if (modalAvatarDataUrl) {
-                next.avatar = modalAvatarDataUrl;
-            } else {
-                delete next.avatar;
-            }
+            try {
+                var supabase = window.silvaSupabaseAuth;
+                if (supabase) {
+                    var avatarUrl;
+                    if (modalAvatarRemoved) {
+                        avatarUrl = null;
+                    } else if (modalAvatarFile) {
+                        avatarUrl = await supabase.uploadAvatar(modalAvatarFile);
+                    } else if (modalAvatarDataUrl && /^https?:\/\//.test(modalAvatarDataUrl)) {
+                        avatarUrl = modalAvatarDataUrl;
+                    }
+                    var saved = await supabase.saveProfile({
+                        name: next.name,
+                        email: next.email,
+                        phone: next.phone,
+                        newsletter: next.newsletter,
+                        avatarUrl: avatarUrl
+                    });
+                    if (saved) {
+                        next = Object.assign({}, next, saved);
+                    }
+                }
+                saveUser(next);
+                closeModal();
 
-            saveUser(next);
-            closeModal();
-
-            var banner = document.getElementById('profile-saved');
-            if (banner) {
-                banner.style.display = 'flex';
-                setTimeout(function () {
-                    banner.style.display = 'none';
-                }, 4000);
+                var banner = document.getElementById('profile-saved');
+                if (banner) {
+                    banner.style.display = 'flex';
+                    setTimeout(function () {
+                        banner.style.display = 'none';
+                    }, 4000);
+                }
+                if (typeof initHeader === 'function') initHeader();
+                refreshPage();
+                if (typeof SilvaIcons !== 'undefined' && SilvaIcons.hydrate) SilvaIcons.hydrate(document);
+            } catch (err) {
+                alert(err && err.message ? err.message : 'Не удалось сохранить профиль.');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText || 'Сохранить';
+                }
             }
-            if (typeof initHeader === 'function') initHeader();
-            refreshPage();
-            if (typeof SilvaIcons !== 'undefined' && SilvaIcons.hydrate) SilvaIcons.hydrate(document);
         });
 
         document.addEventListener('keydown', function (e) {
