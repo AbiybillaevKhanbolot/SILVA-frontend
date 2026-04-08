@@ -119,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
                       escapeHtml(r.hotelResponse) +
                       '</p>'
                     : '';
+                var replyBtnText = r.hotelResponse ? 'Редактировать ответ' : 'Ответить';
 
                 block +=
                     '<div class="owner-review-item" data-property-id="' +
@@ -147,7 +148,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     pid +
                     '" data-review-id="' +
                     escapeHtml(rid) +
-                    '">Ответить</button>' +
+                    '">' +
+                    replyBtnText +
+                    '</button>' +
                     '</div>' +
                     '</div>' +
                     '<p class="review-snippet">' +
@@ -198,9 +201,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function saveReply() {
+    async function saveReply() {
         if (pendingPid == null || pendingRid == null) return;
         var text = modalText ? modalText.value.trim() : '';
+        if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.syncLocalUserFromSupabase === 'function') {
+            try {
+                await window.silvaSupabaseAuth.syncLocalUserFromSupabase();
+            } catch (e) {}
+        }
         mockAPI.updateReviewHotelResponse(pendingPid, pendingRid, text);
         closeModal();
         render();
