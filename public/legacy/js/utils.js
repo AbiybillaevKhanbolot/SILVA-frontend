@@ -128,162 +128,10 @@ const SPB_DISTRICTS = [
 
 // Mock API - Replace with actual base44 API calls
 const mockAPI = {
-    properties: [
-        {
-            id: 1,
-            title: 'Уютный коттедж в Приморском районе',
-            region: 'Приморский',
-            property_type: 'cottage',
-            price_per_night: 5000,
-            max_guests: 6,
-            bedrooms: 3,
-            bathrooms: 2,
-            area: 120,
-            rating: 4.8,
-            reviews_count: 24,
-            main_image: 'images/1card.png',
-            gallery_images: ['images/1card.png', 'images/2card.jpg', 'images/3card.jpg'],
-            eco_certified: true,
-            is_featured: true,
-            description: 'Просторный коттедж с панорамными окнами и террасой. Идеален для семейного отдыха. Полностью оборудованная кухня, камин, сауна. Тихое место в 15 минутах от метро.\n\nВ доме три спальни, две ванные комнаты, гостиная-кухня и терраса с мангалом. Бесплатный Wi-Fi на всей территории. Дети приветствуются, предоставляем детскую кроватку по запросу.',
-            amenities: ['wifi', 'parking', 'transfer', 'children', 'kitchen', 'pool', 'pets', 'sauna'],
-            conditions: ['Заезд с 14:00', 'Выезд до 12:00', 'Нельзя с животными без согласования', 'Тихие часы с 23:00 до 8:00'],
-            extra_info: ['Расстояние до метро: 15 мин на машине', 'Трансфер от/до аэропорта по запросу', 'Экскурсии можно заказать на ресепшене'],
-            visa_info: 'Для граждан РФ виза не требуется. Иностранным гостям необходимо иметь действующую визу или безвизовый въезд согласно законодательству РФ.',
-            map_lat: 60.0125,
-            map_lng: 30.2583
-        },
-        {
-            id: 2,
-            title: 'Глэмпинг в Курортном районе',
-            region: 'Курортный',
-            property_type: 'glamping',
-            price_per_night: 8000,
-            max_guests: 4,
-            bedrooms: 1,
-            bathrooms: 1,
-            area: 45,
-            rating: 4.9,
-            reviews_count: 18,
-            main_image: 'images/2card.jpg',
-            gallery_images: ['images/2card.jpg', 'images/3card.jpg', 'images/1card.png'],
-            eco_certified: true,
-            is_featured: true,
-            description: 'Уединённый глэмпинг с видом на лес. Панорамные окна, комфортная кровать, душ и туалет в номере. Завтрак доставляется в домик. Идеально для романтического отдыха и любителей природы.',
-            amenities: ['wifi', 'parking', 'children', 'kitchen', 'pets'],
-            conditions: ['Заезд с 15:00', 'Выезд до 11:00', 'Курение только на улице'],
-            extra_info: ['Завтрак включён', 'Прокат велосипедов на территории'],
-            visa_info: 'Для граждан РФ виза не требуется.',
-            map_lat: 60.1586,
-            map_lng: 29.9086
-        },
-        {
-            id: 3,
-            title: 'Эко-дом в Пушкинском районе',
-            region: 'Пушкинский',
-            property_type: 'eco_house',
-            price_per_night: 6000,
-            max_guests: 8,
-            bedrooms: 4,
-            bathrooms: 3,
-            area: 180,
-            rating: 4.7,
-            reviews_count: 31,
-            main_image: 'images/3card.jpg',
-            gallery_images: ['images/3card.jpg', 'images/1card.png', 'images/2card.jpg'],
-            eco_certified: true,
-            is_featured: true,
-            description: 'Большой эко-дом из натуральных материалов. Солнечные батареи, система сбора дождевой воды. Четыре спальни, три ванные, кухня-гостиная и веранда. Подходит для больших компаний и семей с детьми. Рядом парк и конюшня.',
-            amenities: ['wifi', 'parking', 'transfer', 'children', 'kitchen', 'pool', 'pets'],
-            conditions: ['Заезд с 14:00', 'Выезд до 12:00', 'Раздельный сбор мусора', 'Тихие часы с 22:00'],
-            extra_info: ['Конюшня на территории', 'Экскурсии в Пушкин и Павловск'],
-            visa_info: 'Для граждан РФ виза не требуется. Иностранным гостям — действующая виза РФ.',
-            map_lat: 59.7234,
-            map_lng: 30.4092
-        },
-        {
-            id: 4,
-            title: 'Дом у воды в Петродворцовом районе',
-            region: 'Петродворцовый',
-            property_type: 'cottage',
-            price_per_night: 7000,
-            max_guests: 5,
-            bedrooms: 2,
-            bathrooms: 2,
-            area: 95,
-            rating: 4.6,
-            reviews_count: 15,
-            main_image: null,
-            eco_certified: false,
-            is_featured: false,
-            description: 'Дом на берегу залива с собственной пристанью. Две спальни, кухня, гостиная с камином. Можно арендовать лодку. Подходит для рыбаков и любителей водного отдыха.',
-            amenities: ['wifi', 'parking', 'children', 'kitchen'],
-            conditions: ['Заезд с 16:00', 'Выезд до 10:00', 'Дети под присмотром взрослых у воды'],
-            extra_info: ['Аренда лодки по запросу', 'Баня на дровах'],
-            visa_info: 'Для граждан РФ виза не требуется.',
-            map_lat: 59.8833,
-            map_lng: 29.9000
-        },
-        {
-            id: 5,
-            title: 'Отель в центре Петербурга',
-            region: 'Центральный',
-            property_type: 'hotel',
-            price_per_night: 12000,
-            max_guests: 2,
-            bedrooms: 1,
-            bathrooms: 1,
-            area: 28,
-            rating: 5.0,
-            reviews_count: 42,
-            main_image: null,
-            eco_certified: true,
-            is_featured: false,
-            description: 'Бутик-отель в историческом здании в центре города. Номера с дизайнерским ремонтом, кондиционер, мини-бар. Завтрак включён. Рядом Невский проспект, Эрмитаж, театры.',
-            amenities: ['wifi', 'parking', 'transfer', 'children', 'kitchen'],
-            conditions: ['Заезд с 14:00', 'Выезд до 12:00', 'Без курения'],
-            extra_info: ['Завтрак 8:00–11:00', 'Трансфер от вокзала по запросу'],
-            visa_info: 'Для въезда в РФ иностранным гостям необходима виза. Гражданам РФ виза не требуется.',
-            map_lat: 59.9343,
-            map_lng: 30.3356
-        },
-        {
-            id: 6,
-            title: 'Гостевой дом в Петроградском районе',
-            region: 'Петроградский',
-            property_type: 'guest_house',
-            price_per_night: 4500,
-            max_guests: 4,
-            bedrooms: 2,
-            bathrooms: 1,
-            area: 65,
-            rating: 4.5,
-            reviews_count: 28,
-            main_image: null,
-            eco_certified: true,
-            is_featured: false,
-            description: 'Уютный гостевой дом в тихом дворе. Две спальни, общая кухня и гостиная. Идеально для бюджетного проживания в городе. Метро в 7 минутах ходьбы.',
-            amenities: ['wifi', 'parking', 'children', 'kitchen'],
-            conditions: ['Заезд с 13:00', 'Выезд до 11:00', 'Общая кухня'],
-            extra_info: ['Сейф в номере', 'Прачечная за доплату'],
-            visa_info: 'Для граждан РФ виза не требуется.',
-            map_lat: 59.9656,
-            map_lng: 30.3112
-        }
-    ],
+    properties: [],
 
     // Mock reviews per property (merged with localStorage on get)
-    _reviewsByProperty: {
-        1: [
-            { id: 'r1', author: 'Анна', authorCountry: 'RU', stayType: 'отдых, пара', stayDate: 'февраль 2024 г.', roomInfo: 'Двухместный номер Стандарт, 2 ночи', rating: 9.6, ratingLabel: 'Превосходно', text: 'Отличное место для отдыха! Всё чисто, уютно, природа вокруг прекрасная. Очень понравилась кухня и терраса. Обязательно вернёмся.', textShort: true, helpfulYes: 2, helpfulNo: 0, hotelResponse: 'Спасибо за тёплые слова! Ждём снова.', photos: [], categories: { wifi: 8, cleanliness: 9, service: 10 } },
-            { id: 'r2', author: 'Иван', authorCountry: 'RU', stayType: 'семья', stayDate: 'январь 2024 г.', roomInfo: 'Коттедж целиком, 5 ночей', rating: 8.8, ratingLabel: 'Отлично', text: 'Хороший дом, но немного далеко от города. В остальном всё отлично — дети в восторге от сауны.', textShort: true, helpfulYes: 0, helpfulNo: 0, hotelResponse: null, photos: [], categories: { cleanliness: 9, service: 8 } }
-        ],
-        2: [],
-        3: [],
-        4: [],
-        5: [],
-        6: []
-    },
+    _reviewsByProperty: {},
 
     _getReviewsRaw: function(propertyId) {
         const id = parseInt(propertyId, 10);
@@ -316,7 +164,13 @@ const mockAPI = {
             const oid = String(r.id);
             const out = Object.assign({}, r);
             if (Object.prototype.hasOwnProperty.call(overrides, oid)) {
-                out.hotelResponse = overrides[oid];
+                var ov = overrides[oid];
+                if (ov && typeof ov === 'object') {
+                    out.hotelResponse = ov.text || '';
+                    out.hotelResponseAvatar = ov.ownerAvatar || null;
+                } else {
+                    out.hotelResponse = ov;
+                }
             }
             return out;
         });
@@ -331,6 +185,12 @@ const mockAPI = {
             return r && String(r.id) === rid;
         });
         if (!target) return false;
+        var ownerAvatar = null;
+        try {
+            var ownerRaw = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            ownerAvatar = ownerRaw && ownerRaw.avatar ? ownerRaw.avatar : null;
+        } catch (e) {}
+
         if (rid.indexOf('u') === 0) {
             try {
                 var stored = JSON.parse(localStorage.getItem('silva_reviews_' + id) || '[]');
@@ -340,12 +200,16 @@ const mockAPI = {
                 });
                 if (idx !== -1) {
                     stored[idx].hotelResponse = hotelResponse;
+                    stored[idx].hotelResponseAvatar = ownerAvatar;
                     localStorage.setItem('silva_reviews_' + id, JSON.stringify(stored));
                 }
             } catch (e) {}
         } else {
             var o = this.getReviewResponseOverrides(id);
-            o[rid] = hotelResponse;
+            o[rid] = {
+                text: hotelResponse,
+                ownerAvatar: ownerAvatar
+            };
             try {
                 localStorage.setItem('silva_review_responses_' + id, JSON.stringify(o));
             } catch (e) {}
@@ -402,7 +266,23 @@ const mockAPI = {
     },
 
     getFeaturedProperties: function() {
-        return this.properties.filter(p => p.is_featured).slice(0, 6);
+        const ownerList = this.getOwnerListingsFromStorage();
+        const published = ownerList.filter(function (p) {
+            return p && p.status === 'published';
+        });
+        const source = published.length ? published : ownerList;
+        return source
+            .slice()
+            .sort(function (a, b) {
+                var br = Number(b && b.rating) || 0;
+                var ar = Number(a && a.rating) || 0;
+                if (br !== ar) return br - ar;
+                var bc = Number(b && b.reviews_count) || 0;
+                var ac = Number(a && a.reviews_count) || 0;
+                if (bc !== ac) return bc - ac;
+                return (Number(b && b.id) || 0) - (Number(a && a.id) || 0);
+            })
+            .slice(0, 6);
     },
 
     getOwnerListingsFromStorage: function() {
@@ -429,18 +309,15 @@ const mockAPI = {
     getPropertyById: function(id) {
         const numId = parseInt(id, 10);
         if (isNaN(numId)) return null;
-        const base = this.properties.find(p => p.id === numId);
-        if (base) return base;
         const ownerList = this.getOwnerListingsFromStorage();
         return ownerList.find(p => Number(p.id) === numId) || null;
     },
 
     getProperties: function(filters = {}) {
-        const baseCatalog = this.properties.slice();
         const ownerPublished = this.getOwnerListingsFromStorage().filter(function (p) {
             return p.status === 'published';
         });
-        let result = baseCatalog.concat(ownerPublished);
+        let result = ownerPublished.slice();
         
         if (filters.region && filters.region !== 'Все регионы') {
             result = result.filter(p => p.region === filters.region);
