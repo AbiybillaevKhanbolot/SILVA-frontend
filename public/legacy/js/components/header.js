@@ -21,8 +21,16 @@ function silvaOpenLogoutConfirmModal() {
     document.body.style.overflow = 'hidden';
 }
 
-function silvaPerformLogout() {
-    localStorage.removeItem('silva_user');
+async function silvaPerformLogout() {
+    try {
+        if (window.silvaSupabaseAuth) {
+            await window.silvaSupabaseAuth.signOut();
+        } else {
+            localStorage.removeItem('silva_user');
+        }
+    } catch (e) {
+        localStorage.removeItem('silva_user');
+    }
     window.location.href = 'index.html';
 }
 
@@ -66,7 +74,12 @@ function initHeader() {
         } catch (e) { return {}; }
     }
 
-    function renderHeader() {
+    async function renderHeader() {
+        if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.syncLocalUserFromSupabase === 'function') {
+            try {
+                await window.silvaSupabaseAuth.syncLocalUserFromSupabase();
+            } catch (e) {}
+        }
         const loggedIn = isUserLoggedIn();
         const user = getUserData();
         const userName = user.name || 'Пользователь';
@@ -79,7 +92,17 @@ function initHeader() {
         const menuClass = '';
 
         const isOwner = user.role === 'owner';
+        const isAdmin = user.role === 'admin';
         const ic = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
+        const profileHref = isAdmin ? 'admin.html' : 'profile.html';
+        const profileLabel = isAdmin ? 'Админ-панель' : 'Личный кабинет';
+        const adminLinksHtml = isAdmin
+            ? `
+                                <a href="admin.html" class="header-dropdown-link">
+                                    ${ic('shield-check', 18, 18)}
+                                    Панель администратора
+                                </a>`
+            : '';
         const ownerLinksHtml = isOwner
             ? `
                                 <a href="owner-dashboard.html" class="header-dropdown-link">
@@ -87,7 +110,7 @@ function initHeader() {
                                     Панель владельца
                                 </a>`
             : '';
-        const guestLinksHtml = !isOwner
+        const guestLinksHtml = !isOwner && !isAdmin
             ? `
                                 <a href="my-bookings.html" class="header-dropdown-link">
                                     ${ic('calendar-days', 18, 18)}
@@ -98,8 +121,17 @@ function initHeader() {
                                     Избранное
                                 </a>`
             : '';
+        const adminAuthHtml = `
+                        <div class="header-auth-buttons">
+                            <a href="admin.html" class="header-auth-link header-auth-link-primary">Админ-панель</a>
+                            <button type="button" class="header-auth-link" id="header-logout-btn">Выйти</button>
+                        </div>`;
         const authHtml = loggedIn
             ? `
+                        ${
+                            isAdmin
+                                ? adminAuthHtml
+                                : `
                         <div class="header-user-menu" id="header-user-menu">
                             <button type="button" class="header-user-btn ${userClass}" id="header-profile-btn" aria-haspopup="true" aria-expanded="false">
                                 ${ic('user-round', 20, 20)}
@@ -111,12 +143,13 @@ function initHeader() {
                                     <div class="header-dropdown-email">${userEmail}</div>
                                 </div>
                                 <div class="header-dropdown-divider"></div>
-                                <a href="profile.html" class="header-dropdown-link">
+                                <a href="${profileHref}" class="header-dropdown-link">
                                     ${ic('circle-user', 18, 18)}
-                                    Личный кабинет
+                                    ${profileLabel}
                                 </a>
                                 ${guestLinksHtml}
                                 ${ownerLinksHtml}
+                                ${adminLinksHtml}
                                 <div class="header-dropdown-divider"></div>
                                 <button type="button" class="header-dropdown-logout" id="header-logout-btn">
                                     ${ic('log-out', 18, 18)}
@@ -124,6 +157,8 @@ function initHeader() {
                                 </button>
                             </div>
                         </div>`
+                        } 
+            `
             : `
                         <div class="header-auth-buttons">
                             <a href="login.html" class="header-auth-link">Вход</a>
@@ -170,9 +205,11 @@ function initHeader() {
                         <a href="loyalty.html" class="mobile-menu-link${navActive === 'loyalty' ? ' mobile-menu-link--active' : ''}"${navActive === 'loyalty' ? ' aria-current="page"' : ''}>Виртуальный сад</a>
                     </div>
                     <div class="mobile-menu-auth">${loggedIn
-                        ? (isOwner
-                            ? '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="owner-dashboard.html" class="mobile-menu-link">Панель владельца</a>'
-                            : '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>')
+                        ? (isAdmin
+                            ? '<a href="admin.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Админ-панель</a>'
+                            : (isOwner
+                                ? '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="owner-dashboard.html" class="mobile-menu-link">Панель владельца</a>'
+                                : '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>'))
                         : '<a href="login.html" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="register.html" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
                     }</div>
                 </div>
@@ -244,6 +281,12 @@ function initHeader() {
                     silvaOpenLogoutConfirmModal();
                 });
             }
+        }
+        if (logoutBtn && !profileBtn) {
+            logoutBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                silvaOpenLogoutConfirmModal();
+            });
         }
 
         if (logoutModal) {
