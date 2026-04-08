@@ -580,7 +580,16 @@
                         ? Number(existing.id)
                         : mockAPI.nextOwnerPropertyId();
                 var addr = (fd.get('address') || '').trim();
+                var titleVal = (fd.get('title') || '').trim();
                 var regionVal = (fd.get('region') || '').toString();
+                if (!titleVal) {
+                    showBanner(banner, 'Укажите название объекта.', true);
+                    return;
+                }
+                if (!addr) {
+                    showBanner(banner, 'Укажите точный адрес объекта.', true);
+                    return;
+                }
                 var fallbackLat =
                     existing && existing.map_lat != null && !isNaN(Number(existing.map_lat))
                         ? Number(existing.map_lat)
@@ -593,7 +602,7 @@
                 var listing = {
                     id: idNum,
                     ownerEmail: email,
-                    title: (fd.get('title') || '').trim(),
+                    title: titleVal,
                     address: addr,
                     region: fd.get('region'),
                     property_type: fd.get('property_type'),
