@@ -251,6 +251,7 @@
 
     function initOwnerPropertyForm(root) {
         var email = typeof getOwnerUserEmail === 'function' ? getOwnerUserEmail() : '';
+        var verifiedOwner = typeof isOwnerVerified === 'function' ? isOwnerVerified() : false;
         if (!email || typeof mockAPI === 'undefined') return;
 
         function $(id) {
@@ -287,7 +288,7 @@
                 eco_certified: false,
                 is_featured: false,
                 is_owner_listing: true,
-                status: 'draft',
+                status: verifiedOwner ? 'published' : 'draft',
                 description: '',
                 amenities: ['wifi'],
                 conditions: ['Заезд с 14:00', 'Выезд до 12:00'],
@@ -598,7 +599,12 @@
                     eco_certified: $('op-eco').checked,
                     is_featured: false,
                     is_owner_listing: true,
-                    status: fd.get('status') === 'published' ? 'published' : 'draft',
+                    status:
+                        !idParam && verifiedOwner
+                            ? 'published'
+                            : fd.get('status') === 'published'
+                              ? 'published'
+                              : 'draft',
                     description: (fd.get('description') || '').trim(),
                     amenities: collectAmenities(),
                     conditions: (function () {

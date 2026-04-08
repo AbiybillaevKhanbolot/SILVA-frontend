@@ -436,20 +436,11 @@ const mockAPI = {
     },
 
     getProperties: function(filters = {}) {
+        const baseCatalog = this.properties.slice();
         const ownerPublished = this.getOwnerListingsFromStorage().filter(function (p) {
             return p.status === 'published';
         });
-        let result = ownerPublished.slice();
-        try {
-            const u = JSON.parse(localStorage.getItem('silva_user') || '{}');
-            if (u && u.role === 'owner' && u.email) {
-                result = result.filter(function (p) {
-                    return p.ownerEmail === u.email;
-                });
-            }
-        } catch (e) {
-            /* ignore */
-        }
+        let result = baseCatalog.concat(ownerPublished);
         
         if (filters.region && filters.region !== 'Все регионы') {
             result = result.filter(p => p.region === filters.region);
