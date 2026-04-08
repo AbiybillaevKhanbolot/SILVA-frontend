@@ -131,10 +131,10 @@
         };
     }
 
-    function isUuid(value) {
-        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-            String(value || '')
-        );
+    function toPropertyId(value) {
+        var id = Number(value);
+        if (!isFinite(id) || id <= 0) return null;
+        return Math.floor(id);
     }
 
     async function fetchPropertiesCache() {
@@ -189,8 +189,9 @@
             reviews_count: Number(payload.reviews_count) || 0
         };
         var saved;
-        if (payload.id && isUuid(payload.id)) {
-            var upd = await sb.from('properties').update(propertyPatch).eq('id', payload.id).select('id').single();
+        var existingId = toPropertyId(payload.id);
+        if (existingId != null) {
+            var upd = await sb.from('properties').update(propertyPatch).eq('id', existingId).select('id').single();
             if (upd.error) {
                 // If record with this id does not exist (old local id), create new one.
                 if (String(upd.error.code || '') === 'PGRST116') {

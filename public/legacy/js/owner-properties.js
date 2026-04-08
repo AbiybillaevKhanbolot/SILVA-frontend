@@ -70,15 +70,19 @@ document.addEventListener('DOMContentLoaded', async function () {
             if (e.target === modal) closeDeleteModal();
         });
         if (bok) {
-            bok.addEventListener('click', function () {
+            bok.addEventListener('click', async function () {
                 var id = pendingDeleteId;
                 closeDeleteModal();
                 if (id == null || typeof mockAPI === 'undefined') return;
-                var all = mockAPI.getOwnerListingsFromStorage();
-                var next = all.filter(function (x) {
-                    return String(x.id) !== String(id);
-                });
-                mockAPI.saveOwnerListingsToStorage(next);
+                try {
+                    if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.deleteOwnerProperty !== 'function') {
+                        throw new Error('Supabase не подключен для удаления объекта.');
+                    }
+                    await window.silvaSupabaseAuth.deleteOwnerProperty(id);
+                } catch (err) {
+                    alert(err && err.message ? err.message : 'Не удалось удалить объект.');
+                    return;
+                }
                 render();
             });
         }
