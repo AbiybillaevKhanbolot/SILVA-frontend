@@ -156,19 +156,16 @@
         var optionalColumns = ['rating', 'reviews_count'];
         var columns = baseColumns.concat(optionalColumns);
 
-        var q = await sb
-            .from('properties')
-            .select(columns.join(', '))
-            .order('created_at', { ascending: false });
-        if (q.error) {
+        var q;
+        while (true) {
+            q = await sb
+                .from('properties')
+                .select(columns.join(', '))
+                .order('created_at', { ascending: false });
+            if (!q.error) break;
             var missingCol = parseMissingColumn(q.error);
-            if (missingCol && optionalColumns.indexOf(missingCol) !== -1) {
-                columns = columns.filter(function (c) { return c !== missingCol; });
-                q = await sb
-                    .from('properties')
-                    .select(columns.join(', '))
-                    .order('created_at', { ascending: false });
-            }
+            if (!missingCol || optionalColumns.indexOf(missingCol) === -1) break;
+            columns = columns.filter(function (c) { return c !== missingCol; });
         }
         if (q.error) throw q.error;
         var rows = q.data || [];
@@ -216,15 +213,20 @@
         };
         var optionalPatchKeys = ['rating', 'reviews_count'];
         async function runSave(action) {
-            var res = await action(propertyPatch);
-            if (res.error) {
+            var res;
+            while (true) {
+                res = await action(propertyPatch);
+                if (!res.error) return res;
                 var missingCol = parseMissingColumn(res.error);
-                if (missingCol && optionalPatchKeys.indexOf(missingCol) !== -1 && Object.prototype.hasOwnProperty.call(propertyPatch, missingCol)) {
-                    delete propertyPatch[missingCol];
-                    res = await action(propertyPatch);
+                if (
+                    !missingCol ||
+                    optionalPatchKeys.indexOf(missingCol) === -1 ||
+                    !Object.prototype.hasOwnProperty.call(propertyPatch, missingCol)
+                ) {
+                    return res;
                 }
+                delete propertyPatch[missingCol];
             }
-            return res;
         }
         var saved;
         if (payload.id) {
