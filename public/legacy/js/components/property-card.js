@@ -1,7 +1,21 @@
+function getCurrentUserEmailForFavorites() {
+    try {
+        var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+        return (u && u.email ? String(u.email) : '').trim().toLowerCase();
+    } catch (e) {
+        return '';
+    }
+}
+
+function getFavoritesStorageKey() {
+    var email = getCurrentUserEmailForFavorites();
+    return email ? 'silva_favorites_' + email : 'silva_favorites';
+}
+
 // Property Card Component
 function getFavorites() {
     try {
-        return JSON.parse(localStorage.getItem('silva_favorites') || '[]');
+        return JSON.parse(localStorage.getItem(getFavoritesStorageKey()) || '[]');
     } catch (e) {
         return [];
     }
@@ -213,7 +227,7 @@ function togglePropertyFavorite(buttonEl) {
         favorites.splice(idx, 1);
     }
     try {
-        localStorage.setItem('silva_favorites', JSON.stringify(favorites));
+        localStorage.setItem(getFavoritesStorageKey(), JSON.stringify(favorites));
     } catch (e) {}
     var nowInFav = favorites.indexOf(id) !== -1;
     buttonEl.classList.toggle('property-card-favorite-in-favorites', nowInFav);
@@ -230,5 +244,6 @@ if (typeof window !== 'undefined') {
     window.renderPropertyCards = renderPropertyCards;
     window.togglePropertyFavorite = togglePropertyFavorite;
     window.getFavorites = getFavorites;
+    window.getFavoritesStorageKey = getFavoritesStorageKey;
     window.getPropertyCardPreviewImage = getPropertyCardPreviewImage;
 }

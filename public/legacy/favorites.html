@@ -49,7 +49,8 @@
 
                 var ids = [];
                 try {
-                    ids = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
+                    var key = typeof getFavoritesStorageKey === 'function' ? getFavoritesStorageKey() : 'silva_favorites';
+                    ids = JSON.parse(localStorage.getItem(key) || '[]');
                 } catch (e) {}
 
                 var properties = ids
