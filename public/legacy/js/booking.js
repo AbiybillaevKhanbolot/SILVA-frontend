@@ -1,5 +1,24 @@
 // Booking page logic
 document.addEventListener('DOMContentLoaded', function() {
+    function getCurrentUserEmail() {
+        try {
+            var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            return (u && u.email ? String(u.email) : '').trim().toLowerCase();
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function bookingsKeyForCurrentUser() {
+        var email = getCurrentUserEmail();
+        return email ? 'silva_bookings_' + email : 'silva_bookings';
+    }
+
+    function loyaltyPointsKeyForCurrentUser() {
+        var email = getCurrentUserEmail();
+        return email ? 'silva_loyalty_points_' + email : 'silva_loyalty_points';
+    }
+
     if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
         if (typeof window.showAuthRequiredModal === 'function') window.showAuthRequiredModal();
     }
@@ -65,11 +84,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (propertyImage) {
         var icB = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
+        var imageUrl = property.main_image || (Array.isArray(property.gallery_images) && property.gallery_images[0]) || '';
         propertyImage.innerHTML = `
-            <div class="booking-property-image-placeholder" style="position: absolute; inset: 0; background: var(--color-gray-100); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
-                ${icB('image', 56, 56, { strokeWidth: 1.5, extraAttrs: ' style="color: var(--color-gray-400)"' })}
-                <span style="font-size: 0.75rem; color: var(--color-gray-400);">Здесь будет изображение</span>
-            </div>
+            ${imageUrl
+                ? `<img src="${String(imageUrl).replace(/"/g, '')}" alt="${String(property.title || 'Объект').replace(/"/g, '&quot;')}">`
+                : `<div class="booking-property-image-placeholder" style="position: absolute; inset: 0; background: var(--color-gray-100); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;">
+                    ${icB('image', 56, 56, { strokeWidth: 1.5, extraAttrs: ' style="color: var(--color-gray-400)"' })}
+                    <span style="font-size: 0.75rem; color: var(--color-gray-400);">Здесь будет изображение</span>
+                </div>`
+            }
             ${property.eco_certified ? `
                 <span class="badge badge-emerald" style="position: absolute; top: 1rem; left: 1rem; z-index: 2;">
                     ${icB('leaf', 12, 12, { extraAttrs: ' style="margin-right: 0.25rem"' })}
@@ -209,8 +232,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!Array.isArray(list)) list = [];
                 list.unshift(booking);
                 localStorage.setItem('silva_bookings', JSON.stringify(list));
-                var cur = parseInt(localStorage.getItem('silva_loyalty_points') || '0', 10) || 0;
-                localStorage.setItem('silva_loyalty_points', String(cur + loyaltyPointsToAward));
+                var personalKey = bookingsKeyForCurrentUser();
+                var personal = JSON.parse(localStorage.getItem(personalKey) || '[]');
+                if (!Array.isArray(personal)) personal = [];
+                personal.unshift(booking);
+                localStorage.setItem(personalKey, JSON.stringify(personal));
+                var lpKey = loyaltyPointsKeyForCurrentUser();
+                var cur = parseInt(localStorage.getItem(lpKey) || '0', 10) || 0;
+                localStorage.setItem(lpKey, String(cur + loyaltyPointsToAward));
             } catch (e) {}
             window.location.href = 'my-bookings.html?success=1';
         }, 2000);
