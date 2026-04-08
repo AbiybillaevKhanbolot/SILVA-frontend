@@ -131,12 +131,6 @@
         };
     }
 
-    function parseMissingColumn(err) {
-        var message = String((err && err.message) || '');
-        var match = message.match(/Could not find the '([^']+)' column/i);
-        return match ? match[1] : null;
-    }
-
     function isUuid(value) {
         return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
             String(value || '')
@@ -146,33 +140,10 @@
     async function fetchPropertiesCache() {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
-        var baseColumns = [
-            'id',
-            'owner_id',
-            'title',
-            'address',
-            'region',
-            'property_type',
-            'description',
-            'price_per_night',
-            'max_guests',
-            'status',
-            'created_at'
-        ];
-        var optionalColumns = ['rating', 'reviews_count'];
-        var columns = baseColumns.concat(optionalColumns);
-
-        var q;
-        while (true) {
-            q = await sb
-                .from('properties')
-                .select(columns.join(', '))
-                .order('created_at', { ascending: false });
-            if (!q.error) break;
-            var missingCol = parseMissingColumn(q.error);
-            if (!missingCol || optionalColumns.indexOf(missingCol) === -1) break;
-            columns = columns.filter(function (c) { return c !== missingCol; });
-        }
+        var q = await sb
+            .from('properties')
+            .select('id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, rating, reviews_count, created_at')
+            .order('created_at', { ascending: false });
         if (q.error) throw q.error;
         var rows = q.data || [];
         if (!rows.length) {
@@ -217,34 +188,13 @@
             rating: Number(payload.rating) || 0,
             reviews_count: Number(payload.reviews_count) || 0
         };
-        var optionalPatchKeys = ['rating', 'reviews_count'];
-        async function runSave(action) {
-            var res;
-            while (true) {
-                res = await action(propertyPatch);
-                if (!res.error) return res;
-                var missingCol = parseMissingColumn(res.error);
-                if (
-                    !missingCol ||
-                    optionalPatchKeys.indexOf(missingCol) === -1 ||
-                    !Object.prototype.hasOwnProperty.call(propertyPatch, missingCol)
-                ) {
-                    return res;
-                }
-                delete propertyPatch[missingCol];
-            }
-        }
         var saved;
         if (payload.id && isUuid(payload.id)) {
-            var upd = await runSave(function (patch) {
-                return sb.from('properties').update(patch).eq('id', payload.id).select('id').single();
-            });
+            var upd = await sb.from('properties').update(propertyPatch).eq('id', payload.id).select('id').single();
             if (upd.error) {
                 // If record with this id does not exist (old local id), create new one.
                 if (String(upd.error.code || '') === 'PGRST116') {
-                    var insFallback = await runSave(function (patch) {
-                        return sb.from('properties').insert(patch).select('id').single();
-                    });
+                    var insFallback = await sb.from('properties').insert(propertyPatch).select('id').single();
                     if (insFallback.error) throw insFallback.error;
                     saved = insFallback.data;
                 } else {
@@ -254,9 +204,7 @@
                 saved = upd.data;
             }
         } else {
-            var ins = await runSave(function (patch) {
-                return sb.from('properties').insert(patch).select('id').single();
-            });
+            var ins = await sb.from('properties').insert(propertyPatch).select('id').single();
             if (ins.error) throw ins.error;
             saved = ins.data;
         }
