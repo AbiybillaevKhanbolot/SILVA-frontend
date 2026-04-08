@@ -85,22 +85,17 @@ function initHeader() {
                                 <a href="owner-dashboard.html" class="header-dropdown-link">
                                     ${ic('layout-dashboard', 18, 18)}
                                     Панель владельца
-                                </a>
-                                <a href="owner-properties.html" class="header-dropdown-link">
-                                    ${ic('house', 18, 18)}
-                                    Мои объекты
-                                </a>
-                                <a href="owner-bookings.html" class="header-dropdown-link">
+                                </a>`
+            : '';
+        const guestLinksHtml = !isOwner
+            ? `
+                                <a href="my-bookings.html" class="header-dropdown-link">
                                     ${ic('calendar-days', 18, 18)}
-                                    Брони гостей
+                                    Мои бронирования
                                 </a>
-                                <a href="owner-reviews.html" class="header-dropdown-link">
-                                    ${ic('star-filled', 18, 18)}
-                                    Отзывы
-                                </a>
-                                <a href="admin.html" class="header-dropdown-link">
-                                    ${ic('shield-check', 18, 18)}
-                                    Администрирование
+                                <a href="favorites.html" class="header-dropdown-link">
+                                    ${ic('heart', 18, 18)}
+                                    Избранное
                                 </a>`
             : '';
         const authHtml = loggedIn
@@ -120,14 +115,7 @@ function initHeader() {
                                     ${ic('circle-user', 18, 18)}
                                     Личный кабинет
                                 </a>
-                                <a href="my-bookings.html" class="header-dropdown-link">
-                                    ${ic('calendar-days', 18, 18)}
-                                    Мои бронирования
-                                </a>
-                                <a href="favorites.html" class="header-dropdown-link">
-                                    ${ic('heart', 18, 18)}
-                                    Избранное
-                                </a>
+                                ${guestLinksHtml}
                                 ${ownerLinksHtml}
                                 <div class="header-dropdown-divider"></div>
                                 <button type="button" class="header-dropdown-logout" id="header-logout-btn">
@@ -183,7 +171,7 @@ function initHeader() {
                     </div>
                     <div class="mobile-menu-auth">${loggedIn
                         ? (isOwner
-                            ? '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="owner-dashboard.html" class="mobile-menu-link">Панель владельца</a><a href="owner-properties.html" class="mobile-menu-link">Мои объекты</a><a href="owner-bookings.html" class="mobile-menu-link">Брони гостей</a><a href="owner-reviews.html" class="mobile-menu-link">Отзывы</a>'
+                            ? '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="owner-dashboard.html" class="mobile-menu-link">Панель владельца</a>'
                             : '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>')
                         : '<a href="login.html" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="register.html" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
                     }</div>
