@@ -1,5 +1,76 @@
 // Home page logic
 document.addEventListener('DOMContentLoaded', function() {
+    const feedbackForm = document.getElementById('feedback-form');
+    const feedbackStatus = document.getElementById('feedback-status');
+
+    function showFeedbackStatus(message, isError) {
+        if (!feedbackStatus) return;
+        feedbackStatus.textContent = message;
+        feedbackStatus.style.display = 'block';
+        feedbackStatus.style.color = isError ? 'var(--color-red-600, #b91c1c)' : 'var(--color-emerald-700, #047857)';
+    }
+
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const nameEl = document.getElementById('feedback-name');
+            const emailEl = document.getElementById('feedback-email');
+            const messageEl = document.getElementById('feedback-message');
+            const submitBtn = feedbackForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.textContent : 'Отправить';
+
+            const name = nameEl ? String(nameEl.value || '').trim() : '';
+            const email = emailEl ? String(emailEl.value || '').trim() : '';
+            const message = messageEl ? String(messageEl.value || '').trim() : '';
+            if (!name || !email || !message) {
+                showFeedbackStatus('Заполните все поля формы.', true);
+                return;
+            }
+
+            try {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Отправка...';
+                }
+                if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.ensureClient !== 'function') {
+                    throw new Error('Supabase клиент не подключен.');
+                }
+                const sb = window.silvaSupabaseAuth.ensureClient();
+                if (!sb) throw new Error('Supabase клиент не инициализирован.');
+
+                let userId = null;
+                if (typeof window.silvaSupabaseAuth.getSessionUser === 'function') {
+                    const user = await window.silvaSupabaseAuth.getSessionUser();
+                    userId = user && user.id ? user.id : null;
+                }
+
+                const ins = await sb.from('feedback_messages').insert({
+                    name: name,
+                    email: email,
+                    message: message,
+                    user_id: userId,
+                    source: 'homepage_feedback',
+                    page_path: '/legacy/index.html'
+                });
+                if (ins.error) throw ins.error;
+
+                feedbackForm.reset();
+                showFeedbackStatus('Спасибо! Сообщение отправлено.', false);
+            } catch (err) {
+                showFeedbackStatus(
+                    (err && err.message ? err.message : 'Не удалось отправить сообщение.') +
+                        ' Проверьте, что таблица feedback_messages создана.',
+                    true
+                );
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+            }
+        });
+    }
+
     // Load featured properties
     const propertiesContainer = document.getElementById('properties-container');
     if (propertiesContainer) {
@@ -183,6 +254,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 regionDropdown.classList.remove('active');
             }
         });
+    }
+
+    // Smart search: pass guest preferences to catalog
+    const findBtn = document.querySelector('.btn-search');
+    function toISODate(date) {
+        if (!(date instanceof Date)) return '';
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
     }
 
     // People dropdown
@@ -444,6 +525,32 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!checkoutInput.contains(e.target) && !checkoutDropdown.contains(e.target)) {
                 checkoutDropdown.classList.remove('active');
             }
+        });
+    }
+
+    if (findBtn) {
+        findBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const regionValue = regionInput ? String(regionInput.value || '').trim() : '';
+            const totalGuests = Math.max(1, adultsCount + childrenCount);
+            const checkinIso = toISODate(checkinSelectedDate);
+            const checkoutIso = toISODate(checkoutSelectedDate);
+
+            if (checkinSelectedDate && checkoutSelectedDate && checkinSelectedDate >= checkoutSelectedDate) {
+                alert('Дата выезда должна быть позже даты заезда.');
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (regionValue) params.set('region', regionValue);
+            if (checkinIso) params.set('checkin', checkinIso);
+            if (checkoutIso) params.set('checkout', checkoutIso);
+            params.set('adults', String(adultsCount));
+            params.set('children', String(childrenCount));
+            params.set('guests', String(totalGuests));
+            params.set('smart', '1');
+
+            window.location.href = 'catalog.html?' + params.toString();
         });
     }
 });
