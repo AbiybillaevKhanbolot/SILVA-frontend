@@ -1,5 +1,5 @@
 // Property page logic
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     function getFavoritesStorageKey() {
         try {
             var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
+        try { await mockAPI.refreshPropertiesFromSupabase(); } catch (e) {}
+    }
     const property = mockAPI.getPropertyById(propertyId);
     if (!property) {
         document.querySelector('.property-page').innerHTML = `
@@ -35,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             u = JSON.parse(localStorage.getItem('silva_user') || '{}');
         } catch (e) {}
-        if (u.role !== 'owner' || u.email !== property.ownerEmail) {
+        if (u.role !== 'owner' || String(u.id || '') !== String(property.owner_id || '')) {
             window.location.href = 'catalog.html';
             return;
         }
@@ -177,8 +180,8 @@ document.addEventListener('DOMContentLoaded', function() {
             property.is_owner_listing &&
             u.role === 'owner' &&
             u.email &&
-            property.ownerEmail &&
-            u.email === property.ownerEmail;
+            property.owner_id &&
+            String(u.id || '') === String(property.owner_id || '');
 
         if (isOwnerViewingOwn) {
             favoriteBtn.outerHTML =
@@ -204,6 +207,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 favoriteBtn.classList.toggle('in-favorites', nowFav);
                 const s = favoriteBtn.querySelector('svg');
                 if (s) s.style.fill = nowFav ? 'currentColor' : 'none';
+                if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.setFavorite === 'function') {
+                    window.silvaSupabaseAuth.setFavorite(parseInt(propertyId, 10), nowFav).catch(function () {});
+                }
             });
         }
     }

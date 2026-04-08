@@ -80,8 +80,14 @@
 
     global.getMyOwnerListings = function () {
         var email = getOwnerUserEmail();
+        var uid = null;
+        try {
+            var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            uid = u && u.id ? String(u.id) : null;
+        } catch (e) {}
         if (!email || typeof mockAPI === 'undefined') return [];
         return mockAPI.getOwnerListingsFromStorage().filter(function (p) {
+            if (uid && p.owner_id) return String(p.owner_id) === uid;
             return p.ownerEmail === email;
         });
     };

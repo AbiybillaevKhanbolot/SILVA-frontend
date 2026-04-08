@@ -1,9 +1,12 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     'use strict';
     if (typeof requireOwnerOrRedirect !== 'function' || !requireOwnerOrRedirect()) return;
     if (typeof initOwnerSubnav === 'function') initOwnerSubnav();
     if (typeof applyOwnerVerificationGate === 'function') applyOwnerVerificationGate();
 
+    if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
+        try { await mockAPI.refreshPropertiesFromSupabase(); } catch (e) {}
+    }
     var listings = typeof getMyOwnerListings === 'function' ? getMyOwnerListings() : [];
     var published = listings.filter(function (p) {
         return p.status === 'published';
@@ -13,16 +16,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     var bookingsCount = 0;
-    try {
-        var raw = localStorage.getItem('silva_bookings');
-        var bl = raw ? JSON.parse(raw) : [];
-        if (Array.isArray(bl)) {
-            bl.forEach(function (b) {
-                var pid = Number(b.propertyId);
-                if (myIds.indexOf(pid) !== -1) bookingsCount++;
-            });
-        }
-    } catch (e) {}
+    if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchBookingsByPropertyIds === 'function') {
+        try {
+            var ownerBookings = await window.silvaSupabaseAuth.fetchBookingsByPropertyIds(myIds);
+            bookingsCount = Array.isArray(ownerBookings) ? ownerBookings.length : 0;
+        } catch (e) {}
+    }
 
     var reviewsCount = 0;
     if (typeof mockAPI !== 'undefined') {

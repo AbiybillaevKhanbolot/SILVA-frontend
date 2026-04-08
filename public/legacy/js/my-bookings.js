@@ -71,28 +71,34 @@
         return d < today;
     }
 
-    function loadBookings() {
-        try {
-            var key = personalBookingsKey();
-            var raw = localStorage.getItem(key);
-            var list = raw ? JSON.parse(raw) : [];
-            if (Array.isArray(list)) return list;
-        } catch (e) {}
-        try {
-            // Fallback for old data format: filter shared list by current user email.
-            var email = getCurrentUserEmail();
-            var sharedRaw = localStorage.getItem('silva_bookings');
-            var shared = sharedRaw ? JSON.parse(sharedRaw) : [];
-            if (!Array.isArray(shared)) return [];
-            if (!email) return [];
-            var mine = shared.filter(function (b) {
-                return String((b && b.guestEmail) || '').trim().toLowerCase() === email;
-            });
-            localStorage.setItem(personalBookingsKey(), JSON.stringify(mine));
-            return mine;
-        } catch (e) {
-            return [];
+    async function loadBookings() {
+        if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchMyBookings === 'function') {
+            try {
+                var rows = await window.silvaSupabaseAuth.fetchMyBookings();
+                if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
+                    try { await mockAPI.refreshPropertiesFromSupabase(); } catch (e) {}
+                }
+                return (rows || []).map(function (r) {
+                    var p = typeof mockAPI !== 'undefined' ? mockAPI.getPropertyById(r.property_id) : null;
+                    return {
+                        id: r.id,
+                        propertyId: r.property_id,
+                        propertyTitle: p && p.title ? p.title : 'Объект',
+                        propertyRegion: p && p.region ? p.region : '',
+                        mainImage: p && p.main_image ? p.main_image : '',
+                        checkIn: r.check_in,
+                        checkOut: r.check_out,
+                        nights: Math.max(1, Math.ceil((parseYMD(r.check_out) - parseYMD(r.check_in)) / (1000 * 60 * 60 * 24))),
+                        adults: Math.max(1, (Number(r.guests) || 1) - (Number(r.children) || 0)),
+                        children: Number(r.children) || 0,
+                        totalRub: Number(r.total_price) || 0,
+                        payType: 'full',
+                        status: r.status || 'pending'
+                    };
+                });
+            } catch (e) {}
         }
+        return [];
     }
 
     function saveBookings(list) {
@@ -136,10 +142,10 @@
         localStorage.setItem(key, String(Math.max(0, cur - revoke)));
     }
 
-    function confirmCancelDelete() {
+    async function confirmCancelDelete() {
         if (pendingCancelId == null || pendingCancelId === '') return;
         var id = pendingCancelId;
-        var all = loadBookings();
+        var all = await loadBookings();
         var removed = null;
         for (var i = 0; i < all.length; i++) {
             if (String(all[i].id) === String(id)) {
@@ -148,30 +154,19 @@
             }
         }
         closeCancelModal();
-        var next = all.filter(function (x) {
-            return String(x.id) !== String(id);
-        });
-        saveBookings(next);
-        // Keep owner dashboard consistent: remove only this user's booking in shared list.
         try {
-            var email = getCurrentUserEmail();
-            var sharedRaw = localStorage.getItem('silva_bookings');
-            var shared = sharedRaw ? JSON.parse(sharedRaw) : [];
-            if (Array.isArray(shared)) {
-                var sharedNext = shared.filter(function (x) {
-                    return !(
-                        String(x.id) === String(id) &&
-                        String((x && x.guestEmail) || '').trim().toLowerCase() === email
-                    );
-                });
-                localStorage.setItem('silva_bookings', JSON.stringify(sharedNext));
+            if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.cancelBooking === 'function') {
+                await window.silvaSupabaseAuth.cancelBooking(id);
+            } else {
+                var next = all.filter(function (x) { return String(x.id) !== String(id); });
+                saveBookings(next);
             }
         } catch (e) {}
         revokeLoyaltyForBooking(removed);
         render();
     }
 
-    function render() {
+    async function render() {
         var listEl = document.getElementById('bookings-list');
         var emptyEl = document.getElementById('bookings-empty');
         if (!listEl || !emptyEl) return;
@@ -179,7 +174,7 @@
         var ic =
             typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
 
-        var bookings = loadBookings();
+        var bookings = await loadBookings();
 
         if (bookings.length === 0) {
             listEl.innerHTML = '';

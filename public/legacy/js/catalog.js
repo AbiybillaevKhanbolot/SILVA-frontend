@@ -1,5 +1,5 @@
 // Catalog page logic
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const searchInput = document.getElementById('search-input');
     const regionSelect = document.getElementById('region-select');
     const sortSelect = document.getElementById('sort-select');
@@ -424,6 +424,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (smartSearch.region) filters.region = smartSearch.region;
     }
     if (regionSelect && filters.region) regionSelect.value = filters.region;
+    if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
+        await mockAPI.refreshPropertiesFromSupabase();
+    }
     initFilters();
     filterProperties();
     updateActiveFilters();

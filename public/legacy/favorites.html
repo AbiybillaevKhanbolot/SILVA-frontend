@@ -34,6 +34,8 @@
     <div id="footer-container"></div>
 
     <script src="js/icons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
@@ -41,11 +43,18 @@
     <script src="js/components/property-card.js"></script>
     <script>
         (function () {
-            function renderFavorites() {
+            async function renderFavorites() {
                 var container = document.getElementById('favorites-container');
                 var emptyBlock = document.getElementById('favorites-empty');
                 var wrap = document.getElementById('favorites-grid-wrap');
                 if (!container || !emptyBlock) return;
+
+                if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchFavorites === 'function') {
+                    try { await window.silvaSupabaseAuth.fetchFavorites(); } catch (e) {}
+                }
+                if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
+                    try { await mockAPI.refreshPropertiesFromSupabase(); } catch (e) {}
+                }
 
                 var ids = [];
                 try {

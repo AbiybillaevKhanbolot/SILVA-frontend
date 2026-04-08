@@ -46,6 +46,7 @@
 
     function mapProfileToLocalUser(profile, fallbackEmail) {
         return {
+            id: profile && profile.id ? profile.id : null,
             name: profile && profile.full_name ? profile.full_name : '',
             email: profile && profile.email ? profile.email : (fallbackEmail || ''),
             phone: profile && profile.phone ? profile.phone : '',
@@ -94,6 +95,203 @@
         }
         writeLocalUser(localUser);
         return localUser;
+    }
+
+    function mapPropertyRowToLegacy(row, images) {
+        var gallery = (images || []).map(function (img) { return img.image_url; }).filter(Boolean);
+        return {
+            id: Number(row.id),
+            owner_id: row.owner_id,
+            ownerEmail: '',
+            title: row.title || '',
+            address: row.address || '',
+            region: row.region || '',
+            property_type: row.property_type || 'cottage',
+            price_per_night: Number(row.price_per_night) || 0,
+            max_guests: Number(row.max_guests) || 1,
+            bedrooms: 1,
+            bathrooms: 1,
+            area: 50,
+            rating: Number(row.rating) || 0,
+            reviews_count: Number(row.reviews_count) || 0,
+            gallery_images: gallery,
+            main_image: gallery[0] || null,
+            eco_certified: false,
+            is_featured: false,
+            is_owner_listing: true,
+            status: row.status || 'draft',
+            description: row.description || '',
+            amenities: ['wifi'],
+            conditions: ['Заезд с 14:00', 'Выезд до 12:00'],
+            extra_info: [],
+            visa_info: 'Для граждан РФ виза не требуется. Иностранным гостям необходимо иметь действующую визу РФ.',
+            map_lat: 59.9343,
+            map_lng: 30.3356,
+            created_at: row.created_at || null
+        };
+    }
+
+    async function fetchPropertiesCache() {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var q = await sb
+            .from('properties')
+            .select('id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, rating, reviews_count, created_at')
+            .order('created_at', { ascending: false });
+        if (q.error) throw q.error;
+        var rows = q.data || [];
+        if (!rows.length) {
+            localStorage.setItem('silva_owner_properties', '[]');
+            return [];
+        }
+        var ids = rows.map(function (r) { return r.id; });
+        var imgQ = await sb
+            .from('property_images')
+            .select('property_id, image_url, position')
+            .in('property_id', ids)
+            .order('position', { ascending: true });
+        if (imgQ.error) throw imgQ.error;
+        var byProperty = {};
+        (imgQ.data || []).forEach(function (img) {
+            var pid = String(img.property_id);
+            if (!byProperty[pid]) byProperty[pid] = [];
+            byProperty[pid].push(img);
+        });
+        var mapped = rows.map(function (row) {
+            return mapPropertyRowToLegacy(row, byProperty[String(row.id)] || []);
+        });
+        localStorage.setItem('silva_owner_properties', JSON.stringify(mapped));
+        return mapped;
+    }
+
+    async function saveOwnerProperty(payload) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var user = await getSessionUser();
+        if (!user) throw new Error('Пользователь не авторизован');
+        var propertyPatch = {
+            owner_id: user.id,
+            title: payload.title || '',
+            address: payload.address || null,
+            region: payload.region || null,
+            property_type: payload.property_type || 'cottage',
+            description: payload.description || null,
+            price_per_night: Number(payload.price_per_night) || 0,
+            max_guests: Number(payload.max_guests) || 1,
+            status: payload.status === 'published' ? 'published' : 'draft',
+            rating: Number(payload.rating) || 0,
+            reviews_count: Number(payload.reviews_count) || 0
+        };
+        var saved;
+        if (payload.id) {
+            var upd = await sb.from('properties').update(propertyPatch).eq('id', payload.id).select('id').single();
+            if (upd.error) throw upd.error;
+            saved = upd.data;
+        } else {
+            var ins = await sb.from('properties').insert(propertyPatch).select('id').single();
+            if (ins.error) throw ins.error;
+            saved = ins.data;
+        }
+        var propertyId = saved.id;
+        if (Array.isArray(payload.gallery_images)) {
+            var del = await sb.from('property_images').delete().eq('property_id', propertyId);
+            if (del.error) throw del.error;
+            var imageRows = payload.gallery_images
+                .filter(Boolean)
+                .slice(0, 10)
+                .map(function (url, idx) {
+                    return {
+                        property_id: propertyId,
+                        image_url: url,
+                        position: idx
+                    };
+                });
+            if (imageRows.length) {
+                var imgIns = await sb.from('property_images').insert(imageRows);
+                if (imgIns.error) throw imgIns.error;
+            }
+        }
+        await fetchPropertiesCache();
+        return propertyId;
+    }
+
+    async function deleteOwnerProperty(propertyId) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var del = await sb.from('properties').delete().eq('id', propertyId);
+        if (del.error) throw del.error;
+        await fetchPropertiesCache();
+    }
+
+    async function fetchFavorites() {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var q = await sb.from('favorites').select('property_id').order('created_at', { ascending: false });
+        if (q.error) throw q.error;
+        var ids = (q.data || []).map(function (x) { return Number(x.property_id); });
+        var email = normalizeEmail((readLocalUser() || {}).email);
+        var key = email ? 'silva_favorites_' + email : 'silva_favorites';
+        localStorage.setItem(key, JSON.stringify(ids));
+        return ids;
+    }
+
+    async function setFavorite(propertyId, isFavorite) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        if (isFavorite) {
+            var ins = await sb.from('favorites').insert({ property_id: propertyId });
+            if (ins.error && ins.error.code !== '23505') throw ins.error;
+        } else {
+            var del = await sb.from('favorites').delete().eq('property_id', propertyId);
+            if (del.error) throw del.error;
+        }
+        return fetchFavorites();
+    }
+
+    async function createBooking(payload) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var ins = await sb.from('bookings').insert({
+            property_id: payload.propertyId,
+            check_in: payload.checkIn,
+            check_out: payload.checkOut,
+            guests: payload.guests,
+            children: payload.children || 0,
+            total_price: payload.totalRub || 0,
+            status: 'pending'
+        });
+        if (ins.error) throw ins.error;
+    }
+
+    async function fetchMyBookings() {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var q = await sb
+            .from('bookings')
+            .select('id, property_id, check_in, check_out, guests, children, total_price, status, created_at')
+            .order('created_at', { ascending: false });
+        if (q.error) throw q.error;
+        return q.data || [];
+    }
+
+    async function cancelBooking(bookingId) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var del = await sb.from('bookings').delete().eq('id', bookingId);
+        if (del.error) throw del.error;
+    }
+
+    async function fetchBookingsByPropertyIds(propertyIds) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var ids = (propertyIds || []).map(function (x) { return Number(x); }).filter(Boolean);
+        if (!ids.length) return [];
+        var q = await sb
+            .from('bookings')
+            .select('id, property_id, check_in, check_out, guests, children, total_price, status, created_at')
+            .in('property_id', ids);
+        if (q.error) throw q.error;
+        return q.data || [];
     }
 
     async function signIn(email, password) {
@@ -213,6 +411,15 @@
         signOut: signOut,
         saveProfile: saveProfile,
         uploadAvatar: uploadAvatar,
+        fetchPropertiesCache: fetchPropertiesCache,
+        saveOwnerProperty: saveOwnerProperty,
+        deleteOwnerProperty: deleteOwnerProperty,
+        fetchFavorites: fetchFavorites,
+        setFavorite: setFavorite,
+        createBooking: createBooking,
+        fetchMyBookings: fetchMyBookings,
+        cancelBooking: cancelBooking,
+        fetchBookingsByPropertyIds: fetchBookingsByPropertyIds,
         readLocalUser: readLocalUser,
         clearLocalUser: clearLocalUser,
         bootAuthSync: bootAuthSync

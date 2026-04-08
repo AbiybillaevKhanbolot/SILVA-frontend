@@ -1,5 +1,5 @@
 // Booking page logic
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     function getCurrentUserEmail() {
         try {
             var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
@@ -34,7 +34,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    const property = mockAPI.getPropertyById(propertyId);
+    let property = mockAPI.getPropertyById(propertyId);
+    if (!property && typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
+        try {
+            await mockAPI.refreshPropertiesFromSupabase();
+            property = mockAPI.getPropertyById(propertyId);
+        } catch (e) {}
+    }
     if (!property) {
         window.location.href = 'catalog.html';
         return;
@@ -180,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sbpBlock) sbpBlock.style.display = method === 'sbp' ? 'block' : 'none';
     };
     
-    window.processBooking = function() {
+    window.processBooking = async function() {
         const name = document.getElementById('guest-name')?.value?.trim();
         const email = document.getElementById('guest-email')?.value?.trim();
         const rulesConsent = document.getElementById('rules-consent')?.checked;
@@ -203,46 +209,30 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> Обработка...';
         }
         
-        setTimeout(() => {
-            try {
-                var phone = document.getElementById('guest-phone') && document.getElementById('guest-phone').value
-                    ? document.getElementById('guest-phone').value.trim()
-                    : '';
-                var booking = {
-                    id: 'b' + Date.now(),
+        try {
+            if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.createBooking === 'function') {
+                await window.silvaSupabaseAuth.createBooking({
                     propertyId: parseInt(propertyId, 10),
-                    propertyTitle: property.title,
-                    propertyRegion: property.region,
-                    mainImage: property.main_image || '',
                     checkIn: fromDateStr || formatDateYMD(checkIn),
                     checkOut: toDateStr || formatDateYMD(checkOut),
-                    nights: nights,
-                    adults: adults,
+                    guests: adults + children,
                     children: children,
-                    totalRub: amountToPay,
-                    payType: payAmount,
-                    status: 'pending',
-                    createdAt: new Date().toISOString(),
-                    guestName: name,
-                    guestEmail: email,
-                    guestPhone: phone,
-                    loyaltyPointsAwarded: loyaltyPointsToAward
-                };
-                var list = JSON.parse(localStorage.getItem('silva_bookings') || '[]');
-                if (!Array.isArray(list)) list = [];
-                list.unshift(booking);
-                localStorage.setItem('silva_bookings', JSON.stringify(list));
-                var personalKey = bookingsKeyForCurrentUser();
-                var personal = JSON.parse(localStorage.getItem(personalKey) || '[]');
-                if (!Array.isArray(personal)) personal = [];
-                personal.unshift(booking);
-                localStorage.setItem(personalKey, JSON.stringify(personal));
-                var lpKey = loyaltyPointsKeyForCurrentUser();
-                var cur = parseInt(localStorage.getItem(lpKey) || '0', 10) || 0;
-                localStorage.setItem(lpKey, String(cur + loyaltyPointsToAward));
-            } catch (e) {}
+                    totalRub: amountToPay
+                });
+            } else {
+                throw new Error('Supabase бронирование недоступно');
+            }
+            var lpKey = loyaltyPointsKeyForCurrentUser();
+            var cur = parseInt(localStorage.getItem(lpKey) || '0', 10) || 0;
+            localStorage.setItem(lpKey, String(cur + loyaltyPointsToAward));
             window.location.href = 'my-bookings.html?success=1';
-        }, 2000);
+        } catch (e) {
+            alert(e && e.message ? e.message : 'Не удалось создать бронирование.');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = 'Оплатить и забронировать';
+            }
+        }
     };
 
     function formatDateYMD(d) {

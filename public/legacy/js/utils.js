@@ -294,6 +294,17 @@ const mockAPI = {
         }
     },
 
+    refreshPropertiesFromSupabase: async function () {
+        if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.fetchPropertiesCache !== 'function') {
+            return this.getOwnerListingsFromStorage();
+        }
+        try {
+            return await window.silvaSupabaseAuth.fetchPropertiesCache();
+        } catch (e) {
+            return this.getOwnerListingsFromStorage();
+        }
+    },
+
     saveOwnerListingsToStorage: function(list) {
         localStorage.setItem('silva_owner_properties', JSON.stringify(list));
     },

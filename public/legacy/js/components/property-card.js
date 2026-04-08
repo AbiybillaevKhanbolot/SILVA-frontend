@@ -221,18 +221,18 @@ function togglePropertyFavorite(buttonEl) {
     if (!id) return;
     var favorites = getFavorites();
     var idx = favorites.indexOf(id);
-    if (idx === -1) {
-        favorites.push(id);
-    } else {
-        favorites.splice(idx, 1);
-    }
+    var nowInFav = idx === -1;
+    if (nowInFav) favorites.push(id);
+    else favorites.splice(idx, 1);
     try {
         localStorage.setItem(getFavoritesStorageKey(), JSON.stringify(favorites));
     } catch (e) {}
-    var nowInFav = favorites.indexOf(id) !== -1;
     buttonEl.classList.toggle('property-card-favorite-in-favorites', nowInFav);
     var svg = buttonEl.querySelector('svg');
     if (svg) svg.setAttribute('fill', nowInFav ? 'currentColor' : 'none');
+    if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.setFavorite === 'function') {
+        window.silvaSupabaseAuth.setFavorite(id, nowInFav).catch(function () {});
+    }
     if (typeof window.dispatchEvent === 'function') {
         window.dispatchEvent(new CustomEvent('silva-favorites-changed', { detail: { propertyId: id, inFavorites: nowInFav } }));
     }
@@ -246,4 +246,9 @@ if (typeof window !== 'undefined') {
     window.getFavorites = getFavorites;
     window.getFavoritesStorageKey = getFavoritesStorageKey;
     window.getPropertyCardPreviewImage = getPropertyCardPreviewImage;
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchFavorites === 'function') {
+            window.silvaSupabaseAuth.fetchFavorites().catch(function () {});
+        }
+    });
 }

@@ -262,6 +262,11 @@
 
     function initOwnerPropertyForm(root) {
         var email = typeof getOwnerUserEmail === 'function' ? getOwnerUserEmail() : '';
+        var userId = null;
+        try {
+            var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            userId = u && u.id ? u.id : null;
+        } catch (e) {}
         var verifiedOwner = typeof isOwnerVerified === 'function' ? isOwnerVerified() : false;
         if (!email || typeof mockAPI === 'undefined') return;
 
@@ -283,6 +288,7 @@
         function defaultListing() {
             return {
                 ownerEmail: email,
+                owner_id: userId,
                 title: '',
                 address: '',
                 region: 'Центральный',
@@ -342,7 +348,7 @@
 
         if (idParam) {
             var p = mockAPI.getPropertyById(idParam);
-            if (!p || !p.is_owner_listing || p.ownerEmail !== email) {
+            if (!p || !p.is_owner_listing || String(p.owner_id || '') !== String(userId || '')) {
                 window.location.href = 'owner-properties.html';
                 return;
             }
@@ -556,23 +562,8 @@
             return out.length ? out : ['wifi'];
         }
 
-        function saveListing(obj) {
-            var all = mockAPI.getOwnerListingsFromStorage();
-            var idx = all.findIndex(function (x) {
-                return Number(x.id) === Number(obj.id);
-            });
-            if (idx >= 0) all[idx] = obj;
-            else all.push(obj);
-            var rev = 0;
-            if (typeof mockAPI.getReviewsForProperty === 'function') {
-                rev = mockAPI.getReviewsForProperty(obj.id).length;
-            }
-            obj.reviews_count = rev;
-            mockAPI.saveOwnerListingsToStorage(all);
-        }
-
         if (form) {
-            form.addEventListener('submit', function (e) {
+            form.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 if (galleryImages.length < 6 || galleryImages.length > 10) {
                     if (banner) {
@@ -658,9 +649,13 @@
                     }
                 }
 
-                function persistListing() {
+                async function persistListing() {
                     try {
-                        saveListing(listing);
+                        if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.saveOwnerProperty !== 'function') {
+                            throw new Error('Supabase не подключен для сохранения объекта.');
+                        }
+                        var newId = await window.silvaSupabaseAuth.saveOwnerProperty(listing);
+                        listing.id = Number(newId);
                     } catch (err) {
                         showBanner(
                             banner,
@@ -687,14 +682,22 @@
         }
 
         if (deleteBtn) {
-            deleteBtn.addEventListener('click', function () {
+            deleteBtn.addEventListener('click', async function () {
                 if (!existing || existing.id == null) return;
                 if (!confirm('Удалить объект безвозвратно?')) return;
-                var all = mockAPI.getOwnerListingsFromStorage();
-                var next = all.filter(function (x) {
-                    return Number(x.id) !== Number(existing.id);
-                });
-                mockAPI.saveOwnerListingsToStorage(next);
+                try {
+                    if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.deleteOwnerProperty !== 'function') {
+                        throw new Error('Supabase не подключен для удаления объекта.');
+                    }
+                    await window.silvaSupabaseAuth.deleteOwnerProperty(existing.id);
+                } catch (err) {
+                    showBanner(
+                        banner,
+                        err && err.message ? err.message : 'Не удалось удалить объект.',
+                        true
+                    );
+                    return;
+                }
                 window.location.href = 'owner-properties.html';
             });
         }

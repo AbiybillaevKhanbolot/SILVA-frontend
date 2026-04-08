@@ -74,8 +74,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load featured properties
     const propertiesContainer = document.getElementById('properties-container');
     if (propertiesContainer) {
-        const featuredProperties = mockAPI.getFeaturedProperties();
-        renderPropertyCards(propertiesContainer, featuredProperties);
+        (async function () {
+            if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
+                await mockAPI.refreshPropertiesFromSupabase();
+            }
+            const featuredProperties = mockAPI.getFeaturedProperties();
+            renderPropertyCards(propertiesContainer, featuredProperties);
+        })();
     }
 
     // Parallax effect for hero section
