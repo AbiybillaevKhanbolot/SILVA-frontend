@@ -74,11 +74,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                 var id = pendingDeleteId;
                 closeDeleteModal();
                 if (id == null || typeof mockAPI === 'undefined') return;
+                var idNum = Number(id);
+                if (!isFinite(idNum) || idNum <= 0) {
+                    alert('Некорректный идентификатор объекта. Обновите страницу.');
+                    return;
+                }
                 try {
                     if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.deleteOwnerProperty !== 'function') {
                         throw new Error('Supabase не подключен для удаления объекта.');
                     }
-                    await window.silvaSupabaseAuth.deleteOwnerProperty(id);
+                    await window.silvaSupabaseAuth.deleteOwnerProperty(idNum);
                 } catch (err) {
                     alert(err && err.message ? err.message : 'Не удалось удалить объект.');
                     return;

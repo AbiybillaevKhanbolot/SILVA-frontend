@@ -288,7 +288,15 @@ const mockAPI = {
     getOwnerListingsFromStorage: function() {
         try {
             const raw = JSON.parse(localStorage.getItem('silva_owner_properties') || '[]');
-            return Array.isArray(raw) ? raw : [];
+            if (!Array.isArray(raw)) return [];
+            return raw
+                .map(function (p) {
+                    if (!p || typeof p !== 'object') return null;
+                    var idNum = Number(p.id);
+                    if (!isFinite(idNum) || idNum <= 0) return null;
+                    return Object.assign({}, p, { id: Math.floor(idNum) });
+                })
+                .filter(Boolean);
         } catch (e) {
             return [];
         }
@@ -306,7 +314,17 @@ const mockAPI = {
     },
 
     saveOwnerListingsToStorage: function(list) {
-        localStorage.setItem('silva_owner_properties', JSON.stringify(list));
+        var safe = Array.isArray(list)
+            ? list
+                  .map(function (p) {
+                      if (!p || typeof p !== 'object') return null;
+                      var idNum = Number(p.id);
+                      if (!isFinite(idNum) || idNum <= 0) return null;
+                      return Object.assign({}, p, { id: Math.floor(idNum) });
+                  })
+                  .filter(Boolean)
+            : [];
+        localStorage.setItem('silva_owner_properties', JSON.stringify(safe));
     },
 
     nextOwnerPropertyId: function() {

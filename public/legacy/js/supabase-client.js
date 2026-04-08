@@ -235,7 +235,11 @@
     async function deleteOwnerProperty(propertyId) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
-        var del = await sb.from('properties').delete().eq('id', propertyId);
+        var user = await getSessionUser();
+        if (!user || !user.id) throw new Error('Сессия не найдена. Войдите заново.');
+        var id = toPropertyId(propertyId);
+        if (id == null) throw new Error('Некорректный идентификатор объекта.');
+        var del = await sb.from('properties').delete().eq('id', id);
         if (del.error) throw del.error;
         await fetchPropertiesCache();
     }
