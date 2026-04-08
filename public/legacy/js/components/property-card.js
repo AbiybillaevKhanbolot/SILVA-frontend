@@ -22,7 +22,8 @@ function getFavorites() {
 }
 
 function isPropertyInFavorites(propertyId) {
-    return getFavorites().indexOf(parseInt(propertyId, 10)) !== -1;
+    var key = String(propertyId);
+    return getFavorites().map(function (x) { return String(x); }).indexOf(key) !== -1;
 }
 
 /** Одно превью для списков (каталог и т.д.): main_image или первое из gallery_images. */
@@ -217,7 +218,8 @@ function togglePropertyFavorite(buttonEl) {
         if (typeof window.showAuthRequiredModal === 'function') window.showAuthRequiredModal();
         return;
     }
-    var id = parseInt(buttonEl.getAttribute('data-property-id'), 10);
+    var id = String(buttonEl.getAttribute('data-property-id') || '').trim();
+    if (!id) return;
     if (!id) return;
     var favorites = getFavorites();
     var idx = favorites.indexOf(id);

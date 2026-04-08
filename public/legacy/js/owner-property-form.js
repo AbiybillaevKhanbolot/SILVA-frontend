@@ -575,10 +575,7 @@
                     return;
                 }
                 var fd = new FormData(form);
-                var idNum =
-                    existing && existing.id != null && !isNaN(Number(existing.id))
-                        ? Number(existing.id)
-                        : mockAPI.nextOwnerPropertyId();
+                var idVal = existing && existing.id != null ? String(existing.id) : null;
                 var addr = (fd.get('address') || '').trim();
                 var titleVal = (fd.get('title') || '').trim();
                 var regionVal = (fd.get('region') || '').toString();
@@ -600,7 +597,7 @@
                         : 30.3356;
 
                 var listing = {
-                    id: idNum,
+                    id: idVal,
                     ownerEmail: email,
                     title: titleVal,
                     address: addr,
@@ -664,7 +661,7 @@
                             throw new Error('Supabase не подключен для сохранения объекта.');
                         }
                         var newId = await window.silvaSupabaseAuth.saveOwnerProperty(listing);
-                        listing.id = Number(newId);
+                        listing.id = String(newId);
                     } catch (err) {
                         var errMessage = err && err.message ? String(err.message) : '';
                         showBanner(

@@ -100,7 +100,7 @@
     function mapPropertyRowToLegacy(row, images) {
         var gallery = (images || []).map(function (img) { return img.image_url; }).filter(Boolean);
         return {
-            id: Number(row.id),
+            id: row.id != null ? String(row.id) : '',
             owner_id: row.owner_id,
             ownerEmail: '',
             title: row.title || '',
@@ -132,9 +132,10 @@
     }
 
     function toPropertyId(value) {
-        var id = Number(value);
-        if (!isFinite(id) || id <= 0) return null;
-        return Math.floor(id);
+        var s = String(value || '').trim();
+        if (!s) return null;
+        var uuidRx = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        return uuidRx.test(s) ? s : null;
     }
 
     async function fetchPropertiesCache() {
@@ -142,7 +143,7 @@
         if (!sb) throw new Error('Supabase SDK is not loaded');
         var q = await sb
             .from('properties')
-            .select('id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, rating, reviews_count, created_at')
+            .select('id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, created_at')
             .order('created_at', { ascending: false });
         if (q.error) throw q.error;
         var rows = q.data || [];
@@ -188,6 +189,8 @@
             rating: Number(payload.rating) || 0,
             reviews_count: Number(payload.reviews_count) || 0
         };
+        delete propertyPatch.rating;
+        delete propertyPatch.reviews_count;
         var saved;
         var existingId = toPropertyId(payload.id);
         if (existingId != null) {
@@ -249,7 +252,7 @@
         if (!sb) throw new Error('Supabase SDK is not loaded');
         var q = await sb.from('favorites').select('property_id').order('created_at', { ascending: false });
         if (q.error) throw q.error;
-        var ids = (q.data || []).map(function (x) { return Number(x.property_id); });
+        var ids = (q.data || []).map(function (x) { return String(x.property_id); }).filter(Boolean);
         var email = normalizeEmail((readLocalUser() || {}).email);
         var key = email ? 'silva_favorites_' + email : 'silva_favorites';
         localStorage.setItem(key, JSON.stringify(ids));
@@ -305,7 +308,7 @@
     async function fetchBookingsByPropertyIds(propertyIds) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
-        var ids = (propertyIds || []).map(function (x) { return Number(x); }).filter(Boolean);
+        var ids = (propertyIds || []).map(function (x) { return String(x || ''); }).filter(Boolean);
         if (!ids.length) return [];
         var q = await sb
             .from('bookings')

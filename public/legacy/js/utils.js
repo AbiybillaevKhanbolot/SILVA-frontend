@@ -128,6 +128,11 @@ const SPB_DISTRICTS = [
 
 // Mock API - Replace with actual base44 API calls
 const mockAPI = {
+    _normalizePropertyId: function(value) {
+        if (value == null) return null;
+        var s = String(value).trim();
+        return s ? s : null;
+    },
     properties: [],
 
     // Mock reviews per property (merged with localStorage on get)
@@ -292,9 +297,9 @@ const mockAPI = {
             return raw
                 .map(function (p) {
                     if (!p || typeof p !== 'object') return null;
-                    var idNum = Number(p.id);
-                    if (!isFinite(idNum) || idNum <= 0) return null;
-                    return Object.assign({}, p, { id: Math.floor(idNum) });
+                    var idVal = mockAPI._normalizePropertyId(p.id);
+                    if (!idVal) return null;
+                    return Object.assign({}, p, { id: idVal });
                 })
                 .filter(Boolean);
         } catch (e) {
@@ -318,9 +323,9 @@ const mockAPI = {
             ? list
                   .map(function (p) {
                       if (!p || typeof p !== 'object') return null;
-                      var idNum = Number(p.id);
-                      if (!isFinite(idNum) || idNum <= 0) return null;
-                      return Object.assign({}, p, { id: Math.floor(idNum) });
+                      var idVal = mockAPI._normalizePropertyId(p.id);
+                      if (!idVal) return null;
+                      return Object.assign({}, p, { id: idVal });
                   })
                   .filter(Boolean)
             : [];
@@ -328,18 +333,14 @@ const mockAPI = {
     },
 
     nextOwnerPropertyId: function() {
-        const owner = this.getOwnerListingsFromStorage();
-        const maxOwner = owner.reduce(function (m, p) {
-            return Math.max(m, Number(p.id) || 0);
-        }, 100000);
-        return maxOwner + 1;
+        return null;
     },
 
     getPropertyById: function(id) {
-        const numId = parseInt(id, 10);
-        if (isNaN(numId)) return null;
+        const key = this._normalizePropertyId(id);
+        if (!key) return null;
         const ownerList = this.getOwnerListingsFromStorage();
-        return ownerList.find(p => Number(p.id) === numId) || null;
+        return ownerList.find(p => this._normalizePropertyId(p.id) === key) || null;
     },
 
     getProperties: function(filters = {}) {
