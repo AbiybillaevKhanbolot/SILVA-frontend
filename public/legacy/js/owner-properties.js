@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             return p.status === 'published';
         });
         var myIds = listings.map(function (p) {
-            return Number(p.id);
+            return String(p.id || '');
         });
         var reviewsCount = 0;
         if (typeof mockAPI !== 'undefined') {
@@ -74,8 +74,8 @@ document.addEventListener('DOMContentLoaded', async function () {
                 var id = pendingDeleteId;
                 closeDeleteModal();
                 if (id == null || typeof mockAPI === 'undefined') return;
-                var idNum = Number(id);
-                if (!isFinite(idNum) || idNum <= 0) {
+                var idValue = String(id || '').trim();
+                if (!idValue) {
                     alert('Некорректный идентификатор объекта. Обновите страницу.');
                     return;
                 }
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.deleteOwnerProperty !== 'function') {
                         throw new Error('Supabase не подключен для удаления объекта.');
                     }
-                    await window.silvaSupabaseAuth.deleteOwnerProperty(idNum);
+                    await window.silvaSupabaseAuth.deleteOwnerProperty(idValue);
                 } catch (err) {
                     alert(err && err.message ? err.message : 'Не удалось удалить объект.');
                     return;
