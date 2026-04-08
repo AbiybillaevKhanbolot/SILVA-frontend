@@ -58,44 +58,55 @@
         return parts.join('');
     }
 
-    /** Сжатие в JPEG для демо-хранилища (localStorage). */
-    function compressImageFile(file, maxSide, quality) {
-        return new Promise(function (resolve, reject) {
-            var reader = new FileReader();
-            reader.onload = function () {
-                var url = reader.result;
-                var img = new Image();
-                img.onload = function () {
-                    var w = img.naturalWidth || img.width;
-                    var h = img.naturalHeight || img.height;
-                    var scale = Math.min(1, maxSide / Math.max(w, h));
-                    var cw = Math.round(w * scale);
-                    var ch = Math.round(h * scale);
-                    var canvas = document.createElement('canvas');
-                    canvas.width = cw;
-                    canvas.height = ch;
-                    var ctx = canvas.getContext('2d');
-                    if (!ctx) {
-                        resolve(url);
-                        return;
-                    }
-                    ctx.drawImage(img, 0, 0, cw, ch);
-                    try {
-                        resolve(canvas.toDataURL('image/jpeg', quality));
-                    } catch (e) {
-                        resolve(url);
-                    }
-                };
-                img.onerror = function () {
-                    reject(new Error('img'));
-                };
-                img.src = url;
-            };
-            reader.onerror = function () {
-                reject(new Error('read'));
-            };
-            reader.readAsDataURL(file);
+    function showBanner(banner, message, isError) {
+        if (!banner) return;
+        banner.style.display = 'flex';
+        banner.textContent = message;
+        banner.className = isError
+            ? 'owner-property-page__banner account-banner account-banner--error'
+            : 'owner-property-page__banner account-banner account-banner--success';
+        banner.setAttribute('role', isError ? 'alert' : 'status');
+    }
+
+    function fileExt(name) {
+        var n = String(name || '');
+        var dot = n.lastIndexOf('.');
+        if (dot === -1) return 'jpg';
+        return n.slice(dot + 1).toLowerCase() || 'jpg';
+    }
+
+    async function uploadOwnerPropertyImage(file) {
+        var auth = global.silvaSupabaseAuth;
+        if (!auth || typeof auth.ensureClient !== 'function') {
+            throw new Error('Supabase не подключен на странице.');
+        }
+        var sb = auth.ensureClient();
+        if (!sb) throw new Error('Supabase client не инициализирован.');
+        var user = await auth.getSessionUser();
+        if (!user || !user.id) throw new Error('Сессия не найдена. Войдите заново.');
+
+        var ext = fileExt(file.name);
+        var safeExt = /^[a-z0-9]+$/.test(ext) ? ext : 'jpg';
+        var path =
+            user.id +
+            '/property-' +
+            Date.now() +
+            '-' +
+            Math.random().toString(36).slice(2, 8) +
+            '.' +
+            safeExt;
+
+        var up = await sb.storage.from('property-images').upload(path, file, {
+            upsert: false,
+            contentType: file.type || 'image/jpeg'
         });
+        if (up.error) throw up.error;
+
+        var pub = sb.storage.from('property-images').getPublicUrl(path);
+        if (!pub || !pub.data || !pub.data.publicUrl) {
+            throw new Error('Не удалось получить URL загруженного фото.');
+        }
+        return pub.data.publicUrl;
     }
 
     function visaOptionsHtml() {
@@ -503,27 +514,35 @@
             photosAdd.addEventListener('click', function () {
                 photosInput.click();
             });
-            photosInput.addEventListener('change', function () {
+            photosInput.addEventListener('change', async function () {
                 var files = Array.prototype.slice.call(photosInput.files || []);
-                var queue = Promise.resolve();
-                files.forEach(function (file) {
-                    queue = queue.then(function () {
-                        if (galleryImages.length >= 10) return;
-                        if (!file.type || file.type.indexOf('image/') !== 0) return;
-                        return compressImageFile(file, 1200, 0.8).then(function (dataUrl) {
-                            if (galleryImages.length < 10) {
-                                galleryImages.push(dataUrl);
-                                renderPhotoGrid();
-                            }
-                        });
-                    });
-                });
-                queue.then(
-                    function () {},
-                    function () {}
-                ).then(function () {
+                if (!files.length) return;
+
+                photosAdd.disabled = true;
+                photosAdd.textContent = 'Загрузка...';
+                try {
+                    for (var i = 0; i < files.length; i++) {
+                        var file = files[i];
+                        if (galleryImages.length >= 10) break;
+                        if (!file.type || file.type.indexOf('image/') !== 0) continue;
+                        var url = await uploadOwnerPropertyImage(file);
+                        if (url && galleryImages.length < 10) {
+                            galleryImages.push(url);
+                            renderPhotoGrid();
+                        }
+                    }
+                } catch (err) {
+                    showBanner(
+                        banner,
+                        (err && err.message ? err.message : 'Не удалось загрузить фото в хранилище.') +
+                            ' Проверьте bucket property-images и policies.',
+                        true
+                    );
+                } finally {
                     photosInput.value = '';
-                });
+                    photosAdd.disabled = false;
+                    photosAdd.innerHTML = '<span class="owner-property-photos-add-icon" aria-hidden="true">+</span> Добавить';
+                }
             });
         }
 
@@ -624,12 +643,7 @@
                     existing = listing;
                     galleryImages = listing.gallery_images.slice();
                     renderPhotoGrid();
-                    if (banner) {
-                        banner.textContent = 'Сохранено. Объект № ' + listing.id + '.';
-                        banner.style.display = 'flex';
-                        banner.className = 'owner-property-page__banner account-banner account-banner--success';
-                        banner.setAttribute('role', 'status');
-                    }
+                    showBanner(banner, 'Сохранено. Объект № ' + listing.id + '.', false);
                     if (!idParam) {
                         if (typeof history !== 'undefined' && history.replaceState) {
                             history.replaceState(
@@ -648,13 +662,11 @@
                     try {
                         saveListing(listing);
                     } catch (err) {
-                        if (banner) {
-                            banner.style.display = 'flex';
-                            banner.textContent =
-                                'Не удалось сохранить: слишком большой объём данных (фото). Попробуйте удалить часть снимков или уменьшить их в редакторе.';
-                            banner.className = 'owner-property-page__banner account-banner account-banner--error';
-                            banner.setAttribute('role', 'alert');
-                        }
+                        showBanner(
+                            banner,
+                            'Не удалось сохранить объект. Проверьте данные и попробуйте снова.',
+                            true
+                        );
                         return;
                     }
                     afterSaveSuccess();
