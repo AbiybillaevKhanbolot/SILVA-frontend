@@ -75,6 +75,7 @@
                 if (existing.name) user.name = existing.name;
                 if (existing.role) user.role = existing.role;
                 if (existing.property_type) user.property_type = existing.property_type;
+                if (existing.ownerVerificationStatus) user.ownerVerificationStatus = existing.ownerVerificationStatus;
             } catch (x) {}
             localStorage.setItem('silva_user', JSON.stringify(user));
             window.location.href = 'index.html';

@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     'use strict';
     if (typeof requireOwnerOrRedirect !== 'function' || !requireOwnerOrRedirect()) return;
     if (typeof initOwnerSubnav === 'function') initOwnerSubnav();
+    if (typeof applyOwnerVerificationGate === 'function') applyOwnerVerificationGate();
 
     var listings = typeof getMyOwnerListings === 'function' ? getMyOwnerListings() : [];
     var published = listings.filter(function (p) {

@@ -12,12 +12,30 @@
         }
     }
 
+    function saveUser(u) {
+        localStorage.setItem('silva_user', JSON.stringify(u || {}));
+    }
+
+    function normalizeOwnerVerificationStatus(raw) {
+        if (raw === 'verified' || raw === 'rejected') return raw;
+        return 'pending';
+    }
+
+    function ensureOwnerVerificationStatus(u) {
+        if (!u || u.role !== 'owner') return u;
+        var normalized = normalizeOwnerVerificationStatus(u.ownerVerificationStatus);
+        if (u.ownerVerificationStatus === normalized) return u;
+        var next = Object.assign({}, u, { ownerVerificationStatus: normalized });
+        saveUser(next);
+        return next;
+    }
+
     global.requireOwnerOrRedirect = function () {
         if (!localStorage.getItem('silva_user')) {
             window.location.href = 'login.html';
             return false;
         }
-        var u = getUser();
+        var u = ensureOwnerVerificationStatus(getUser());
         if (u.role !== 'owner') {
             window.location.href = 'profile.html';
             return false;
@@ -26,7 +44,38 @@
     };
 
     global.getOwnerUserEmail = function () {
-        return getUser().email || '';
+        return ensureOwnerVerificationStatus(getUser()).email || '';
+    };
+
+    global.getOwnerVerificationStatus = function () {
+        var u = ensureOwnerVerificationStatus(getUser());
+        if (!u || u.role !== 'owner') return null;
+        return normalizeOwnerVerificationStatus(u.ownerVerificationStatus);
+    };
+
+    global.isOwnerVerified = function () {
+        return global.getOwnerVerificationStatus() === 'verified';
+    };
+
+    global.applyOwnerVerificationGate = function () {
+        if (global.isOwnerVerified()) return;
+        var status = global.getOwnerVerificationStatus();
+        var message =
+            status === 'rejected'
+                ? 'Ваш аккаунт владельца отклонен. Добавление объектов временно недоступно.'
+                : 'Аккаунт владельца еще не подтвержден. Добавлять объекты можно только после подтверждения.';
+        document.querySelectorAll('.owner-add-property-btn').forEach(function (el) {
+            if (el.tagName === 'A') {
+                el.setAttribute('href', '#');
+            }
+            el.setAttribute('aria-disabled', 'true');
+            el.classList.add('is-disabled');
+            el.title = message;
+            el.addEventListener('click', function (e) {
+                e.preventDefault();
+                alert(message);
+            });
+        });
     };
 
     global.getMyOwnerListings = function () {

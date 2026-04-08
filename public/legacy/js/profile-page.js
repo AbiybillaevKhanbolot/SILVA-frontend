@@ -155,6 +155,100 @@
         }
     }
 
+    function getOwnerVerificationStatus(user) {
+        var raw = user && user.ownerVerificationStatus;
+        if (raw === 'verified' || raw === 'rejected') return raw;
+        return 'pending';
+    }
+
+    function getOwnerStatusMeta(status) {
+        if (status === 'verified') {
+            return {
+                badgeText: 'Подтвержден',
+                badgeClass: 'owner-verification-badge owner-verification-badge--verified',
+                text: 'Аккаунт подтвержден. Теперь вы можете добавлять и публиковать свои объекты.',
+                note: 'Статус обновляется в личном кабинете.'
+            };
+        }
+        if (status === 'rejected') {
+            return {
+                badgeText: 'Отклонен',
+                badgeClass: 'owner-verification-badge owner-verification-badge--rejected',
+                text: 'Проверка не пройдена. Пока статус не изменится, добавление объектов недоступно.',
+                note: 'Проверьте данные и попробуйте отправить запрос снова.'
+            };
+        }
+        return {
+            badgeText: 'На проверке',
+            badgeClass: 'owner-verification-badge owner-verification-badge--pending',
+            text: 'Ваш аккаунт владельца отправлен на подтверждение. Добавление объектов откроется после одобрения.',
+            note: 'Обычно проверка занимает до 24 часов.'
+        };
+    }
+
+    function renderSecondaryCard(u) {
+        var titleEl = document.getElementById('profile-secondary-title');
+        var contentEl = document.getElementById('profile-secondary-card-content');
+        if (!titleEl || !contentEl) return;
+
+        if (u && u.role === 'owner') {
+            var status = getOwnerVerificationStatus(u);
+            var meta = getOwnerStatusMeta(status);
+            titleEl.innerHTML =
+                '<span class="silva-icon" data-icon="shield-check" data-w="20" data-h="20" aria-hidden="true"></span>' +
+                'Подтверждение аккаунта';
+            contentEl.innerHTML =
+                '<div class="owner-verification-card">' +
+                '<div class="' +
+                meta.badgeClass +
+                '">' +
+                escapeHtml(meta.badgeText) +
+                '</div>' +
+                '<p class="owner-verification-text">' +
+                escapeHtml(meta.text) +
+                '</p>' +
+                '<p class="owner-verification-note">' +
+                escapeHtml(meta.note) +
+                '</p>' +
+                '</div>';
+            return;
+        }
+
+        titleEl.innerHTML =
+            '<span class="silva-icon" data-icon="sprout" data-w="20" data-h="20" aria-hidden="true"></span>' +
+            'Виртуальный сад';
+        contentEl.innerHTML =
+            '<div class="loyalty-dashboard">' +
+            '<div class="loyalty-dashboard-top">' +
+            '<div class="loyalty-dashboard-stats">' +
+            '<div class="loyalty-dashboard-points-line">' +
+            '<span class="loyalty-dashboard-points" id="loyalty-card-points">0</span>' +
+            '<span class="loyalty-dashboard-points-unit">баллов</span>' +
+            '</div>' +
+            '<div class="loyalty-dashboard-level-row">' +
+            '<span class="loyalty-dashboard-level-name" id="loyalty-card-level">Семечко</span>' +
+            '<span class="loyalty-dashboard-discount" id="loyalty-discount-wrap">скидка <span id="loyalty-card-discount">0</span>%</span>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="loyalty-dashboard-progress">' +
+            '<p class="loyalty-dashboard-progress-text" id="loyalty-card-next-text"></p>' +
+            '<div class="loyalty-dashboard-bar">' +
+            '<div class="loyalty-dashboard-bar-fill" id="loyalty-card-bar-fill"></div>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="loyalty-perks-block">' +
+            '<h3 class="loyalty-perks-heading">Привилегии уровня</h3>' +
+            '<ul class="loyalty-perks-list" id="loyalty-card-benefits"></ul>' +
+            '</div>' +
+            '<div class="loyalty-dashboard-footer">' +
+            '<p class="loyalty-dashboard-footnote" id="loyalty-card-short"></p>' +
+            '<a href="loyalty.html" class="btn btn-primary loyalty-dashboard-cta">Программа лояльности</a>' +
+            '</div>';
+        renderLoyaltyCard();
+    }
+
     var modalAvatarDataUrl = null;
     var modalAvatarRemoved = false;
 
@@ -253,7 +347,7 @@
             var u = loadUser();
             renderViewAvatar(document.getElementById('profile-view-avatar'), u.avatar, u.name);
             renderViewFields(u);
-            renderLoyaltyCard();
+            renderSecondaryCard(u);
         }
 
         refreshPage();

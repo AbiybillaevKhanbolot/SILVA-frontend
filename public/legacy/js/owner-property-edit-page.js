@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof requireOwnerOrRedirect !== 'function' || !requireOwnerOrRedirect()) return;
 
     var idParam = typeof getUrlParameter === 'function' ? getUrlParameter('id') : null;
+    if (!idParam && typeof isOwnerVerified === 'function' && !isOwnerVerified()) {
+        window.location.href = 'owner-dashboard.html';
+        return;
+    }
     var backBlock = document.getElementById('owner-property-edit-page-back');
     if (backBlock && !idParam) {
         backBlock.style.display = 'none';
