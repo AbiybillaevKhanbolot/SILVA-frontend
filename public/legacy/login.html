@@ -45,6 +45,8 @@
     </main>
     <div id="footer-container"></div>
     <script src="js/icons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
@@ -67,18 +69,29 @@
                 });
             }
         })();
-        document.getElementById('login-form').addEventListener('submit', function(e) {
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            var user = { email: this.email.value };
+            var submitBtn = this.querySelector('button[type="submit"]');
+            var originalText = submitBtn ? submitBtn.textContent : '';
             try {
-                var existing = JSON.parse(localStorage.getItem('silva_user') || '{}');
-                if (existing.name) user.name = existing.name;
-                if (existing.role) user.role = existing.role;
-                if (existing.property_type) user.property_type = existing.property_type;
-                if (existing.ownerVerificationStatus) user.ownerVerificationStatus = existing.ownerVerificationStatus;
-            } catch (x) {}
-            localStorage.setItem('silva_user', JSON.stringify(user));
-            window.location.href = 'index.html';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Вход...';
+                }
+                await window.silvaSupabaseAuth.signIn(this.email.value.trim(), this.password.value);
+                var u = {};
+                try {
+                    u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+                } catch (x) {}
+                window.location.href = u.role === 'admin' ? 'admin.html' : 'index.html';
+            } catch (err) {
+                alert(err && err.message ? err.message : 'Не удалось войти. Проверьте данные и попробуйте снова.');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText || 'Войти';
+                }
+            }
         });
     </script>
 </body>

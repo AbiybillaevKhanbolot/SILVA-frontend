@@ -115,6 +115,8 @@
     </main>
     <div id="footer-container"></div>
     <script src="js/icons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
@@ -179,7 +181,7 @@
         return null;
     }
 
-    document.getElementById('register-form-guest').addEventListener('submit', function(e) {
+    document.getElementById('register-form-guest').addEventListener('submit', async function(e) {
         e.preventDefault();
         showError('guest-form-error', '');
         var fullname = this.fullname.value.trim();
@@ -188,16 +190,32 @@
         var confirmPwd = this.password_confirm.value;
         var err = validatePassword(pwd, confirmPwd);
         if (err) { showError('guest-form-error', err); return; }
-        localStorage.setItem('silva_user', JSON.stringify({
-            name: fullname,
-            email: email,
-            role: 'guest',
-            newsletter: !!this.newsletter.checked
-        }));
-        window.location.href = 'index.html';
+        var submitBtn = this.querySelector('button[type="submit"]');
+        var originalText = submitBtn ? submitBtn.textContent : '';
+        try {
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Регистрация...';
+            }
+            await window.silvaSupabaseAuth.signUp({
+                full_name: fullname,
+                email: email,
+                password: pwd,
+                role: 'guest',
+                newsletter: !!this.newsletter.checked
+            });
+            window.location.href = 'index.html';
+        } catch (ex) {
+            showError('guest-form-error', ex && ex.message ? ex.message : 'Не удалось зарегистрироваться.');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText || 'Зарегистрироваться';
+            }
+        }
     });
 
-    document.getElementById('register-form-owner').addEventListener('submit', function(e) {
+    document.getElementById('register-form-owner').addEventListener('submit', async function(e) {
         e.preventDefault();
         showError('owner-form-error', '');
         var fullname = this.fullname.value.trim();
@@ -207,14 +225,29 @@
         var err = validatePassword(pwd, confirmPwd);
         if (err) { showError('owner-form-error', err); return; }
         if (!this.business_confirm.checked) { showError('owner-form-error', 'Подтвердите право представлять бизнес'); return; }
-        localStorage.setItem('silva_user', JSON.stringify({
-            name: fullname,
-            email: email,
-            role: 'owner',
-            ownerVerificationStatus: 'pending',
-            newsletter: !!this.newsletter.checked
-        }));
-        window.location.href = 'owner-dashboard.html';
+        var submitBtn = this.querySelector('button[type="submit"]');
+        var originalText = submitBtn ? submitBtn.textContent : '';
+        try {
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Регистрация...';
+            }
+            await window.silvaSupabaseAuth.signUp({
+                full_name: fullname,
+                email: email,
+                password: pwd,
+                role: 'owner',
+                newsletter: !!this.newsletter.checked
+            });
+            window.location.href = 'owner-dashboard.html';
+        } catch (ex) {
+            showError('owner-form-error', ex && ex.message ? ex.message : 'Не удалось зарегистрироваться.');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText || 'Зарегистрироваться';
+            }
+        }
     });
 })();
     </script>
