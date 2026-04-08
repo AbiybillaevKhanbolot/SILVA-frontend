@@ -1,6 +1,24 @@
 // Страница «Мои бронирования»: данные из localStorage (silva_bookings)
 (function () {
     'use strict';
+    function getCurrentUserEmail() {
+        try {
+            var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            return (u && u.email ? String(u.email) : '').trim().toLowerCase();
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function personalBookingsKey() {
+        var email = getCurrentUserEmail();
+        return email ? 'silva_bookings_' + email : 'silva_bookings';
+    }
+
+    function loyaltyPointsKey() {
+        var email = getCurrentUserEmail();
+        return email ? 'silva_loyalty_points_' + email : 'silva_loyalty_points';
+    }
 
     function parseYMD(str) {
         if (!str || !/^\d{4}-\d{2}-\d{2}$/.test(str)) return null;
@@ -55,16 +73,30 @@
 
     function loadBookings() {
         try {
-            var raw = localStorage.getItem('silva_bookings');
+            var key = personalBookingsKey();
+            var raw = localStorage.getItem(key);
             var list = raw ? JSON.parse(raw) : [];
-            return Array.isArray(list) ? list : [];
+            if (Array.isArray(list)) return list;
+        } catch (e) {}
+        try {
+            // Fallback for old data format: filter shared list by current user email.
+            var email = getCurrentUserEmail();
+            var sharedRaw = localStorage.getItem('silva_bookings');
+            var shared = sharedRaw ? JSON.parse(sharedRaw) : [];
+            if (!Array.isArray(shared)) return [];
+            if (!email) return [];
+            var mine = shared.filter(function (b) {
+                return String((b && b.guestEmail) || '').trim().toLowerCase() === email;
+            });
+            localStorage.setItem(personalBookingsKey(), JSON.stringify(mine));
+            return mine;
         } catch (e) {
             return [];
         }
     }
 
     function saveBookings(list) {
-        localStorage.setItem('silva_bookings', JSON.stringify(list));
+        localStorage.setItem(personalBookingsKey(), JSON.stringify(list));
     }
 
     var pendingCancelId = null;
@@ -99,8 +131,9 @@
             revoke = Math.floor(paid / 100);
         }
         if (revoke <= 0) return;
-        var cur = parseInt(localStorage.getItem('silva_loyalty_points') || '0', 10) || 0;
-        localStorage.setItem('silva_loyalty_points', String(Math.max(0, cur - revoke)));
+        var key = loyaltyPointsKey();
+        var cur = parseInt(localStorage.getItem(key) || '0', 10) || 0;
+        localStorage.setItem(key, String(Math.max(0, cur - revoke)));
     }
 
     function confirmCancelDelete() {
@@ -119,6 +152,21 @@
             return String(x.id) !== String(id);
         });
         saveBookings(next);
+        // Keep owner dashboard consistent: remove only this user's booking in shared list.
+        try {
+            var email = getCurrentUserEmail();
+            var sharedRaw = localStorage.getItem('silva_bookings');
+            var shared = sharedRaw ? JSON.parse(sharedRaw) : [];
+            if (Array.isArray(shared)) {
+                var sharedNext = shared.filter(function (x) {
+                    return !(
+                        String(x.id) === String(id) &&
+                        String((x && x.guestEmail) || '').trim().toLowerCase() === email
+                    );
+                });
+                localStorage.setItem('silva_bookings', JSON.stringify(sharedNext));
+            }
+        } catch (e) {}
         revokeLoyaltyForBooking(removed);
         render();
     }

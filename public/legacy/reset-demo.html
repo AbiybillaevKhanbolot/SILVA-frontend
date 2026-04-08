@@ -20,7 +20,7 @@
             <p>
                 Будут удалены демо-брони (<code>silva_bookings</code>),
                 объекты владельца (<code>silva_owner_properties</code>)
-                и обнулены баллы «Виртуального сада» (<code>silva_loyalty_points</code>).
+                и обнулены ваши баллы «Виртуального сада» (<code>silva_loyalty_points_[email]</code>).
                 Профиль и избранное не трогаем.
             </p>
             <div class="reset-demo-actions">
@@ -31,9 +31,22 @@
     </div>
     <script>
         (function () {
+            function currentEmail() {
+                try {
+                    var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+                    return (u && u.email ? String(u.email) : '').trim().toLowerCase();
+                } catch (e) {
+                    return '';
+                }
+            }
+
             function runReset() {
                 try {
-                    localStorage.setItem('silva_loyalty_points', '0');
+                    var email = currentEmail();
+                    var lpKey = email ? 'silva_loyalty_points_' + email : 'silva_loyalty_points';
+                    var bKey = email ? 'silva_bookings_' + email : 'silva_bookings';
+                    localStorage.setItem(lpKey, '0');
+                    localStorage.setItem(bKey, '[]');
                     localStorage.setItem('silva_bookings', '[]');
                     localStorage.removeItem('silva_owner_properties');
                 } catch (e) {}
