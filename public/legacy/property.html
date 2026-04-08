@@ -954,6 +954,21 @@
             margin-bottom: 1rem;
         }
         .review-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.75rem; }
+        .review-card-author-wrap { display: flex; align-items: flex-start; gap: 0.625rem; }
+        .review-card-avatar {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            background: var(--color-gray-100);
+            border: 1px solid var(--color-gray-200);
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .review-card-avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .review-card-avatar-placeholder { font-size: 0.75rem; font-weight: 600; color: var(--color-gray-600); }
         .review-card-author { font-weight: 600; color: #000000; font-size: 0.9375rem; }
         .review-card-meta { font-size: 0.8125rem; color: var(--color-gray-500); margin-top: 0.25rem; }
         .review-card-score { background: var(--color-emerald-100); color: var(--color-emerald-700); padding: 0.35rem 0.6rem; border-radius: 5px; font-size: 0.8125rem; font-weight: 600; }
@@ -961,6 +976,38 @@
         .review-card-expand { font-size: 0.875rem; color: var(--color-emerald-600); cursor: pointer; margin-top: 0.5rem; background: none; border: none; padding: 0; }
         .review-card-helpful { font-size: 0.8125rem; color: var(--color-gray-500); margin-top: 1rem; }
         .review-card-helpful span { margin-right: 0.75rem; cursor: pointer; }
+        .review-card-hotel-response {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--color-gray-100);
+            font-size: 0.875rem;
+            color: var(--color-gray-600);
+        }
+        .review-card-hotel-response-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
+        .review-card-owner-avatar-wrap {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 1px solid var(--color-gray-200);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-emerald-100);
+            flex-shrink: 0;
+        }
+        .review-card-owner-avatar {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            color: var(--color-emerald-700);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
         .btn-leave-review {
             padding: 0.625rem 1.25rem;
             border-radius: 5px;

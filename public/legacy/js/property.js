@@ -1,5 +1,14 @@
 // Property page logic
 document.addEventListener('DOMContentLoaded', function() {
+    function getFavoritesStorageKey() {
+        try {
+            var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            var email = (u && u.email ? String(u.email) : '').trim().toLowerCase();
+            return email ? 'silva_favorites_' + email : 'silva_favorites';
+        } catch (e) {
+            return 'silva_favorites';
+        }
+    }
     const propertyId = getUrlParameter('id');
     if (!propertyId) {
         window.location.href = 'catalog.html';
@@ -179,18 +188,18 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             let favorites = [];
             try {
-                favorites = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
+                favorites = JSON.parse(localStorage.getItem(getFavoritesStorageKey()) || '[]');
             } catch (e) {}
             const isFavorite = favorites.indexOf(propertyId) !== -1;
             if (isFavorite) favoriteBtn.classList.add('in-favorites');
             const svgEl = favoriteBtn.querySelector('svg');
             if (svgEl) svgEl.style.fill = isFavorite ? 'currentColor' : 'none';
             favoriteBtn.addEventListener('click', function() {
-                favorites = JSON.parse(localStorage.getItem('silva_favorites') || '[]');
+                favorites = JSON.parse(localStorage.getItem(getFavoritesStorageKey()) || '[]');
                 const idx = favorites.indexOf(propertyId);
                 if (idx === -1) favorites.push(propertyId);
                 else favorites.splice(idx, 1);
-                localStorage.setItem('silva_favorites', JSON.stringify(favorites));
+                localStorage.setItem(getFavoritesStorageKey(), JSON.stringify(favorites));
                 const nowFav = favorites.indexOf(propertyId) !== -1;
                 favoriteBtn.classList.toggle('in-favorites', nowFav);
                 const s = favoriteBtn.querySelector('svg');
@@ -756,6 +765,20 @@ document.addEventListener('DOMContentLoaded', function() {
         return 'Нормально';
     };
 
+    const escapeHtml = (v) => String(v == null ? '' : v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    const initialsFromName = (name) => {
+        var n = String(name || '').trim();
+        if (!n) return '?';
+        var parts = n.split(/\s+/).filter(Boolean);
+        if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+        return n.slice(0, 2).toUpperCase();
+    };
+
     function renderReviews() {
         let reviews = mockAPI.getReviewsForProperty(propertyId);
         const sortVal = reviewsSortSelect ? reviewsSortSelect.value : 'useful';
@@ -808,9 +831,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 const yes = (r.helpfulYes || 0) + (stored.yes || 0);
                 const no = (r.helpfulNo || 0) + (stored.no || 0);
                 const helpful = 'Отзыв был полезен? <span data-review-id="' + (r.id || '') + '" data-helpful="yes">Да (' + yes + ')</span> <span data-review-id="' + (r.id || '') + '" data-helpful="no">Нет (' + no + ')</span>';
-                const hotelResp = r.hotelResponse ? '<div class="review-card-hotel-response" style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--color-gray-100);font-size:0.875rem;color:var(--color-gray-600);"><strong>Ответ отеля:</strong> ' + r.hotelResponse + '</div>' : '';
+                const guestAvatarUrl = r.avatar && String(r.avatar).trim() ? String(r.avatar).trim() : '';
+                const guestAvatar = guestAvatarUrl
+                    ? '<img class="review-card-avatar-img" src="' + escapeHtml(guestAvatarUrl) + '" alt="">'
+                    : '<span class="review-card-avatar-placeholder" aria-hidden="true">' + escapeHtml(initialsFromName(r.author || 'Гость')) + '</span>';
+                const ownerAvatarUrl = r.hotelResponseAvatar && String(r.hotelResponseAvatar).trim() ? String(r.hotelResponseAvatar).trim() : '';
+                const ownerAvatar = ownerAvatarUrl
+                    ? '<img class="review-card-avatar-img" src="' + escapeHtml(ownerAvatarUrl) + '" alt="">'
+                    : '<span class="review-card-owner-avatar" aria-hidden="true">В</span>';
+                const hotelResp = r.hotelResponse ? '<div class="review-card-hotel-response"><div class="review-card-hotel-response-head"><span class="review-card-owner-avatar-wrap">' + ownerAvatar + '</span><strong>Ответ владельца</strong></div><div>' + escapeHtml(r.hotelResponse) + '</div></div>' : '';
                 const guestPhotos = (r.photos && r.photos.length) ? '<div class="review-card-guest-photos" style="margin-top:0.75rem;"><strong>Фотографии от гостя</strong><div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">' + r.photos.map(p => '<img src="' + (typeof p === 'string' ? p : (p.url || '')) + '" alt="" style="width:4rem;height:4rem;object-fit:cover;border-radius:5px;">').join('') + '</div></div>' : '';
-                return '<div class="review-card" data-review-id="' + (r.id || '') + '"><div class="review-card-header"><div><span class="review-card-author">' + (r.author || 'Гость') + '</span> <span class="review-card-meta">' + (r.stayType || '') + ', ' + (r.stayDate || '') + '<br>' + (r.roomInfo || '') + '</span></div><div><span class="review-card-score">' + (r.rating != null ? (String(r.rating).replace('.', ',') + ' ' + (r.ratingLabel || ratingLabel(r.rating))) : '—') + '</span></div></div><div class="review-card-text-wrap"><p class="review-card-text review-card-text-content">' + (r.text || '') + '</p><button type="button" class="review-card-expand" style="display:none;">Развернуть отзыв</button></div>' + guestPhotos + '<div class="review-card-helpful">' + helpful + '</div>' + hotelResp + '</div>';
+                return '<div class="review-card" data-review-id="' + (r.id || '') + '"><div class="review-card-header"><div class="review-card-author-wrap"><div class="review-card-avatar">' + guestAvatar + '</div><div><span class="review-card-author">' + escapeHtml(r.author || 'Гость') + '</span> <span class="review-card-meta">' + escapeHtml(r.stayType || '') + ', ' + escapeHtml(r.stayDate || '') + '<br>' + escapeHtml(r.roomInfo || '') + '</span></div></div><div><span class="review-card-score">' + (r.rating != null ? (String(r.rating).replace('.', ',') + ' ' + escapeHtml(r.ratingLabel || ratingLabel(r.rating))) : '—') + '</span></div></div><div class="review-card-text-wrap"><p class="review-card-text review-card-text-content">' + escapeHtml(r.text || '') + '</p><button type="button" class="review-card-expand" style="display:none;">Развернуть отзыв</button></div>' + guestPhotos + '<div class="review-card-helpful">' + helpful + '</div>' + hotelResp + '</div>';
             }).join('');
         }
 
