@@ -6,20 +6,93 @@
     <title>Администрирование - Silva</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/account-pages.css">
 </head>
-<body>
+<body class="profile-body-inter">
     <div id="header-container"></div>
-    <main style="padding: 6rem 0; text-align: center;">
-        <div class="container">
-            <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">Администрирование</h1>
-            <p style="color: var(--color-gray-600);">Панель администратора.</p>
+
+    <main class="account-page account-page--profile">
+        <div class="account-page-inner account-page-inner--profile">
+            <div class="account-main account-main--full">
+                <h1 class="account-page-title">Панель администратора</h1>
+                <p class="account-page-lead">Административный кабинет: общая статистика и сообщения обратной связи.</p>
+
+                <div id="admin-banner" class="account-banner account-banner--error" style="display:none;" role="alert"></div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;margin-bottom:1rem;">
+                    <section class="account-card" style="margin-bottom:0;">
+                        <h2 class="account-card-title profile-data-card-title">
+                            <span class="silva-icon" data-icon="circle-user" data-w="20" data-h="20" aria-hidden="true"></span>
+                            Контактные данные
+                        </h2>
+                        <div id="admin-profile" style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;"></div>
+                        <div style="margin-top:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
+                            <button type="button" class="btn btn-primary" id="admin-edit-btn">Редактировать</button>
+                        </div>
+                    </section>
+
+                    <section class="account-card" style="margin-bottom:0;">
+                        <h2 class="account-card-title">Статистика</h2>
+                        <div id="admin-stats"></div>
+                    </section>
+                </div>
+
+                <section class="account-card">
+                    <h2 class="account-card-title">Обратная связь</h2>
+                    <div id="admin-feedback"></div>
+                </section>
+            </div>
         </div>
     </main>
+
+    <div id="admin-edit-modal" class="profile-modal-overlay" aria-hidden="true" role="presentation">
+        <div class="profile-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+            <button type="button" class="profile-modal-close" id="admin-modal-x" aria-label="Закрыть">×</button>
+            <h2 id="admin-modal-title" class="profile-modal-title">Редактировать профиль администратора</h2>
+
+            <div class="profile-modal-photo-section">
+                <p class="profile-modal-photo-label">Фото профиля</p>
+                <div class="profile-modal-photo-row">
+                    <div class="profile-modal-preview" id="admin-modal-avatar-preview"></div>
+                    <div class="profile-modal-photo-btns">
+                        <input type="file" id="admin-modal-avatar-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+                        <button type="button" class="btn btn-ghost" id="admin-modal-btn-photo">Добавить фото</button>
+                        <button type="button" class="btn btn-ghost profile-modal-btn-danger" id="admin-modal-btn-remove-photo" style="display:none;">Удалить фото</button>
+                    </div>
+                </div>
+                <p class="profile-modal-hint">JPG, PNG, WebP или GIF, до 2 МБ</p>
+            </div>
+
+            <form id="admin-modal-form" class="profile-modal-form">
+                <div class="account-form-grid">
+                    <div class="account-field">
+                        <label for="admin-modal-name">Имя и фамилия</label>
+                        <input type="text" id="admin-modal-name" class="input" name="name" autocomplete="name" required>
+                    </div>
+                    <div class="account-field">
+                        <label for="admin-modal-email">Электронная почта</label>
+                        <input type="email" id="admin-modal-email" class="input" name="email" autocomplete="email" required>
+                    </div>
+                    <div class="account-field" style="grid-column:1 / -1;">
+                        <label for="admin-modal-phone">Телефон</label>
+                        <input type="tel" id="admin-modal-phone" class="input" name="phone" autocomplete="tel" placeholder="+7 (999) 000-00-00">
+                    </div>
+                </div>
+                <div class="profile-modal-actions">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="footer-container"></div>
     <script src="js/icons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/auth-modal.js"></script>
     <script src="js/components/header.js"></script>
     <script src="js/components/footer.js"></script>
+    <script src="js/admin-dashboard.js"></script>
 </body>
 </html>
