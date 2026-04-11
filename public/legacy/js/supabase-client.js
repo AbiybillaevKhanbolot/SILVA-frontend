@@ -384,6 +384,26 @@
         return s;
     }
 
+    /** Ночи между датами YYYY-MM-DD (как на странице брони). */
+    function bookingNightsBetween(checkInStr, checkOutStr) {
+        if (!checkInStr || !checkOutStr) return 1;
+        var a = String(checkInStr).split('-').map(Number);
+        var b = String(checkOutStr).split('-').map(Number);
+        if (a.length < 3 || b.length < 3) return 1;
+        var d0 = new Date(a[0], a[1] - 1, a[2]);
+        var d1 = new Date(b[0], b[1] - 1, b[2]);
+        var ms = d1.getTime() - d0.getTime();
+        var n = Math.round(ms / 86400000);
+        return Math.max(1, isFinite(n) ? n : 1);
+    }
+
+    /** Тип оплаты в БД: как в booking.js — 'full' | '30'. */
+    function normalizeBookingPayType(raw) {
+        var s = String(raw == null ? 'full' : raw).trim().toLowerCase();
+        if (s === '30' || s === 'partial' || s === 'predoplata') return '30';
+        return 'full';
+    }
+
     async function createBooking(payload) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
@@ -396,19 +416,39 @@
         if (pid == null) throw new Error('Не указан объект для бронирования');
         var amount = Number(payload.totalRub);
         if (isNaN(amount) || amount < 0) amount = 0;
-        // user_id — миграции SILVA-backend; guest_id / total_amount — частые legacy-поля на проде.
-        var ins = await sb.from('bookings').insert({
+        var ch = Number(payload.children);
+        if (isNaN(ch) || ch < 0) ch = 0;
+        var g = Number(payload.guests);
+        if (isNaN(g) || g < 1) g = 1;
+        var adults;
+        if (payload.adults != null && payload.adults !== '') {
+            var pa = parseInt(payload.adults, 10);
+            adults = isNaN(pa) ? Math.max(1, g - ch) : Math.max(1, pa);
+        } else {
+            adults = Math.max(1, g - ch);
+        }
+        var nights = bookingNightsBetween(payload.checkIn, payload.checkOut);
+        var payType = normalizeBookingPayType(payload.payType);
+        // Поля, которые часто NOT NULL на проде (расхождение с минимальной миграцией): guest_id, total_amount, pay_type, adults, nights, внешний id платежа.
+        var row = {
             user_id: uid,
             guest_id: uid,
             property_id: pid,
             check_in: payload.checkIn,
             check_out: payload.checkOut,
-            guests: payload.guests,
-            children: payload.children || 0,
+            guests: g,
+            children: ch,
+            adults: adults,
+            nights: nights,
             total_price: amount,
             total_amount: amount,
+            pay_type: payType,
             status: 'pending'
-        });
+        };
+        if (payload.paymentId != null && String(payload.paymentId).trim() !== '') {
+            row.yookassa_payment_id = String(payload.paymentId).trim();
+        }
+        var ins = await sb.from('bookings').insert(row);
         if (ins.error) throw ins.error;
     }
 
