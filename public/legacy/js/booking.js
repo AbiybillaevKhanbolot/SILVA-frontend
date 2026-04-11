@@ -19,6 +19,38 @@ document.addEventListener('DOMContentLoaded', async function() {
         return email ? 'silva_loyalty_points_' + email : 'silva_loyalty_points';
     }
 
+    /** Страница брони в iframe (React): ЮKassa запрещает свою страницу во фрейме — пишем в top и редиректим top. */
+    function topSessionStorage() {
+        try {
+            return window.top.sessionStorage;
+        } catch (e) {
+            return sessionStorage;
+        }
+    }
+
+    function redirectTop(url) {
+        try {
+            window.top.location.href = url;
+        } catch (e) {
+            window.location.href = url;
+        }
+    }
+
+    /** На проде: window.SILVA_PAYMENT_URLS на родителе (iframe) или на window (см. docs/supabase-yookassa-setup.md). */
+    function getPaymentUrls() {
+        try {
+            if (window.parent && window.parent !== window && window.parent.SILVA_PAYMENT_URLS) {
+                return window.parent.SILVA_PAYMENT_URLS;
+            }
+        } catch (e) {}
+        return window.SILVA_PAYMENT_URLS || null;
+    }
+
+    function silvaYookassaCreatePaymentUrl() {
+        var u = getPaymentUrls();
+        return (u && u.create) || '/api/yookassa/create-payment';
+    }
+
     const propertyId = getUrlParameter('property');
     const fromDateStr = getUrlParameter('from');
     const toDateStr = getUrlParameter('to');
@@ -231,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 loyaltyPointsToAward: loyaltyPointsToAward
             };
 
-            const payResp = await fetch('/api/yookassa/create-payment', {
+            const payResp = await fetch(silvaYookassaCreatePaymentUrl(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
@@ -258,9 +290,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
 
             if (payResp.ok && payJson.confirmationUrl && payJson.paymentId) {
-                sessionStorage.setItem('silva_pending_booking', JSON.stringify(pendingBooking));
-                sessionStorage.setItem('silva_yookassa_payment_id', payJson.paymentId);
-                window.location.href = payJson.confirmationUrl;
+                var st = topSessionStorage();
+                st.setItem('silva_pending_booking', JSON.stringify(pendingBooking));
+                st.setItem('silva_yookassa_payment_id', payJson.paymentId);
+                redirectTop(payJson.confirmationUrl);
                 return;
             }
 

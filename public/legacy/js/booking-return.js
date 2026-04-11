@@ -1,11 +1,41 @@
 /**
  * Возврат с оплаты ЮKassa: проверка платежа и создание брони в Supabase.
- * Работает в связке с dev-прокси /api/yookassa/* (npm run dev).
+ * Dev: прокси /api/yookassa/*. Прод: window.SILVA_PAYMENT_URLS.status (см. docs/supabase-yookassa-setup.md).
  */
 document.addEventListener('DOMContentLoaded', async function () {
     var msgEl = document.getElementById('booking-return-msg');
     var titleEl = document.querySelector('.booking-return-card h1');
     var actionsEl = document.getElementById('booking-return-actions');
+
+    function storageGetItem(key) {
+        try {
+            var v = window.top.sessionStorage.getItem(key);
+            if (v != null) return v;
+        } catch (e) {}
+        return sessionStorage.getItem(key);
+    }
+
+    function storageRemovePending() {
+        try {
+            window.top.sessionStorage.removeItem('silva_yookassa_payment_id');
+            window.top.sessionStorage.removeItem('silva_pending_booking');
+        } catch (e) {}
+        try {
+            sessionStorage.removeItem('silva_yookassa_payment_id');
+            sessionStorage.removeItem('silva_pending_booking');
+        } catch (e2) {}
+    }
+
+    function silvaYookassaPaymentStatusUrl(paymentId) {
+        var urls = window.SILVA_PAYMENT_URLS;
+        try {
+            if (window.parent && window.parent !== window && window.parent.SILVA_PAYMENT_URLS) {
+                urls = window.parent.SILVA_PAYMENT_URLS;
+            }
+        } catch (e) {}
+        var prefix = (urls && urls.status) || '/api/yookassa/payment?id=';
+        return prefix + encodeURIComponent(paymentId);
+    }
 
     function setError(title, text, actionsHtml) {
         if (titleEl) titleEl.textContent = title;
@@ -26,8 +56,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
-    var paymentId = sessionStorage.getItem('silva_yookassa_payment_id');
-    var pendingRaw = sessionStorage.getItem('silva_pending_booking');
+    var paymentId = storageGetItem('silva_yookassa_payment_id');
+    var pendingRaw = storageGetItem('silva_pending_booking');
 
     if (!paymentId || !pendingRaw) {
         setError(
@@ -47,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     try {
-        var payRes = await fetch('/api/yookassa/payment?id=' + encodeURIComponent(paymentId), {
+        var payRes = await fetch(silvaYookassaPaymentStatusUrl(paymentId), {
             credentials: 'same-origin',
         });
         var pay = await payRes.json();
@@ -136,10 +166,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             localStorage.setItem(lpKey, String(cur + lpAward));
         }
 
-        sessionStorage.removeItem('silva_yookassa_payment_id');
-        sessionStorage.removeItem('silva_pending_booking');
+        storageRemovePending();
 
-        window.location.replace('my-bookings.html?success=1');
+        try {
+            window.top.location.replace('my-bookings.html?success=1');
+        } catch (e) {
+            window.location.replace('my-bookings.html?success=1');
+        }
     } catch (e) {
         var m = e && e.message ? String(e.message) : 'Ошибка';
         setError(
