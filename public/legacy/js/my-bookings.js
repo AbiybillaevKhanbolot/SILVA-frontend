@@ -1,4 +1,4 @@
-// Страница «Мои бронирования»: данные из localStorage (silva_bookings)
+// Страница «Мои бронирования»: в основном Supabase; локальный кэш — silva_bookings
 (function () {
     'use strict';
     function getCurrentUserEmail() {
