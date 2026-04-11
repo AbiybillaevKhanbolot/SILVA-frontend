@@ -146,7 +146,12 @@ const mockAPI = {
     _normalizePropertyId: function(value) {
         if (value == null) return null;
         var s = String(value).trim();
-        return s ? s : null;
+        if (!s) return null;
+        if (/^\d+$/.test(s)) {
+            var n = parseInt(s, 10);
+            if (!isNaN(n) && n >= 1) return String(n);
+        }
+        return s;
     },
     properties: [],
 

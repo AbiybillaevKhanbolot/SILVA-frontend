@@ -512,44 +512,64 @@
         });
     }
 
+    async function attachReviewProfiles(sb, rows) {
+        if (!sb || !rows || !rows.length) return rows;
+        var ids = [];
+        var seen = {};
+        rows.forEach(function (r) {
+            var uid = r && r.user_id;
+            if (uid == null || uid === '') return;
+            var key = String(uid);
+            if (seen[key]) return;
+            seen[key] = true;
+            ids.push(uid);
+        });
+        if (!ids.length) return rows;
+        var pr = await sb.from('profiles').select('id, full_name, avatar_url').in('id', ids);
+        if (pr.error) {
+            if (typeof console !== 'undefined' && console.warn) {
+                console.warn('[Silva] profiles batch for reviews:', pr.error.message || pr.error.code || pr.error);
+            }
+            return rows;
+        }
+        var byId = {};
+        (pr.data || []).forEach(function (p) {
+            if (p && p.id != null) byId[String(p.id)] = p;
+        });
+        return rows.map(function (row) {
+            var uid = row && row.user_id;
+            var p = uid != null ? byId[String(uid)] : null;
+            if (!p) return row;
+            return Object.assign({}, row, {
+                profiles: { full_name: p.full_name, avatar_url: p.avatar_url }
+            });
+        });
+    }
+
+    /**
+     * Только «голый» select по reviews + отдельные batch по review_responses и profiles.
+     * Вложенный select(..., profiles(...), review_responses(...)) для роли anon часто падает целиком,
+     * из‑за чего гость в другом браузере не видел отзывов даже при корректных RLS на reviews.
+     */
     async function fetchReviewsForProperty(propertyId) {
         var sb = ensureClient();
         if (!sb) return [];
         var pid = normalizeReviewPropertyId(propertyId);
         if (pid == null) return [];
         var order = { ascending: false };
-
-        var selFull =
-            'id, property_id, user_id, rating, text, avatar_url, created_at, profiles(full_name, avatar_url), review_responses(text, owner_avatar_url)';
-        var q = await sb.from('reviews').select(selFull).eq('property_id', pid).order('created_at', order);
-        if (q.error && typeof console !== 'undefined' && console.warn) {
-            console.warn('[Silva] reviews select (full):', q.error.message || q.error.code || q.error);
-        }
-        if (!q.error && q.data) {
-            return (q.data || []).map(mapReviewRowToLegacy);
-        }
-
-        var selNoProfiles =
-            'id, property_id, user_id, rating, text, avatar_url, created_at, review_responses(text, owner_avatar_url)';
-        var q2 = await sb.from('reviews').select(selNoProfiles).eq('property_id', pid).order('created_at', order);
-        if (q2.error && typeof console !== 'undefined' && console.warn) {
-            console.warn('[Silva] reviews select (no profiles):', q2.error.message || q2.error.code || q2.error);
-        }
-        if (!q2.error && q2.data) {
-            return (q2.data || []).map(mapReviewRowToLegacy);
-        }
-
         var selBare = 'id, property_id, user_id, rating, text, avatar_url, created_at';
         var q3 = await sb.from('reviews').select(selBare).eq('property_id', pid).order('created_at', order);
         if (q3.error) {
             if (typeof console !== 'undefined' && console.warn) {
-                console.warn('[Silva] reviews select (bare):', q3.error.message || q3.error.code || q3.error);
+                console.warn('[Silva] reviews select:', q3.error.message || q3.error.code || q3.error);
             }
             return [];
         }
-        if (!q3.data) return [];
-        var withResp = await attachReviewResponses(sb, q3.data);
-        return (withResp || []).map(mapReviewRowToLegacy);
+        var rows = q3.data || [];
+        if (!rows.length) return [];
+        rows = await attachReviewResponses(sb, rows);
+        rows = await attachReviewProfiles(sb, rows);
+        return rows.map(mapReviewRowToLegacy);
     }
 
     async function insertReview(payload) {
