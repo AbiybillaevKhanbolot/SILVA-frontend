@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.updateBookingStatus === 'function') {
                 try {
-                    await window.silvaSupabaseAuth.updateBookingStatus(Number(id), val);
+                    await window.silvaSupabaseAuth.updateBookingStatus(id, val);
                 } catch (err) {
                     alert(err && err.message ? err.message : 'Не удалось сохранить статус');
                     window.location.reload();

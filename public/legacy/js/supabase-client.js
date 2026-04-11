@@ -384,6 +384,24 @@
         return s;
     }
 
+    /** PK строки bookings: uuid или bigint (не Number(uuid) — будет NaN). */
+    function normalizeBookingRowId(raw) {
+        if (raw == null || raw === '') return null;
+        var s = String(raw).trim();
+        if (!s) return null;
+        var uuidRx =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (uuidRx.test(s)) return s;
+        if (/^-?\d+$/.test(s)) {
+            if (s.length <= 15) {
+                var n = parseInt(s, 10);
+                if (!isNaN(n)) return n;
+            }
+            return s;
+        }
+        return s;
+    }
+
     /** Тип оплаты в БД: как в booking.js — 'full' | '30'. */
     function normalizeBookingPayType(raw) {
         var s = String(raw == null ? 'full' : raw).trim().toLowerCase();
@@ -444,7 +462,9 @@
     async function cancelBooking(bookingId) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
-        var del = await sb.from('bookings').delete().eq('id', bookingId);
+        var bid = normalizeBookingRowId(bookingId);
+        if (bid == null) throw new Error('Некорректный id брони');
+        var del = await sb.from('bookings').delete().eq('id', bid);
         if (del.error) throw del.error;
     }
 
@@ -525,9 +545,11 @@
     async function updateBookingStatus(bookingId, status) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
+        var bid = normalizeBookingRowId(bookingId);
+        if (bid == null) throw new Error('Некорректный id брони');
         var ok = { pending: true, confirmed: true, completed: true, cancelled: true };
         if (!ok[String(status || '')]) throw new Error('Недопустимый статус');
-        var res = await sb.from('bookings').update({ status: status }).eq('id', bookingId);
+        var res = await sb.from('bookings').update({ status: status }).eq('id', bid);
         if (res.error) throw res.error;
     }
 
