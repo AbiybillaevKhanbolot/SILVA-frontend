@@ -468,21 +468,57 @@
         };
     }
 
+    async function attachReviewResponses(sb, rows) {
+        if (!sb || !rows || !rows.length) return rows;
+        var ids = rows
+            .map(function (r) {
+                return r.id;
+            })
+            .filter(function (id) {
+                return id != null;
+            });
+        if (!ids.length) return rows;
+        var rres = await sb.from('review_responses').select('review_id, text, owner_avatar_url').in('review_id', ids);
+        if (rres.error || !rres.data) return rows;
+        var byRid = {};
+        rres.data.forEach(function (x) {
+            if (x && x.review_id != null) byRid[String(x.review_id)] = x;
+        });
+        return rows.map(function (row) {
+            var rr = row.id != null ? byRid[String(row.id)] : null;
+            if (!rr) return row;
+            return Object.assign({}, row, {
+                review_responses: { text: rr.text, owner_avatar_url: rr.owner_avatar_url }
+            });
+        });
+    }
+
     async function fetchReviewsForProperty(propertyId) {
         var sb = ensureClient();
         if (!sb) return [];
         var pid = normalizeReviewPropertyId(propertyId);
         if (pid == null) return [];
-        var sel =
+        var order = { ascending: false };
+
+        var selFull =
             'id, property_id, user_id, rating, text, avatar_url, created_at, profiles(full_name, avatar_url), review_responses(text, owner_avatar_url)';
-        var q = await sb.from('reviews').select(sel).eq('property_id', pid).order('created_at', { ascending: false });
-        if (q.error) {
-            var selSimple = 'id, property_id, user_id, rating, text, avatar_url, created_at';
-            var q2 = await sb.from('reviews').select(selSimple).eq('property_id', pid).order('created_at', { ascending: false });
-            if (q2.error) return [];
+        var q = await sb.from('reviews').select(selFull).eq('property_id', pid).order('created_at', order);
+        if (!q.error && q.data) {
+            return (q.data || []).map(mapReviewRowToLegacy);
+        }
+
+        var selNoProfiles =
+            'id, property_id, user_id, rating, text, avatar_url, created_at, review_responses(text, owner_avatar_url)';
+        var q2 = await sb.from('reviews').select(selNoProfiles).eq('property_id', pid).order('created_at', order);
+        if (!q2.error && q2.data) {
             return (q2.data || []).map(mapReviewRowToLegacy);
         }
-        return (q.data || []).map(mapReviewRowToLegacy);
+
+        var selBare = 'id, property_id, user_id, rating, text, avatar_url, created_at';
+        var q3 = await sb.from('reviews').select(selBare).eq('property_id', pid).order('created_at', order);
+        if (q3.error || !q3.data) return [];
+        var withResp = await attachReviewResponses(sb, q3.data);
+        return (withResp || []).map(mapReviewRowToLegacy);
     }
 
     async function insertReview(payload) {

@@ -759,6 +759,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Reviews: overview, categories, guest photos, sort, cards, leave-review (logged-in only), modal
     var reviewSupabasePropertyId =
         property && property.id != null && String(property.id).trim() !== '' ? property.id : propertyId;
+    var reviewsListKey =
+        typeof mockAPI._normalizePropertyId === 'function'
+            ? mockAPI._normalizePropertyId(propertyId)
+            : String(propertyId || '').trim();
 
     const reviewsList = document.getElementById('reviews-list');
     const reviewsCountEl = document.getElementById('reviews-count');
@@ -920,8 +924,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (typeof window.silvaSupabaseAuth !== 'undefined' && typeof window.silvaSupabaseAuth.fetchReviewsForProperty === 'function') {
         try {
             var serverReviews = await window.silvaSupabaseAuth.fetchReviewsForProperty(reviewSupabasePropertyId);
-            mockAPI.setServerReviewsForProperty(propertyId, serverReviews);
-        } catch (errReviews) {}
+            if (reviewsListKey) {
+                mockAPI.setServerReviewsForProperty(reviewsListKey, serverReviews);
+            }
+        } catch (errReviews) {
+            if (typeof console !== 'undefined' && console.warn) {
+                console.warn('[Silva] Не удалось загрузить отзывы с сервера:', errReviews);
+            }
+        }
     }
 
     renderReviews();
@@ -1048,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                         return supa.fetchReviewsForProperty(reviewSupabasePropertyId);
                     })
                     .then(function (list) {
-                        mockAPI.setServerReviewsForProperty(propertyId, list);
+                        mockAPI.setServerReviewsForProperty(reviewsListKey || propertyId, list);
                         afterSuccess();
                     })
                     .catch(function (err) {
