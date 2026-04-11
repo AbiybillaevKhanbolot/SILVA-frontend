@@ -387,9 +387,17 @@
     async function createBooking(payload) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
+        var user = await getSessionUser();
+        if (!user || !user.id) {
+            throw new Error('Нужна авторизация для бронирования');
+        }
+        var uid = user.id;
         var pid = normalizeBookingPropertyId(payload.propertyId);
         if (pid == null) throw new Error('Не указан объект для бронирования');
+        // user_id — схема из миграций SILVA-backend; guest_id — встречается в проде (legacy NOT NULL).
         var ins = await sb.from('bookings').insert({
+            user_id: uid,
+            guest_id: uid,
             property_id: pid,
             check_in: payload.checkIn,
             check_out: payload.checkOut,
