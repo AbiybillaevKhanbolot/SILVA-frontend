@@ -15,7 +15,11 @@ function getFavoritesStorageKey() {
 // Property Card Component
 function getFavorites() {
     try {
-        return JSON.parse(localStorage.getItem(getFavoritesStorageKey()) || '[]');
+        var raw = JSON.parse(localStorage.getItem(getFavoritesStorageKey()) || '[]');
+        if (!Array.isArray(raw)) return [];
+        return raw.map(function (x) {
+            return String(x);
+        });
     } catch (e) {
         return [];
     }
@@ -214,14 +218,9 @@ function renderPropertyCards(container, properties) {
 }
 
 function togglePropertyFavorite(buttonEl) {
-    if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
-        if (typeof window.showAuthRequiredModal === 'function') window.showAuthRequiredModal();
-        return;
-    }
     var id = String(buttonEl.getAttribute('data-property-id') || '').trim();
     if (!id) return;
-    if (!id) return;
-    var favorites = getFavorites();
+    var favorites = getFavorites().slice();
     var idx = favorites.indexOf(id);
     var nowInFav = idx === -1;
     if (nowInFav) favorites.push(id);
@@ -232,7 +231,12 @@ function togglePropertyFavorite(buttonEl) {
     buttonEl.classList.toggle('property-card-favorite-in-favorites', nowInFav);
     var svg = buttonEl.querySelector('svg');
     if (svg) svg.setAttribute('fill', nowInFav ? 'currentColor' : 'none');
-    if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.setFavorite === 'function') {
+    if (
+        window.silvaSupabaseAuth &&
+        typeof window.silvaSupabaseAuth.setFavorite === 'function' &&
+        typeof window.isLoggedIn === 'function' &&
+        window.isLoggedIn()
+    ) {
         window.silvaSupabaseAuth.setFavorite(id, nowInFav).catch(function () {});
     }
     if (typeof window.dispatchEvent === 'function') {
