@@ -456,11 +456,79 @@
         var q = await sb
             .from('bookings')
             .select(
-                'id, property_id, check_in, check_out, guests, children, total_price, total_amount, pay_type, status, created_at'
+                'id, property_id, user_id, guest_id, check_in, check_out, guests, children, total_price, total_amount, pay_type, status, created_at'
             )
             .in('property_id', ids);
         if (q.error) throw q.error;
         return q.data || [];
+    }
+
+    /**
+     * Брони по объектам владельца + профили гостей (нужна RLS profiles_owner_sees_booking_guests).
+     * Возвращает плоские объекты под UI owner-bookings.
+     */
+    async function fetchBookingsForOwner(propertyIds) {
+        var rows = await fetchBookingsByPropertyIds(propertyIds);
+        if (!rows.length) return [];
+        var uidList = [];
+        var seen = {};
+        rows.forEach(function (r) {
+            var u = r.user_id != null ? r.user_id : r.guest_id;
+            if (u && !seen[u]) {
+                seen[u] = true;
+                uidList.push(u);
+            }
+        });
+        var profileById = {};
+        if (uidList.length) {
+            var sb = ensureClient();
+            var pr = await sb.from('profiles').select('id, full_name, email, phone').in('id', uidList);
+            if (pr.error) throw pr.error;
+            (pr.data || []).forEach(function (p) {
+                profileById[p.id] = p;
+            });
+        }
+        return rows.map(function (r) {
+            var uid = r.user_id != null ? r.user_id : r.guest_id;
+            var p = uid ? profileById[uid] : null;
+            var ci = r.check_in;
+            var co = r.check_out;
+            var nights = null;
+            if (ci && co) {
+                var a = String(ci).split('-').map(Number);
+                var b = String(co).split('-').map(Number);
+                if (a.length >= 3 && b.length >= 3) {
+                    var d0 = new Date(a[0], a[1] - 1, a[2]);
+                    var d1 = new Date(b[0], b[1] - 1, b[2]);
+                    var n = Math.round((d1.getTime() - d0.getTime()) / 86400000);
+                    if (isFinite(n) && n > 0) nights = n;
+                }
+            }
+            return {
+                id: r.id,
+                propertyId: r.property_id,
+                checkIn: ci,
+                checkOut: co,
+                nights: nights,
+                guests: r.guests,
+                children: r.children,
+                totalRub: Number(r.total_price || r.total_amount) || 0,
+                status: r.status || 'pending',
+                payType: r.pay_type,
+                guestName: p && p.full_name ? String(p.full_name) : '—',
+                guestEmail: p && p.email ? String(p.email) : '—',
+                guestPhone: p && p.phone ? String(p.phone) : ''
+            };
+        });
+    }
+
+    async function updateBookingStatus(bookingId, status) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var ok = { pending: true, confirmed: true, completed: true, cancelled: true };
+        if (!ok[String(status || '')]) throw new Error('Недопустимый статус');
+        var res = await sb.from('bookings').update({ status: status }).eq('id', bookingId);
+        if (res.error) throw res.error;
     }
 
     async function signIn(email, password) {
@@ -590,6 +658,8 @@
         fetchMyBookings: fetchMyBookings,
         cancelBooking: cancelBooking,
         fetchBookingsByPropertyIds: fetchBookingsByPropertyIds,
+        fetchBookingsForOwner: fetchBookingsForOwner,
+        updateBookingStatus: updateBookingStatus,
         readLocalUser: readLocalUser,
         clearLocalUser: clearLocalUser,
         bootAuthSync: bootAuthSync
