@@ -384,19 +384,6 @@
         return s;
     }
 
-    /** Ночи между датами YYYY-MM-DD (как на странице брони). */
-    function bookingNightsBetween(checkInStr, checkOutStr) {
-        if (!checkInStr || !checkOutStr) return 1;
-        var a = String(checkInStr).split('-').map(Number);
-        var b = String(checkOutStr).split('-').map(Number);
-        if (a.length < 3 || b.length < 3) return 1;
-        var d0 = new Date(a[0], a[1] - 1, a[2]);
-        var d1 = new Date(b[0], b[1] - 1, b[2]);
-        var ms = d1.getTime() - d0.getTime();
-        var n = Math.round(ms / 86400000);
-        return Math.max(1, isFinite(n) ? n : 1);
-    }
-
     /** Тип оплаты в БД: как в booking.js — 'full' | '30'. */
     function normalizeBookingPayType(raw) {
         var s = String(raw == null ? 'full' : raw).trim().toLowerCase();
@@ -427,9 +414,8 @@
         } else {
             adults = Math.max(1, g - ch);
         }
-        var nights = bookingNightsBetween(payload.checkIn, payload.checkOut);
         var payType = normalizeBookingPayType(payload.payType);
-        // Поля, которые часто NOT NULL на проде (расхождение с минимальной миграцией): guest_id, total_amount, pay_type, adults, nights, внешний id платежа.
+        // Не шлём nights в insert: на многих прода колонки нет (ночи считаются из check_in/check_out при показе).
         var row = {
             user_id: uid,
             guest_id: uid,
@@ -439,7 +425,6 @@
             guests: g,
             children: ch,
             adults: adults,
-            nights: nights,
             total_price: amount,
             total_amount: amount,
             pay_type: payType,
