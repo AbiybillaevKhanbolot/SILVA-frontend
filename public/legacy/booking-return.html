@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата — Silva</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/account-pages.css">
+    <style>
+        .booking-return-page { padding-top: 5rem; padding-bottom: 3rem; min-height: 100vh; background: var(--color-gray-50); }
+        .booking-return-card {
+            max-width: 32rem;
+            margin: 0 auto;
+            background: var(--color-white);
+            border-radius: 7px;
+            padding: 2rem;
+            border: 1px solid var(--color-gray-200);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        .booking-return-card h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-gray-900); }
+        .booking-return-card p { color: var(--color-gray-600); line-height: 1.55; margin-bottom: 1rem; font-size: 0.9375rem; }
+        .booking-return-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; }
+    </style>
+</head>
+<body>
+    <div id="header-container"></div>
+    <main class="booking-return-page">
+        <div class="container">
+            <div class="booking-return-card" id="booking-return-root">
+                <h1>Проверяем оплату…</h1>
+                <p id="booking-return-msg">Подождите несколько секунд.</p>
+                <div class="booking-return-actions" id="booking-return-actions" style="display: none;"></div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-container"></div>
+    <script src="js/icons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/booking-return.js"></script>
+</body>
+</html>

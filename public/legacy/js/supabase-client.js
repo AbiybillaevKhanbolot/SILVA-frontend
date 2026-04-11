@@ -373,11 +373,24 @@
         return fetchFavorites();
     }
 
+    function normalizeBookingPropertyId(raw) {
+        if (raw == null || raw === '') return null;
+        var s = String(raw).trim();
+        var uuidRx =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (uuidRx.test(s)) return s;
+        var n = parseInt(s, 10);
+        if (!isNaN(n) && String(n) === s) return n;
+        return s;
+    }
+
     async function createBooking(payload) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
+        var pid = normalizeBookingPropertyId(payload.propertyId);
+        if (pid == null) throw new Error('Не указан объект для бронирования');
         var ins = await sb.from('bookings').insert({
-            property_id: payload.propertyId,
+            property_id: pid,
             check_in: payload.checkIn,
             check_out: payload.checkOut,
             guests: payload.guests,

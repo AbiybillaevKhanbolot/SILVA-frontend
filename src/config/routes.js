@@ -4,6 +4,7 @@ export const legacyRoutes = [
   { path: "/contacts", file: "contact.html" },
   { path: "/property", file: "property.html" },
   { path: "/booking", file: "booking.html" },
+  { path: "/booking-return", file: "booking-return.html" },
   { path: "/loyalty", file: "loyalty.html" },
   { path: "/login", file: "login.html" },
   { path: "/register", file: "register.html" },

@@ -215,26 +215,71 @@ document.addEventListener('DOMContentLoaded', async function() {
             btn.disabled = true;
             btn.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> Обработка...';
         }
-        
+
         try {
-            if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.createBooking === 'function') {
-                await window.silvaSupabaseAuth.createBooking({
-                    propertyId: parseInt(propertyId, 10),
-                    checkIn: fromDateStr || formatDateYMD(checkIn),
-                    checkOut: toDateStr || formatDateYMD(checkOut),
-                    guests: adults + children,
-                    children: children,
-                    totalRub: amountToPay
-                });
-            } else {
-                throw new Error('Supabase бронирование недоступно');
+            const checkInStr = fromDateStr || formatDateYMD(checkIn);
+            const checkOutStr = toDateStr || formatDateYMD(checkOut);
+            const pendingBooking = {
+                propertyId: String(propertyId),
+                checkIn: checkInStr,
+                checkOut: checkOutStr,
+                guests: adults + children,
+                adults: adults,
+                children: children,
+                totalRub: amountToPay,
+                payType: payAmount,
+                loyaltyPointsToAward: loyaltyPointsToAward
+            };
+
+            const payResp = await fetch('/api/yookassa/create-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    amountRub: amountToPay,
+                    description: ('Бронь: ' + (property.title || 'объект')).slice(0, 128),
+                    metadata: {
+                        propertyId: String(propertyId),
+                        checkIn: checkInStr,
+                        checkOut: checkOutStr,
+                        guests: String(adults + children),
+                        children: String(children),
+                        totalRub: String(amountToPay),
+                        payType: String(payAmount)
+                    }
+                })
+            });
+
+            let payJson = {};
+            try {
+                payJson = await payResp.json();
+            } catch (parseErr) {
+                payJson = {};
             }
-            var lpKey = loyaltyPointsKeyForCurrentUser();
-            var cur = parseInt(localStorage.getItem(lpKey) || '0', 10) || 0;
-            localStorage.setItem(lpKey, String(cur + loyaltyPointsToAward));
-            window.location.href = 'my-bookings.html?success=1';
+
+            if (payResp.ok && payJson.confirmationUrl && payJson.paymentId) {
+                sessionStorage.setItem('silva_pending_booking', JSON.stringify(pendingBooking));
+                sessionStorage.setItem('silva_yookassa_payment_id', payJson.paymentId);
+                window.location.href = payJson.confirmationUrl;
+                return;
+            }
+
+            if (payResp.status === 503 && payJson.error === 'yookassa_env_missing') {
+                throw new Error(
+                    payJson.message ||
+                        'ЮKassa не настроена: в корне проекта создайте .env с YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY (см. .env.example) и запустите npm run dev.'
+                );
+            }
+
+            const ykMsg =
+                payJson.detail && payJson.detail.description
+                    ? payJson.detail.description
+                    : payJson.detail && payJson.detail.type
+                      ? payJson.detail.type
+                      : payJson.message || payJson.error || 'Не удалось создать платёж';
+            throw new Error(typeof ykMsg === 'string' ? ykMsg : 'Не удалось создать платёж');
         } catch (e) {
-            alert(e && e.message ? e.message : 'Не удалось создать бронирование.');
+            alert(e && e.message ? e.message : 'Не удалось перейти к оплате.');
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = 'Оплатить и забронировать';
