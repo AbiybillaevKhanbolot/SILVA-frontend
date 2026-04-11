@@ -165,6 +165,123 @@
 
         render();
 
+        var lightboxRoot = document.getElementById('gallery-lightbox');
+        if (lightboxRoot && swipeEl && thumbEls.length && thumbEls[0].parentElement) {
+            var thumbsRoot = thumbEls[0].parentElement;
+            var lbImg = lightboxRoot.querySelector('.gallery-lightbox-img');
+            var lbBackdrop = lightboxRoot.querySelector('.gallery-lightbox-backdrop');
+            var lbClose = lightboxRoot.querySelector('.gallery-lightbox-close');
+            var lbPrev = lightboxRoot.querySelector('#gallery-lightbox-prev');
+            var lbNext = lightboxRoot.querySelector('#gallery-lightbox-next');
+            var bodyOverflowPrev = '';
+            var lightboxIdx = 0;
+
+            function lightboxPhotoCount() {
+                var c = 0;
+                for (var i = 0; i < n; i++) {
+                    if (urls[i]) c++;
+                }
+                return c;
+            }
+
+            function updateLightboxArrows() {
+                var show = lightboxPhotoCount() > 1;
+                if (lbPrev) lbPrev.hidden = !show;
+                if (lbNext) lbNext.hidden = !show;
+            }
+
+            function showLightboxAt(idx) {
+                if (!lbImg || n <= 0) return;
+                var i = ((idx % n) + n) % n;
+                if (!urls[i]) return;
+                lightboxIdx = i;
+                lbImg.src = urls[i];
+                lbImg.alt = alt;
+                lightboxRoot.hidden = false;
+                lightboxRoot.setAttribute('aria-hidden', 'false');
+                bodyOverflowPrev = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+                updateLightboxArrows();
+            }
+
+            function lightboxStep(delta) {
+                if (lightboxPhotoCount() <= 1) return;
+                var steps = 0;
+                var i = lightboxIdx;
+                do {
+                    i = (i + delta + n) % n;
+                    steps++;
+                    if (steps > n) return;
+                } while (!urls[i]);
+                lightboxIdx = i;
+                lbImg.src = urls[i];
+            }
+
+            function closeLightbox() {
+                lightboxRoot.hidden = true;
+                lightboxRoot.setAttribute('aria-hidden', 'true');
+                if (lbImg) {
+                    lbImg.removeAttribute('src');
+                    lbImg.alt = '';
+                }
+                document.body.style.overflow = bodyOverflowPrev;
+            }
+
+            function onThumbLightboxClick(e) {
+                var img = e.target.closest('.gallery-thumb-slot img');
+                if (!img || img.tagName !== 'IMG') return;
+                var slot = img.closest('.gallery-thumb-slot');
+                var j = thumbEls.indexOf(slot);
+                if (j < 0) return;
+                var idx = (k + 1 + j) % n;
+                if (!urls[idx]) return;
+                showLightboxAt(idx);
+            }
+
+            function onMainLightboxClick(e) {
+                if (e.target.closest('.gallery-nav') || e.target.closest('.gallery-dot')) return;
+                var img = e.target.closest('.gallery-main-slot img');
+                if (!img || img.tagName !== 'IMG') return;
+                var idx = k % n;
+                if (!urls[idx]) return;
+                showLightboxAt(idx);
+            }
+
+            function onLightboxNavClick(e, delta) {
+                e.preventDefault();
+                e.stopPropagation();
+                lightboxStep(delta);
+            }
+
+            if (!lightboxRoot.dataset.silvaLightboxBound) {
+                lightboxRoot.dataset.silvaLightboxBound = '1';
+                swipeEl.addEventListener('click', onMainLightboxClick);
+                thumbsRoot.addEventListener('click', onThumbLightboxClick);
+                if (lbBackdrop) lbBackdrop.addEventListener('click', closeLightbox);
+                if (lbClose) lbClose.addEventListener('click', closeLightbox);
+                if (lbPrev) lbPrev.addEventListener('click', function (e) { onLightboxNavClick(e, -1); });
+                if (lbNext) lbNext.addEventListener('click', function (e) { onLightboxNavClick(e, 1); });
+                document.addEventListener('keydown', function silvaGalleryLightboxKey(e) {
+                    if (lightboxRoot.hidden) return;
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeLightbox();
+                        return;
+                    }
+                    if (e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        lightboxStep(-1);
+                        return;
+                    }
+                    if (e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        lightboxStep(1);
+                        return;
+                    }
+                });
+            }
+        }
+
         return { next: next, prev: prev, render: render, goTo: goTo };
     }
 
