@@ -8,6 +8,7 @@ function createPageUrl(pageName) {
         'Property': 'property.html',
         'Booking': 'booking.html',
         'Loyalty': 'loyalty.html',
+        'Contacts': 'contact.html',
         'Dashboard': 'dashboard.html',
         'MyBookings': 'my-bookings.html',
         'Favorites': 'favorites.html',
@@ -19,6 +20,17 @@ function createPageUrl(pageName) {
         'AdminPanel': 'admin.html'
     };
     return pages[pageName] || 'index.html';
+}
+
+/** Ссылки на страницы legacy: с корня сайта (/legacy/…), чтобы навигация из iframe React работала стабильно */
+function silvaLegacyHref(file) {
+    var name = String(file || '').replace(/^\/?legacy\/?/i, '');
+    try {
+        if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
+            return name;
+        }
+    } catch (e) {}
+    return '/legacy/' + name;
 }
 
 // Format number with spaces
