@@ -391,6 +391,10 @@
         return 'full';
     }
 
+    /**
+     * Вставка в public.bookings под прод-схему SILVA (без nights / adults / yookassa_payment_id в insert).
+     * Поля: user_id, guest_id, property_id, check_in, check_out, guests, children, total_price, total_amount, pay_type, status.
+     */
     async function createBooking(payload) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
@@ -407,16 +411,8 @@
         if (isNaN(ch) || ch < 0) ch = 0;
         var g = Number(payload.guests);
         if (isNaN(g) || g < 1) g = 1;
-        var adults;
-        if (payload.adults != null && payload.adults !== '') {
-            var pa = parseInt(payload.adults, 10);
-            adults = isNaN(pa) ? Math.max(1, g - ch) : Math.max(1, pa);
-        } else {
-            adults = Math.max(1, g - ch);
-        }
         var payType = normalizeBookingPayType(payload.payType);
-        // Не шлём nights в insert: на многих прода колонки нет (ночи считаются из check_in/check_out при показе).
-        var row = {
+        var ins = await sb.from('bookings').insert({
             user_id: uid,
             guest_id: uid,
             property_id: pid,
@@ -424,16 +420,11 @@
             check_out: payload.checkOut,
             guests: g,
             children: ch,
-            adults: adults,
             total_price: amount,
             total_amount: amount,
             pay_type: payType,
             status: 'pending'
-        };
-        if (payload.paymentId != null && String(payload.paymentId).trim() !== '') {
-            row.yookassa_payment_id = String(payload.paymentId).trim();
-        }
-        var ins = await sb.from('bookings').insert(row);
+        });
         if (ins.error) throw ins.error;
     }
 
@@ -442,7 +433,9 @@
         if (!sb) throw new Error('Supabase SDK is not loaded');
         var q = await sb
             .from('bookings')
-            .select('id, property_id, check_in, check_out, guests, children, total_price, status, created_at')
+            .select(
+                'id, property_id, check_in, check_out, guests, children, total_price, total_amount, pay_type, status, created_at'
+            )
             .order('created_at', { ascending: false });
         if (q.error) throw q.error;
         return q.data || [];
@@ -462,7 +455,9 @@
         if (!ids.length) return [];
         var q = await sb
             .from('bookings')
-            .select('id, property_id, check_in, check_out, guests, children, total_price, status, created_at')
+            .select(
+                'id, property_id, check_in, check_out, guests, children, total_price, total_amount, pay_type, status, created_at'
+            )
             .in('property_id', ids);
         if (q.error) throw q.error;
         return q.data || [];

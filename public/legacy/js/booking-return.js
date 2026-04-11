@@ -155,11 +155,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             checkIn: pending.checkIn,
             checkOut: pending.checkOut,
             guests: Number(pending.guests) || 1,
-            adults: pending.adults,
             children: Number(pending.children) || 0,
             totalRub: expectedRub,
-            payType: pending.payType,
-            paymentId: paymentId
+            payType: pending.payType
         });
 
         var lpAward = Math.floor(Number(pending.loyaltyPointsToAward) || 0);

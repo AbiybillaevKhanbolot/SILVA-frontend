@@ -91,8 +91,8 @@
                         nights: Math.max(1, Math.ceil((parseYMD(r.check_out) - parseYMD(r.check_in)) / (1000 * 60 * 60 * 24))),
                         adults: Math.max(1, (Number(r.guests) || 1) - (Number(r.children) || 0)),
                         children: Number(r.children) || 0,
-                        totalRub: Number(r.total_price) || 0,
-                        payType: 'full',
+                        totalRub: Number(r.total_price || r.total_amount) || 0,
+                        payType: r.pay_type === '30' ? '30' : 'full',
                         status: r.status || 'pending'
                     };
                 });
