@@ -65,6 +65,7 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            cursor: zoom-in;
         }
         @media (max-width: 767px) {
             .property-gallery {
@@ -101,6 +102,102 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            cursor: zoom-in;
+        }
+        .gallery-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 10050;
+            box-sizing: border-box;
+        }
+        .gallery-lightbox[hidden] {
+            display: none !important;
+        }
+        .gallery-lightbox-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            border: none;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+        }
+        .gallery-lightbox-stage {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+        .gallery-lightbox-img {
+            max-width: min(100%, 92vw);
+            max-height: min(88vh, 100%);
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+            pointer-events: auto;
+        }
+        .gallery-lightbox-close {
+            position: fixed;
+            top: max(1rem, env(safe-area-inset-top));
+            right: max(1rem, env(safe-area-inset-right));
+            z-index: 10051;
+            width: 2.75rem;
+            height: 2.75rem;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+            font-size: 1.75rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: background 0.2s;
+        }
+        .gallery-lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+        .gallery-lightbox-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3rem;
+            height: 3rem;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.14);
+            cursor: pointer;
+            z-index: 10051;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: background 0.2s;
+        }
+        .gallery-lightbox-arrow:hover {
+            background: rgba(255, 255, 255, 0.24);
+        }
+        .gallery-lightbox-arrow svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            color: #ffffff;
+        }
+        .gallery-lightbox-arrow--prev {
+            left: max(1rem, env(safe-area-inset-left));
+        }
+        .gallery-lightbox-arrow--next {
+            right: max(1rem, env(safe-area-inset-right));
+        }
+        .gallery-lightbox-arrow[hidden] {
+            display: none !important;
         }
         .gallery-slide-placeholder {
             width: 100%;
@@ -1109,7 +1206,7 @@
                             <div class="property-meta" id="property-meta"></div>
                             <button type="button" class="property-favorite-btn" id="property-favorite-btn" aria-label="В избранное">
                                 <span class="silva-icon" data-icon="heart" data-w="18" data-h="18" data-fill="none" aria-hidden="true"></span>
-                                В избранное
+                                <span class="property-favorite-btn-label">В избранное</span>
                             </button>
                         </div>
                     </div>
@@ -1215,6 +1312,39 @@
                     <button type="button" class="btn btn-ghost" id="review-modal-cancel">Отмена</button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <div
+        class="gallery-lightbox"
+        id="gallery-lightbox"
+        hidden
+        aria-hidden="true"
+        role="dialog"
+        aria-label="Просмотр фотографии"
+    >
+        <button type="button" class="gallery-lightbox-backdrop" aria-label="Закрыть просмотр"></button>
+        <div class="gallery-lightbox-stage">
+            <button type="button" class="gallery-lightbox-close" aria-label="Закрыть">&times;</button>
+            <button
+                type="button"
+                class="gallery-lightbox-arrow gallery-lightbox-arrow--prev"
+                id="gallery-lightbox-prev"
+                hidden
+                aria-label="Предыдущее фото"
+            >
+                <span class="silva-icon" data-icon="chevron-left" data-w="24" data-h="24" aria-hidden="true"></span>
+            </button>
+            <button
+                type="button"
+                class="gallery-lightbox-arrow gallery-lightbox-arrow--next"
+                id="gallery-lightbox-next"
+                hidden
+                aria-label="Следующее фото"
+            >
+                <span class="silva-icon" data-icon="chevron-right" data-w="24" data-h="24" aria-hidden="true"></span>
+            </button>
+            <img class="gallery-lightbox-img" alt="" decoding="async">
         </div>
     </div>
     
