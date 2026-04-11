@@ -97,6 +97,28 @@
         return localUser;
     }
 
+    /** Нормализация amenities из text[] / jsonb / json-строки / массива для карточки и каталога. */
+    function normalizeRowAmenities(raw) {
+        if (raw == null || raw === '') return [];
+        if (Array.isArray(raw)) {
+            return raw
+                .map(function (x) {
+                    return String(x || '')
+                        .trim()
+                        .toLowerCase();
+                })
+                .filter(Boolean);
+        }
+        if (typeof raw === 'string') {
+            try {
+                return normalizeRowAmenities(JSON.parse(raw));
+            } catch (e) {
+                return [];
+            }
+        }
+        return [];
+    }
+
     function mapPropertyRowToLegacy(row, images) {
         var gallery = (images || []).map(function (img) { return img.image_url; }).filter(Boolean);
         return {
@@ -121,7 +143,7 @@
             is_owner_listing: true,
             status: row.status || 'draft',
             description: row.description || '',
-            amenities: ['wifi'],
+            amenities: normalizeRowAmenities(row.amenities),
             conditions: ['Заезд с 14:00', 'Выезд до 12:00'],
             extra_info: [],
             visa_info: 'Для граждан РФ виза не требуется. Иностранным гостям необходимо иметь действующую визу РФ.',
@@ -143,7 +165,9 @@
         if (!sb) throw new Error('Supabase SDK is not loaded');
         var q = await sb
             .from('properties')
-            .select('id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, created_at')
+            .select(
+                'id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, created_at, amenities'
+            )
             .order('created_at', { ascending: false });
         if (q.error) throw q.error;
         var rows = q.data || [];
@@ -183,7 +207,9 @@
         if (!rawIds.length) return [];
         var q = await sb
             .from('properties')
-            .select('id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, created_at')
+            .select(
+                'id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, created_at, amenities'
+            )
             .in('id', rawIds);
         if (q.error) return [];
         var rows = q.data || [];
@@ -214,6 +240,18 @@
         if (!sb) throw new Error('Supabase SDK is not loaded');
         var user = await getSessionUser();
         if (!user) throw new Error('Пользователь не авторизован');
+        // В таблице properties колонка amenities — массив текстов (text[]) или jsonb-массив, например:
+        // alter table properties add column if not exists amenities text[] default '{}';
+        var amenitiesSave = Array.isArray(payload.amenities) ? payload.amenities : [];
+        amenitiesSave = amenitiesSave
+            .map(function (x) {
+                return String(x || '')
+                    .trim()
+                    .toLowerCase();
+            })
+            .filter(Boolean);
+        if (!amenitiesSave.length) amenitiesSave = ['wifi'];
+
         var propertyPatch = {
             owner_id: user.id,
             title: payload.title || '',
@@ -225,7 +263,8 @@
             max_guests: Number(payload.max_guests) || 1,
             status: payload.status === 'published' ? 'published' : 'draft',
             rating: Number(payload.rating) || 0,
-            reviews_count: Number(payload.reviews_count) || 0
+            reviews_count: Number(payload.reviews_count) || 0,
+            amenities: amenitiesSave
         };
         delete propertyPatch.rating;
         delete propertyPatch.reviews_count;
