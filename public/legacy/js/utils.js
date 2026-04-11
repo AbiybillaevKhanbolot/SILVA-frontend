@@ -150,21 +150,59 @@ const mockAPI = {
     // Mock reviews per property (merged with localStorage on get)
     _reviewsByProperty: {},
 
+    /** Отзывы с сервера (Supabase), ключ — нормализованный id объекта */
+    _serverReviewsByProperty: {},
+
+    setServerReviewsForProperty: function(propertyId, list) {
+        var n = this._normalizePropertyId(propertyId);
+        if (!n) return;
+        this._serverReviewsByProperty[n] = Array.isArray(list) ? list.slice() : [];
+    },
+
+    _getAllReviewsRawForLookup: function(propertyId) {
+        var n = this._normalizePropertyId(propertyId);
+        if (!n) return [];
+        var server = (this._serverReviewsByProperty && this._serverReviewsByProperty[n]) || [];
+        return server.concat(this._getReviewsRaw(propertyId));
+    },
+
+    _reviewsStorageKey: function(propertyId) {
+        var n = this._normalizePropertyId(propertyId);
+        return n ? 'silva_reviews_' + n : null;
+    },
+
+    _reviewResponsesStorageKey: function(propertyId) {
+        var n = this._normalizePropertyId(propertyId);
+        return n ? 'silva_review_responses_' + n : null;
+    },
+
     _getReviewsRaw: function(propertyId) {
-        const id = parseInt(propertyId, 10);
-        if (isNaN(id)) return [];
-        const stored =
-            typeof localStorage !== 'undefined' && localStorage.getItem('silva_reviews_' + id);
-        const saved = stored ? JSON.parse(stored) : [];
-        const base = this._reviewsByProperty[id] || [];
-        return [...base, ...(Array.isArray(saved) ? saved : [])];
+        var n = this._normalizePropertyId(propertyId);
+        if (!n) return [];
+        var key = this._reviewsStorageKey(propertyId);
+        var saved = [];
+        if (key && typeof localStorage !== 'undefined') {
+            try {
+                var stored = localStorage.getItem(key);
+                saved = stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                saved = [];
+            }
+        }
+        if (!Array.isArray(saved)) saved = [];
+        var base = [];
+        var idNum = parseInt(n, 10);
+        if (!isNaN(idNum) && String(idNum) === n) {
+            base = this._reviewsByProperty[idNum] || [];
+        }
+        return base.concat(saved);
     },
 
     getReviewResponseOverrides: function(propertyId) {
-        const id = parseInt(propertyId, 10);
-        if (isNaN(id)) return {};
+        var key = this._reviewResponsesStorageKey(propertyId);
+        if (!key) return {};
         try {
-            const raw = localStorage.getItem('silva_review_responses_' + id);
+            const raw = localStorage.getItem(key);
             return raw ? JSON.parse(raw) : {};
         } catch (e) {
             return {};
@@ -172,10 +210,11 @@ const mockAPI = {
     },
 
     getReviewsForProperty: function(propertyId) {
-        const id = parseInt(propertyId, 10);
-        if (isNaN(id)) return [];
-        const raw = this._getReviewsRaw(id);
-        const overrides = this.getReviewResponseOverrides(id);
+        if (!this._normalizePropertyId(propertyId)) return [];
+        var n = this._normalizePropertyId(propertyId);
+        var server = (this._serverReviewsByProperty && this._serverReviewsByProperty[n]) || [];
+        const raw = server.concat(this._getReviewsRaw(propertyId));
+        const overrides = this.getReviewResponseOverrides(propertyId);
         return raw.map(function (r) {
             if (!r || r.id == null) return r;
             const oid = String(r.id);
@@ -194,10 +233,11 @@ const mockAPI = {
     },
 
     updateReviewHotelResponse: function(propertyId, reviewId, hotelResponse) {
-        const id = parseInt(propertyId, 10);
+        var revKey = this._reviewsStorageKey(propertyId);
+        var respKey = this._reviewResponsesStorageKey(propertyId);
         const rid = String(reviewId);
-        if (isNaN(id)) return false;
-        const raw = this._getReviewsRaw(id);
+        if (!revKey || !respKey) return false;
+        const raw = this._getAllReviewsRawForLookup(propertyId);
         const target = raw.find(function (r) {
             return r && String(r.id) === rid;
         });
@@ -210,7 +250,7 @@ const mockAPI = {
 
         if (rid.indexOf('u') === 0) {
             try {
-                var stored = JSON.parse(localStorage.getItem('silva_reviews_' + id) || '[]');
+                var stored = JSON.parse(localStorage.getItem(revKey) || '[]');
                 if (!Array.isArray(stored)) stored = [];
                 var idx = stored.findIndex(function (r) {
                     return r && String(r.id) === rid;
@@ -218,27 +258,29 @@ const mockAPI = {
                 if (idx !== -1) {
                     stored[idx].hotelResponse = hotelResponse;
                     stored[idx].hotelResponseAvatar = ownerAvatar;
-                    localStorage.setItem('silva_reviews_' + id, JSON.stringify(stored));
+                    localStorage.setItem(revKey, JSON.stringify(stored));
                 }
             } catch (e) {}
         } else {
-            var o = this.getReviewResponseOverrides(id);
+            var o = this.getReviewResponseOverrides(propertyId);
             o[rid] = {
                 text: hotelResponse,
                 ownerAvatar: ownerAvatar
             };
             try {
-                localStorage.setItem('silva_review_responses_' + id, JSON.stringify(o));
+                localStorage.setItem(respKey, JSON.stringify(o));
             } catch (e) {}
         }
         return true;
     },
 
     addReviewForProperty: function(propertyId, review) {
-        const id = parseInt(propertyId);
-        const raw = this._getReviewsRaw(id);
+        var revKey = this._reviewsStorageKey(propertyId);
+        if (!revKey) return null;
+        const raw = this._getReviewsRaw(propertyId);
         const newReview = {
             id: 'u' + Date.now(),
+            _createdAt: new Date().toISOString(),
             author: review.author,
             authorCountry: review.authorCountry || 'RU',
             stayType: review.stayType || 'гость',
@@ -260,7 +302,7 @@ const mockAPI = {
         });
         userOnly.push(newReview);
         try {
-            localStorage.setItem('silva_reviews_' + id, JSON.stringify(userOnly));
+            localStorage.setItem(revKey, JSON.stringify(userOnly));
         } catch (e) {}
         return newReview;
     },

@@ -409,6 +409,108 @@
         return 'full';
     }
 
+    /** property_id в public.reviews — bigint из урла (как в public.properties.id). */
+    function normalizeReviewPropertyId(raw) {
+        if (raw == null || raw === '') return null;
+        var s = String(raw).trim();
+        var n = parseInt(s, 10);
+        if (!isNaN(n) && String(n) === s) return n;
+        return null;
+    }
+
+    function legacyRatingLabelFromTenScale(n) {
+        var x = Number(n) || 0;
+        if (x >= 9.5) return 'Превосходно';
+        if (x >= 8.5) return 'Отлично';
+        if (x >= 7.5) return 'Очень хорошо';
+        if (x >= 6) return 'Хорошо';
+        return 'Нормально';
+    }
+
+    function mapReviewRowToLegacy(row) {
+        var prof = row.profiles;
+        if (Array.isArray(prof)) prof = prof[0];
+        prof = prof || {};
+        var rr = row.review_responses;
+        if (Array.isArray(rr)) rr = rr[0];
+        rr = rr && typeof rr === 'object' ? rr : null;
+        var ratingDb = Number(row.rating) || 0;
+        var ratingUi = ratingDb * 2;
+        var created = row.created_at ? new Date(row.created_at) : new Date();
+        var idStr = 'db-' + String(row.id);
+        return {
+            id: idStr,
+            _dbReviewId: row.id,
+            _createdAt: row.created_at || null,
+            author: prof.full_name || 'Гость',
+            authorCountry: 'RU',
+            stayType: 'гость',
+            stayDate: created.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' }),
+            roomInfo: '—',
+            rating: ratingUi,
+            ratingLabel: legacyRatingLabelFromTenScale(ratingUi),
+            text: row.text || '',
+            textShort: true,
+            helpfulYes: 0,
+            helpfulNo: 0,
+            hotelResponse: rr && rr.text ? rr.text : null,
+            hotelResponseAvatar: rr && rr.owner_avatar_url ? rr.owner_avatar_url : null,
+            photos: [],
+            categories: {},
+            avatar: row.avatar_url || prof.avatar_url || null
+        };
+    }
+
+    async function fetchReviewsForProperty(propertyId) {
+        var sb = ensureClient();
+        if (!sb) return [];
+        var pid = normalizeReviewPropertyId(propertyId);
+        if (pid == null) return [];
+        var sel =
+            'id, property_id, user_id, rating, text, avatar_url, created_at, profiles(full_name, avatar_url), review_responses(text, owner_avatar_url)';
+        var q = await sb.from('reviews').select(sel).eq('property_id', pid).order('created_at', { ascending: false });
+        if (q.error) {
+            var selSimple = 'id, property_id, user_id, rating, text, avatar_url, created_at';
+            var q2 = await sb.from('reviews').select(selSimple).eq('property_id', pid).order('created_at', { ascending: false });
+            if (q2.error) return [];
+            return (q2.data || []).map(mapReviewRowToLegacy);
+        }
+        return (q.data || []).map(mapReviewRowToLegacy);
+    }
+
+    async function insertReview(payload) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK не загружен');
+        var user = await getSessionUser();
+        if (!user || !user.id) throw new Error('Войдите в аккаунт, чтобы оставить отзыв');
+        var pid = normalizeReviewPropertyId(payload && payload.propertyId);
+        if (pid == null) throw new Error('Некорректный объект');
+        var stars = Number(payload && payload.rating);
+        if (isNaN(stars) || stars < 1 || stars > 5) throw new Error('Оценка должна быть от 1 до 5');
+        var txt = payload && payload.text != null ? String(payload.text).trim() : '';
+        if (!txt) throw new Error('Введите текст отзыва');
+        var avatarUrl =
+            payload && payload.avatarUrl != null && String(payload.avatarUrl).trim()
+                ? String(payload.avatarUrl).trim()
+                : null;
+        var ins = await sb
+            .from('reviews')
+            .insert({
+                property_id: pid,
+                user_id: user.id,
+                rating: stars,
+                text: txt,
+                avatar_url: avatarUrl
+            })
+            .select('id')
+            .single();
+        if (ins.error) throw ins.error;
+        try {
+            await fetchPropertiesCache();
+        } catch (eCache) {}
+        return ins.data;
+    }
+
     /**
      * Вставка в public.bookings под прод-схему SILVA (без nights / adults / yookassa_payment_id в insert).
      * Поля: user_id, guest_id, property_id, check_in, check_out, guests, children, total_price, total_amount, pay_type, status.
@@ -747,6 +849,8 @@
         updateBookingStatus: updateBookingStatus,
         fetchLoyaltyPoints: fetchLoyaltyPoints,
         incrementLoyaltyPointsAfterPayment: incrementLoyaltyPointsAfterPayment,
+        fetchReviewsForProperty: fetchReviewsForProperty,
+        insertReview: insertReview,
         readLocalUser: readLocalUser,
         clearLocalUser: clearLocalUser,
         bootAuthSync: bootAuthSync

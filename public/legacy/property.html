@@ -1135,27 +1135,165 @@
         .modal-review {
             position: relative;
             background: var(--color-white);
-            border-radius: 5px;
-            max-width: 28rem;
+            border-radius: 14px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            max-width: 30rem;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            padding: 1.5rem;
-            padding-top: 2.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            padding: 1.75rem 1.75rem 1.5rem;
+            padding-top: 2.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.03);
         }
-        .modal-review h3 { margin-bottom: 1rem; font-size: 1.25rem; }
-        .modal-review .form-group { margin-bottom: 1rem; }
-        .modal-review .form-label { display: block; margin-bottom: 0.35rem; font-size: 0.875rem; font-weight: 500; color: var(--color-gray-700); }
-        .modal-review .form-input, .modal-review textarea { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--color-gray-200); border-radius: 5px; font-size: 0.9375rem; }
-        .modal-review textarea { min-height: 5rem; resize: vertical; }
-        .modal-review-stars { display: flex; gap: 0.25rem; margin-bottom: 0.5rem; }
-        .modal-review-stars button { background: none; border: none; padding: 0; cursor: pointer; color: var(--color-gray-300); }
-        .modal-review-stars button.active, .modal-review-stars button:hover { color: var(--color-amber-400); }
-        .modal-review-photos { margin-top: 0.5rem; }
-        .modal-review-photos input[type="file"] { font-size: 0.875rem; }
-        .modal-review-actions { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
-        .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; cursor: pointer; padding: 0.25rem; color: var(--color-gray-500); }
+        .modal-review h3 {
+            margin: 0 0 0.35rem;
+            font-size: 1.375rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--color-gray-900, #111);
+        }
+        .modal-review-sub {
+            margin: 0 0 1.25rem;
+            font-size: 0.875rem;
+            color: var(--color-gray-600);
+            line-height: 1.45;
+        }
+        .modal-review .form-group { margin-bottom: 1.15rem; }
+        .modal-review .form-label { display: block; margin-bottom: 0.45rem; font-size: 0.8125rem; font-weight: 600; color: var(--color-gray-700); text-transform: uppercase; letter-spacing: 0.04em; }
+        .modal-review-optional { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--color-gray-500); }
+        .modal-review .form-input, .modal-review textarea {
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid var(--color-gray-200);
+            border-radius: 10px;
+            font-size: 0.9375rem;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            box-sizing: border-box;
+        }
+        .modal-review textarea:focus {
+            outline: none;
+            border-color: var(--color-gray-400);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+        }
+        .modal-review textarea { min-height: 6.5rem; resize: vertical; line-height: 1.5; }
+        .modal-review-stars {
+            display: flex;
+            gap: 0.2rem;
+            margin-bottom: 0.15rem;
+            padding: 0.35rem 0;
+        }
+        .modal-review-stars button {
+            background: none;
+            border: none;
+            padding: 0.15rem 0.2rem;
+            cursor: pointer;
+            color: var(--color-gray-300);
+            font-size: 2rem;
+            line-height: 1;
+            transition: color 0.12s ease, transform 0.12s ease;
+        }
+        .modal-review-stars button:hover { transform: scale(1.08); }
+        .modal-review-stars button.active,
+        .modal-review-stars button.hover-active { color: #f59e0b; }
+        .modal-review-stars-hint { font-size: 0.8125rem; color: var(--color-gray-500); margin-top: 0.25rem; }
+        .modal-review-photos { margin-top: 0.25rem; }
+        .modal-review-file-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .modal-review-upload {
+            display: block;
+            cursor: pointer;
+            border: 2px dashed var(--color-gray-200);
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            transition: border-color 0.2s ease, background 0.2s ease;
+            background: var(--color-gray-50, #fafafa);
+        }
+        .modal-review-upload:hover,
+        .modal-review-upload:focus-within {
+            border-color: var(--color-gray-400);
+            background: #fff;
+        }
+        .modal-review-upload.is-dragover {
+            border-color: #000;
+            background: rgba(0, 0, 0, 0.04);
+        }
+        .modal-review-upload-inner { pointer-events: none; }
+        .modal-review-upload-title {
+            margin: 0 0 0.35rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--color-gray-800);
+        }
+        .modal-review-upload-hint {
+            margin: 0;
+            font-size: 0.8125rem;
+            color: var(--color-gray-500);
+        }
+        .modal-review-upload-hint kbd {
+            font-family: inherit;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--color-gray-700);
+        }
+        .modal-review-photos-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .modal-review-photos-preview img {
+            width: 4.25rem;
+            height: 4.25rem;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--color-gray-200);
+        }
+        .modal-review-error {
+            margin: 0 0 0.75rem;
+            padding: 0.5rem 0.65rem;
+            font-size: 0.8125rem;
+            color: #b91c1c;
+            background: #fef2f2;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+        .modal-review-error[hidden] { display: none !important; }
+        .modal-review-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            margin-top: 1.35rem;
+        }
+        .modal-review-actions .btn { flex: 1 1 auto; min-width: 7rem; justify-content: center; border-radius: 10px; padding: 0.65rem 1rem; font-weight: 600; }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--color-gray-100);
+            border: none;
+            cursor: pointer;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            color: var(--color-gray-600);
+            font-size: 1.35rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+        .modal-close:hover { background: var(--color-gray-200); color: var(--color-gray-900); }
     </style>
 </head>
 <body>
@@ -1287,25 +1425,34 @@
         <div class="modal-review">
             <button type="button" class="modal-close" id="review-modal-close" aria-label="Закрыть">&times;</button>
             <h3>Оставить отзыв</h3>
+            <p class="modal-review-sub">Поделитесь впечатлениями — это поможет другим гостям.</p>
             <form id="review-form">
+                <p class="modal-review-error" id="review-form-error" role="alert" hidden></p>
                 <div class="form-group">
-                    <label class="form-label">Ваша оценка</label>
-                    <div class="modal-review-stars" id="review-stars">
+                    <span class="form-label" id="review-stars-label">Ваша оценка</span>
+                    <div class="modal-review-stars" id="review-stars" role="group" aria-labelledby="review-stars-label">
                         <button type="button" data-rating="1" aria-label="1 звезда">★</button>
                         <button type="button" data-rating="2" aria-label="2 звезды">★</button>
                         <button type="button" data-rating="3" aria-label="3 звезды">★</button>
                         <button type="button" data-rating="4" aria-label="4 звезды">★</button>
                         <button type="button" data-rating="5" aria-label="5 звёзд">★</button>
                     </div>
+                    <p class="modal-review-stars-hint" id="review-stars-hint">Нажмите на звёзды от 1 до 5</p>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="review-text">Текст отзыва</label>
                     <textarea id="review-text" placeholder="Расскажите о вашем отдыхе..." rows="4"></textarea>
                 </div>
                 <div class="form-group modal-review-photos">
-                    <label class="form-label">Фотографии (необязательно)</label>
-                    <input type="file" id="review-photos" accept="image/*" multiple>
-                    <div id="review-photos-preview" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;"></div>
+                    <span class="form-label">Фотографии <span class="modal-review-optional">необязательно</span></span>
+                    <label class="modal-review-upload" id="review-upload-zone" for="review-photos">
+                        <input type="file" id="review-photos" class="modal-review-file-input" accept="image/*" multiple>
+                        <span class="modal-review-upload-inner">
+                            <span class="modal-review-upload-title">Перетащите сюда фото</span>
+                            <span class="modal-review-upload-hint">или <kbd>выберите файлы</kbd> на устройстве · до 5 изображений</span>
+                        </span>
+                    </label>
+                    <div id="review-photos-preview" class="modal-review-photos-preview"></div>
                 </div>
                 <div class="modal-review-actions">
                     <button type="submit" class="btn btn-primary">Отправить отзыв</button>

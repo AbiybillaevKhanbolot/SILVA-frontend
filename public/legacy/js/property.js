@@ -776,6 +776,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const reviewText = document.getElementById('review-text');
     const reviewPhotosInput = document.getElementById('review-photos');
     const reviewPhotosPreview = document.getElementById('review-photos-preview');
+    const reviewUploadZone = document.getElementById('review-upload-zone');
+    const reviewFormError = document.getElementById('review-form-error');
 
     const ratingLabel = (n) => {
         if (n >= 9.5) return 'Превосходно';
@@ -799,10 +801,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         return n.slice(0, 2).toUpperCase();
     };
 
+    function reviewSortTimeMs(r) {
+        if (r && r._createdAt) return new Date(r._createdAt).getTime();
+        if (r && typeof r.id === 'string' && r.id.indexOf('u') === 0) return parseInt(r.id.slice(1), 10) || 0;
+        return 0;
+    }
+
     function renderReviews() {
         let reviews = mockAPI.getReviewsForProperty(propertyId);
         const sortVal = reviewsSortSelect ? reviewsSortSelect.value : 'useful';
-        if (sortVal === 'new') reviews = [...reviews].sort((a, b) => (b.id || '').localeCompare(a.id || ''));
+        if (sortVal === 'new') {
+            reviews = [...reviews].sort(function (a, b) {
+                return reviewSortTimeMs(b) - reviewSortTimeMs(a);
+            });
+        }
         if (sortVal === 'rating-high') reviews = [...reviews].sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
         const avgRating = reviews.length ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1) : '0';
@@ -903,10 +915,60 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
+    if (typeof window.silvaSupabaseAuth !== 'undefined' && typeof window.silvaSupabaseAuth.fetchReviewsForProperty === 'function') {
+        try {
+            var serverReviews = await window.silvaSupabaseAuth.fetchReviewsForProperty(propertyId);
+            mockAPI.setServerReviewsForProperty(propertyId, serverReviews);
+        } catch (errReviews) {}
+    }
+
     renderReviews();
     if (reviewsSortSelect) reviewsSortSelect.addEventListener('change', renderReviews);
 
     // "Оставить отзыв" — для гостей показываем модалку «Войдите»
+    function clearReviewFormError() {
+        if (reviewFormError) {
+            reviewFormError.textContent = '';
+            reviewFormError.hidden = true;
+        }
+    }
+    function showReviewFormError(msg) {
+        if (!reviewFormError) return;
+        reviewFormError.textContent = msg;
+        reviewFormError.hidden = !msg;
+    }
+
+    function assignReviewPhotoFiles(fileList) {
+        if (!reviewPhotosInput) return;
+        var arr = Array.from(fileList || []).filter(function (f) {
+            return f && f.type && f.type.indexOf('image/') === 0;
+        }).slice(0, 5);
+        var dt = new DataTransfer();
+        arr.forEach(function (f) {
+            dt.items.add(f);
+        });
+        reviewPhotosInput.files = dt.files;
+    }
+
+    function renderReviewPhotoPreviews() {
+        if (!reviewPhotosPreview || !reviewPhotosInput) return;
+        reviewPhotosPreview.innerHTML = '';
+        var files = Array.from(reviewPhotosInput.files || []).slice(0, 5);
+        files.forEach(function (file) {
+            if (file.type.indexOf('image/') !== 0) return;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = '';
+                reviewPhotosPreview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    let selectedStars = 0;
+
     if (btnLeaveReview) {
         btnLeaveReview.style.display = 'inline-block';
         btnLeaveReview.addEventListener('click', function() {
@@ -915,11 +977,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
             selectedStars = 0;
+            clearReviewFormError();
             if (reviewModal) reviewModal.classList.add('open');
-            if (reviewStars) reviewStars.querySelectorAll('button').forEach((b, i) => { b.classList.toggle('active', i < selectedStars); });
+            if (reviewStars) {
+                reviewStars.querySelectorAll('button').forEach(function (b, i) {
+                    b.classList.toggle('active', i < selectedStars);
+                    b.classList.remove('hover-active');
+                });
+            }
             if (reviewText) reviewText.value = '';
-            if (reviewPhotosInput) reviewPhotosInput.value = '';
-            if (reviewPhotosPreview) reviewPhotosPreview.innerHTML = '';
+            assignReviewPhotoFiles([]);
+            renderReviewPhotoPreviews();
         });
     }
 
@@ -927,40 +995,76 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (reviewModalCancel) reviewModalCancel.addEventListener('click', () => reviewModal && reviewModal.classList.remove('open'));
     if (reviewModal) reviewModal.addEventListener('click', function(e) { if (e.target === reviewModal) reviewModal.classList.remove('open'); });
 
-    let selectedStars = 0;
     if (reviewStars) {
-        reviewStars.querySelectorAll('button').forEach((btn, index) => {
-            btn.addEventListener('click', function() {
+        reviewStars.querySelectorAll('button').forEach(function (btn, index) {
+            btn.addEventListener('mouseenter', function () {
+                reviewStars.querySelectorAll('button').forEach(function (b, i) {
+                    b.classList.toggle('hover-active', i <= index);
+                });
+            });
+            btn.addEventListener('click', function () {
                 selectedStars = index + 1;
-                reviewStars.querySelectorAll('button').forEach((b, i) => b.classList.toggle('active', i < selectedStars));
+                reviewStars.querySelectorAll('button').forEach(function (b, i) {
+                    b.classList.remove('hover-active');
+                    b.classList.toggle('active', i < selectedStars);
+                });
+                clearReviewFormError();
+            });
+        });
+        reviewStars.addEventListener('mouseleave', function () {
+            reviewStars.querySelectorAll('button').forEach(function (b, i) {
+                b.classList.remove('hover-active');
+                b.classList.toggle('active', i < selectedStars);
             });
         });
     }
 
     if (reviewPhotosInput && reviewPhotosPreview) {
-        reviewPhotosInput.addEventListener('change', function() {
-            reviewPhotosPreview.innerHTML = '';
-            const files = Array.from(this.files || []).slice(0, 5);
-            files.forEach(file => {
-                if (!file.type.startsWith('image/')) return;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.width = '4rem'; img.style.height = '4rem'; img.style.objectFit = 'cover'; img.style.borderRadius = '5px';
-                    reviewPhotosPreview.appendChild(img);
-                };
-                reader.readAsDataURL(file);
+        reviewPhotosInput.addEventListener('change', function () {
+            assignReviewPhotoFiles(this.files);
+            renderReviewPhotoPreviews();
+        });
+    }
+
+    if (reviewUploadZone && reviewPhotosInput) {
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            reviewUploadZone.addEventListener(ev, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                reviewUploadZone.classList.add('is-dragover');
             });
+        });
+        reviewUploadZone.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            if (!reviewUploadZone.contains(e.relatedTarget)) {
+                reviewUploadZone.classList.remove('is-dragover');
+            }
+        });
+        reviewUploadZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            reviewUploadZone.classList.remove('is-dragover');
+            var dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length) {
+                assignReviewPhotoFiles(dt.files);
+                renderReviewPhotoPreviews();
+            }
         });
     }
 
     if (reviewForm) {
         reviewForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            if (selectedStars === 0) return;
+            clearReviewFormError();
+            if (selectedStars === 0) {
+                showReviewFormError('Выберите оценку — нажмите на звёзды.');
+                return;
+            }
             const text = reviewText ? reviewText.value.trim() : '';
-            if (!text) return;
+            if (!text) {
+                showReviewFormError('Напишите текст отзыва.');
+                return;
+            }
             const files = reviewPhotosInput && reviewPhotosInput.files ? Array.from(reviewPhotosInput.files).filter(f => f.type.startsWith('image/')).slice(0, 5) : [];
             const readPhotos = () => {
                 if (files.length === 0) return Promise.resolve([]);
@@ -979,7 +1083,55 @@ document.addEventListener('DOMContentLoaded', async function() {
                 avatar = u.avatar || null;
             } catch (e) {}
             const rating = selectedStars * 2;
-            readPhotos().then(photos => {
+            readPhotos().then(function (photos) {
+                var supa = window.silvaSupabaseAuth;
+                var tryRemote =
+                    supa && typeof supa.insertReview === 'function' && typeof supa.fetchReviewsForProperty === 'function';
+
+                function afterSuccess() {
+                    clearReviewFormError();
+                    if (reviewModal) reviewModal.classList.remove('open');
+                    renderReviews();
+                }
+
+                function remoteFailMessage(err) {
+                    if (err && err.message) return String(err.message);
+                    if (err && err.error && err.error.message) return String(err.error.message);
+                    return 'Не удалось отправить отзыв на сервер.';
+                }
+
+                if (tryRemote) {
+                    return supa
+                        .insertReview({
+                            propertyId: propertyId,
+                            rating: selectedStars,
+                            text: text,
+                            avatarUrl: avatar
+                        })
+                        .then(function () {
+                            return supa.fetchReviewsForProperty(propertyId);
+                        })
+                        .then(function (list) {
+                            mockAPI.setServerReviewsForProperty(propertyId, list);
+                            afterSuccess();
+                        })
+                        .catch(function (err) {
+                            mockAPI.addReviewForProperty(propertyId, {
+                                author: author,
+                                avatar: avatar,
+                                rating: rating,
+                                ratingLabel: ratingLabel(rating),
+                                text: text,
+                                photos: photos,
+                                stayDate: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
+                            });
+                            showReviewFormError(
+                                remoteFailMessage(err) + ' Отзыв сохранён только на этом устройстве.'
+                            );
+                            renderReviews();
+                        });
+                }
+
                 mockAPI.addReviewForProperty(propertyId, {
                     author: author,
                     avatar: avatar,
@@ -989,8 +1141,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     photos: photos,
                     stayDate: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
                 });
-                if (reviewModal) reviewModal.classList.remove('open');
-                renderReviews();
+                afterSuccess();
             });
         });
     }
