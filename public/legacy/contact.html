@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контакты — Silva</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body class="page-contacts">
+    <div id="header-container"></div>
+
+    <main>
+        <section class="section section-gray contacts-page-hero">
+            <div class="container">
+                <h1 class="section-title" style="margin-bottom: 0.75rem;">Контакты</h1>
+                <p class="contacts-lead">Свяжитесь с нами по телефону, почте или оставьте сообщение в форме ниже — ответим в рабочее время.</p>
+
+                <div class="contacts-grid">
+                    <article class="contacts-card">
+                        <div class="contacts-card-icon" aria-hidden="true">
+                            <span class="silva-icon" data-icon="phone" data-w="22" data-h="22"></span>
+                        </div>
+                        <h2 class="contacts-card-title">Телефон</h2>
+                        <p class="contacts-card-value">
+                            <a href="tel:+78001234567">8 (800) 123-45-67</a>
+                        </p>
+                        <p class="contacts-card-note">Бесплатно по России</p>
+                    </article>
+                    <article class="contacts-card">
+                        <div class="contacts-card-icon" aria-hidden="true">
+                            <span class="silva-icon" data-icon="mail" data-w="22" data-h="22"></span>
+                        </div>
+                        <h2 class="contacts-card-title">Электронная почта</h2>
+                        <p class="contacts-card-value">
+                            <a href="mailto:info@dachagrad.ru">info@dachagrad.ru</a>
+                        </p>
+                        <p class="contacts-card-note">Для вопросов и бронирований</p>
+                    </article>
+                    <article class="contacts-card">
+                        <div class="contacts-card-icon" aria-hidden="true">
+                            <span class="silva-icon" data-icon="map-pin" data-w="22" data-h="22"></span>
+                        </div>
+                        <h2 class="contacts-card-title">Офис</h2>
+                        <p class="contacts-card-value">Москва,<br>ул. Природная, 42</p>
+                        <p class="contacts-card-note">Встречи — по предварительной записи, Пн–Пт 10:00–19:00</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-divider section-divider--feedback"></div>
+
+        <section class="feedback-section section-white">
+            <div class="container feedback-layout">
+                <div class="feedback-visual">
+                    <img src="images/feedback.png" alt="Иллюстрация: обратная связь" width="800" height="1200" decoding="async" loading="lazy">
+                </div>
+                <div class="feedback-content">
+                    <div class="feedback-header">
+                        <h2 class="feedback-title">Обратная связь</h2>
+                        <p class="feedback-desc">Напишите нам — ответим в течение рабочего дня.</p>
+                    </div>
+                    <form class="feedback-form" id="feedback-form" action="#" method="post">
+                        <div class="feedback-field">
+                            <label class="feedback-label" for="feedback-name">Имя</label>
+                            <input id="feedback-name" type="text" class="feedback-input" name="name" autocomplete="name" required>
+                        </div>
+                        <div class="feedback-field">
+                            <label class="feedback-label" for="feedback-email">Почта</label>
+                            <input id="feedback-email" type="email" class="feedback-input" name="email" autocomplete="email" required>
+                        </div>
+                        <div class="feedback-field">
+                            <label class="feedback-label" for="feedback-message">Сообщение</label>
+                            <textarea id="feedback-message" class="feedback-textarea" name="message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="header-auth-link header-auth-link-primary garden-btn">Отправить</button>
+                        <p id="feedback-status" class="feedback-desc" style="margin-top:0.75rem; display:none;"></p>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <script src="js/icons.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth-modal.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/components/footer.js"></script>
+    <script src="js/contacts-page.js"></script>
+</body>
+</html>
