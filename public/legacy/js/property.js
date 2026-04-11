@@ -189,26 +189,50 @@ document.addEventListener('DOMContentLoaded', async function() {
                 encodeURIComponent(propertyId) +
                 '" class="property-favorite-btn" id="property-favorite-btn">Редактировать</a>';
         } else {
-            let favorites = [];
-            try {
-                favorites = JSON.parse(localStorage.getItem(getFavoritesStorageKey()) || '[]');
-            } catch (e) {}
-            const isFavorite = favorites.indexOf(propertyId) !== -1;
-            if (isFavorite) favoriteBtn.classList.add('in-favorites');
-            const svgEl = favoriteBtn.querySelector('svg');
-            if (svgEl) svgEl.style.fill = isFavorite ? 'currentColor' : 'none';
+            const pid = String(propertyId);
+            function readFavoritesList() {
+                try {
+                    var raw = JSON.parse(localStorage.getItem(getFavoritesStorageKey()) || '[]');
+                    return Array.isArray(raw) ? raw.map(String) : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            function setFavoriteButtonState(btn, inFavorites) {
+                btn.classList.toggle('in-favorites', inFavorites);
+                var s = btn.querySelector('svg');
+                if (s) s.style.fill = inFavorites ? 'currentColor' : 'none';
+                var lab = btn.querySelector('.property-favorite-btn-label');
+                if (lab) {
+                    lab.textContent = inFavorites ? 'Убрать из избранного' : 'В избранное';
+                }
+                btn.setAttribute('aria-label', inFavorites ? 'Убрать из избранного' : 'В избранное');
+            }
+            let favorites = readFavoritesList();
+            const isFavorite = favorites.indexOf(pid) !== -1;
+            setFavoriteButtonState(favoriteBtn, isFavorite);
             favoriteBtn.addEventListener('click', function() {
-                favorites = JSON.parse(localStorage.getItem(getFavoritesStorageKey()) || '[]');
-                const idx = favorites.indexOf(propertyId);
-                if (idx === -1) favorites.push(propertyId);
+                favorites = readFavoritesList();
+                const idx = favorites.indexOf(pid);
+                if (idx === -1) favorites.push(pid);
                 else favorites.splice(idx, 1);
                 localStorage.setItem(getFavoritesStorageKey(), JSON.stringify(favorites));
-                const nowFav = favorites.indexOf(propertyId) !== -1;
-                favoriteBtn.classList.toggle('in-favorites', nowFav);
-                const s = favoriteBtn.querySelector('svg');
-                if (s) s.style.fill = nowFav ? 'currentColor' : 'none';
-                if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.setFavorite === 'function') {
-                    window.silvaSupabaseAuth.setFavorite(parseInt(propertyId, 10), nowFav).catch(function () {});
+                const nowFav = favorites.indexOf(pid) !== -1;
+                setFavoriteButtonState(favoriteBtn, nowFav);
+                if (
+                    window.silvaSupabaseAuth &&
+                    typeof window.silvaSupabaseAuth.setFavorite === 'function' &&
+                    typeof window.isLoggedIn === 'function' &&
+                    window.isLoggedIn()
+                ) {
+                    window.silvaSupabaseAuth.setFavorite(parseInt(pid, 10), nowFav).catch(function () {});
+                }
+                if (typeof window.dispatchEvent === 'function') {
+                    window.dispatchEvent(
+                        new CustomEvent('silva-favorites-changed', {
+                            detail: { propertyId: pid, inFavorites: nowFav }
+                        })
+                    );
                 }
             });
         }
@@ -217,7 +241,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Render amenities (extended)
     const amenitiesGrid = document.getElementById('amenities-grid');
     if (amenitiesGrid) {
-        const amenities = property.amenities || ['wifi', 'parking', 'kitchen'];
+        const amenities = Array.isArray(property.amenities)
+            ? property.amenities
+            : ['wifi', 'parking', 'kitchen'];
         var p = typeof SilvaIcons !== 'undefined' ? SilvaIcons.paths : {};
         var icAmenity = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
         var amenityKey = { wifi: 'wifi', parking: 'car', kitchen: 'utensils-crossed', pool: 'waves', transfer: 'bus', children: 'baby', pets: 'paw-print', sauna: 'flame' };
@@ -528,18 +554,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 </div>
             </div>
         `;
-        
-        // Перехват «Забронировать» для гостей — показать модалку авторизации
-        const bookingCardEl = document.getElementById('booking-card');
-        if (bookingCardEl) {
-            bookingCardEl.addEventListener('click', function(e) {
-                var btn = e.target.closest('#booking-btn');
-                if (btn && typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
-                    e.preventDefault();
-                    if (typeof window.showAuthRequiredModal === 'function') window.showAuthRequiredModal();
-                }
-            });
-        }
         
         // Initialize price calculation
         calculatePrice();
