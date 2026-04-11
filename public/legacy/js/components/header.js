@@ -31,7 +31,8 @@ async function silvaPerformLogout() {
     } catch (e) {
         localStorage.removeItem('silva_user');
     }
-    window.location.href = 'index.html';
+    window.location.href =
+        typeof silvaLegacyHref === 'function' ? silvaLegacyHref('index.html') : 'index.html';
 }
 
 window.silvaOpenLogoutConfirmModal = silvaOpenLogoutConfirmModal;
@@ -48,6 +49,8 @@ function initHeader() {
     let navActive = null;
     if (pathLower.indexOf('catalog.html') !== -1) {
         navActive = 'catalog';
+    } else if (pathLower.indexOf('/contact.html') !== -1 || pathLower.endsWith('/contacts')) {
+        navActive = 'contacts';
     } else if (pathLower.indexOf('loyalty.html') !== -1) {
         navActive = 'loyalty';
     } else if (isHomePage) {
@@ -75,6 +78,7 @@ function initHeader() {
     }
 
     async function renderHeader() {
+        var lh = typeof silvaLegacyHref === 'function' ? silvaLegacyHref : function (f) { return f; };
         if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.syncLocalUserFromSupabase === 'function') {
             try {
                 await window.silvaSupabaseAuth.syncLocalUserFromSupabase();
@@ -94,36 +98,36 @@ function initHeader() {
         const isOwner = user.role === 'owner';
         const isAdmin = user.role === 'admin';
         const ic = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
-        const profileHref = isAdmin ? 'admin.html' : 'profile.html';
+        const profileHref = isAdmin ? lh('admin.html') : lh('profile.html');
         const profileLabel = isAdmin ? 'Админ-панель' : 'Личный кабинет';
         const adminLinksHtml = isAdmin
             ? `
-                                <a href="admin.html" class="header-dropdown-link">
+                                <a href="${lh('admin.html')}" class="header-dropdown-link">
                                     ${ic('shield-check', 18, 18)}
                                     Панель администратора
                                 </a>`
             : '';
         const ownerLinksHtml = isOwner
             ? `
-                                <a href="owner-dashboard.html" class="header-dropdown-link">
+                                <a href="${lh('owner-dashboard.html')}" class="header-dropdown-link">
                                     ${ic('layout-dashboard', 18, 18)}
                                     Панель владельца
                                 </a>`
             : '';
         const guestLinksHtml = !isOwner && !isAdmin
             ? `
-                                <a href="my-bookings.html" class="header-dropdown-link">
+                                <a href="${lh('my-bookings.html')}" class="header-dropdown-link">
                                     ${ic('calendar-days', 18, 18)}
                                     Мои бронирования
                                 </a>
-                                <a href="favorites.html" class="header-dropdown-link">
+                                <a href="${lh('favorites.html')}" class="header-dropdown-link">
                                     ${ic('heart', 18, 18)}
                                     Избранное
                                 </a>`
             : '';
         const adminAuthHtml = `
                         <div class="header-auth-buttons">
-                            <a href="admin.html" class="header-auth-link header-auth-link-primary">Админ-панель</a>
+                            <a href="${lh('admin.html')}" class="header-auth-link header-auth-link-primary">Админ-панель</a>
                             <button type="button" class="header-auth-link" id="header-logout-btn">Выйти</button>
                         </div>`;
         const authHtml = loggedIn
@@ -161,15 +165,15 @@ function initHeader() {
             `
             : `
                         <div class="header-auth-buttons">
-                            <a href="login.html" class="header-auth-link">Вход</a>
-                            <a href="register.html" class="header-auth-link header-auth-link-primary">Регистрация</a>
+                            <a href="${lh('login.html')}" class="header-auth-link">Вход</a>
+                            <a href="${lh('register.html')}" class="header-auth-link header-auth-link-primary">Регистрация</a>
                         </div>`;
 
         headerContainer.innerHTML = `
             <header class="header ${headerClass} ${isHomePage ? 'header--home' : ''}">
                 <div class="header-content">
                     <div class="header-left">
-                        <a href="index.html" class="header-logo">
+                        <a href="${lh('index.html')}" class="header-logo">
                             <div class="header-logo-icon ${iconClass}">
                                 <img src="images/logo.svg" alt="SILVA" style="width: 100%; height: 100%; object-fit: contain;">
                             </div>
@@ -178,11 +182,13 @@ function initHeader() {
                     </div>
 
                     <nav class="header-nav" aria-label="Основная навигация">
-                        <a href="index.html" class="header-nav-link${navActive === 'home' ? ' header-nav-link--active' : ''}"${navActive === 'home' ? ' aria-current="page"' : ''}>Главная</a>
+                        <a href="${lh('index.html')}" class="header-nav-link${navActive === 'home' ? ' header-nav-link--active' : ''}"${navActive === 'home' ? ' aria-current="page"' : ''}>Главная</a>
                         <span class="header-nav-sep" aria-hidden="true"></span>
-                        <a href="catalog.html" class="header-nav-link${navActive === 'catalog' ? ' header-nav-link--active' : ''}"${navActive === 'catalog' ? ' aria-current="page"' : ''}>Каталог</a>
+                        <a href="${lh('catalog.html')}" class="header-nav-link${navActive === 'catalog' ? ' header-nav-link--active' : ''}"${navActive === 'catalog' ? ' aria-current="page"' : ''}>Каталог</a>
                         <span class="header-nav-sep" aria-hidden="true"></span>
-                        <a href="loyalty.html" class="header-nav-link${navActive === 'loyalty' ? ' header-nav-link--active' : ''}"${navActive === 'loyalty' ? ' aria-current="page"' : ''}>Виртуальный сад</a>
+                        <a href="${lh('loyalty.html')}" class="header-nav-link${navActive === 'loyalty' ? ' header-nav-link--active' : ''}"${navActive === 'loyalty' ? ' aria-current="page"' : ''}>Бонусы</a>
+                        <span class="header-nav-sep" aria-hidden="true"></span>
+                        <a href="${lh('contact.html')}" class="header-nav-link${navActive === 'contacts' ? ' header-nav-link--active' : ''}"${navActive === 'contacts' ? ' aria-current="page"' : ''}>Контакты</a>
                     </nav>
 
                     <div class="header-right">
@@ -198,19 +204,21 @@ function initHeader() {
             <div class="mobile-menu" id="mobile-menu">
                 <div class="mobile-menu-content">
                     <div class="mobile-menu-nav" role="group" aria-label="Основная навигация">
-                        <a href="index.html" class="mobile-menu-link${navActive === 'home' ? ' mobile-menu-link--active' : ''}"${navActive === 'home' ? ' aria-current="page"' : ''}>Главная</a>
+                        <a href="${lh('index.html')}" class="mobile-menu-link${navActive === 'home' ? ' mobile-menu-link--active' : ''}"${navActive === 'home' ? ' aria-current="page"' : ''}>Главная</a>
                         <span class="mobile-menu-nav-sep" aria-hidden="true"></span>
-                        <a href="catalog.html" class="mobile-menu-link${navActive === 'catalog' ? ' mobile-menu-link--active' : ''}"${navActive === 'catalog' ? ' aria-current="page"' : ''}>Каталог</a>
+                        <a href="${lh('catalog.html')}" class="mobile-menu-link${navActive === 'catalog' ? ' mobile-menu-link--active' : ''}"${navActive === 'catalog' ? ' aria-current="page"' : ''}>Каталог</a>
                         <span class="mobile-menu-nav-sep" aria-hidden="true"></span>
-                        <a href="loyalty.html" class="mobile-menu-link${navActive === 'loyalty' ? ' mobile-menu-link--active' : ''}"${navActive === 'loyalty' ? ' aria-current="page"' : ''}>Виртуальный сад</a>
+                        <a href="${lh('loyalty.html')}" class="mobile-menu-link${navActive === 'loyalty' ? ' mobile-menu-link--active' : ''}"${navActive === 'loyalty' ? ' aria-current="page"' : ''}>Бонусы</a>
+                        <span class="mobile-menu-nav-sep" aria-hidden="true"></span>
+                        <a href="${lh('contact.html')}" class="mobile-menu-link${navActive === 'contacts' ? ' mobile-menu-link--active' : ''}"${navActive === 'contacts' ? ' aria-current="page"' : ''}>Контакты</a>
                     </div>
                     <div class="mobile-menu-auth">${loggedIn
                         ? (isAdmin
-                            ? '<a href="admin.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Админ-панель</a>'
+                            ? '<a href="' + lh('admin.html') + '" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Админ-панель</a>'
                             : (isOwner
-                                ? '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="owner-dashboard.html" class="mobile-menu-link">Панель владельца</a>'
-                                : '<a href="profile.html" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>'))
-                        : '<a href="login.html" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="register.html" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
+                                ? '<a href="' + lh('profile.html') + '" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="' + lh('owner-dashboard.html') + '" class="mobile-menu-link">Панель владельца</a>'
+                                : '<a href="' + lh('profile.html') + '" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>'))
+                        : '<a href="' + lh('login.html') + '" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="' + lh('register.html') + '" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
                     }</div>
                 </div>
             </div>
