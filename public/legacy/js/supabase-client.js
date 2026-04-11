@@ -394,7 +394,9 @@
         var uid = user.id;
         var pid = normalizeBookingPropertyId(payload.propertyId);
         if (pid == null) throw new Error('Не указан объект для бронирования');
-        // user_id — схема из миграций SILVA-backend; guest_id — встречается в проде (legacy NOT NULL).
+        var amount = Number(payload.totalRub);
+        if (isNaN(amount) || amount < 0) amount = 0;
+        // user_id — миграции SILVA-backend; guest_id / total_amount — частые legacy-поля на проде.
         var ins = await sb.from('bookings').insert({
             user_id: uid,
             guest_id: uid,
@@ -403,7 +405,8 @@
             check_out: payload.checkOut,
             guests: payload.guests,
             children: payload.children || 0,
-            total_price: payload.totalRub || 0,
+            total_price: amount,
+            total_amount: amount,
             status: 'pending'
         });
         if (ins.error) throw ins.error;
