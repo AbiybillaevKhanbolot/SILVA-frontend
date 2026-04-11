@@ -196,6 +196,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             alert('Необходимо подтвердить ознакомление с правилами бронирования');
             return;
         }
+
+        if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
+            if (typeof window.showAuthRequiredModal === 'function') {
+                window.showAuthRequiredModal(
+                    'Чтобы оплатить и подтвердить бронирование, войдите в существующий аккаунт или зарегистрируйтесь. ' +
+                        'Так мы сохраним вашу бронь и сможем отправить детали на email.'
+                );
+            }
+            return;
+        }
         
         const amountToPay = payAmount === '30' ? total30 : total;
         const loyaltyPointsToAward = Math.floor(amountToPay / 100);
