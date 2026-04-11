@@ -17,6 +17,7 @@
                 <h1 class="account-page-title">Избранное</h1>
                 <p class="account-page-lead">
                     Объекты, которые вы сохранили. Цены и наличие дат уточняйте при бронировании.
+                    Без входа список хранится только в этом браузере.
                 </p>
 
                 <div id="favorites-grid-wrap" class="favorites-grid-wrap">
@@ -49,7 +50,12 @@
                 var wrap = document.getElementById('favorites-grid-wrap');
                 if (!container || !emptyBlock) return;
 
-                if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchFavorites === 'function') {
+                if (
+                    window.silvaSupabaseAuth &&
+                    typeof window.silvaSupabaseAuth.fetchFavorites === 'function' &&
+                    typeof window.isLoggedIn === 'function' &&
+                    window.isLoggedIn()
+                ) {
                     try { await window.silvaSupabaseAuth.fetchFavorites(); } catch (e) {}
                 }
                 if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
@@ -59,14 +65,46 @@
                 var ids = [];
                 try {
                     var key = typeof getFavoritesStorageKey === 'function' ? getFavoritesStorageKey() : 'silva_favorites';
-                    ids = JSON.parse(localStorage.getItem(key) || '[]');
-                } catch (e) {}
+                    var parsed = JSON.parse(localStorage.getItem(key) || '[]');
+                    ids = Array.isArray(parsed) ? parsed.map(function (x) { return String(x); }) : [];
+                } catch (e) {
+                    ids = [];
+                }
 
-                var properties = ids
-                    .map(function (id) {
-                        return typeof mockAPI !== 'undefined' && mockAPI.getPropertyById
-                            ? mockAPI.getPropertyById(id)
+                var byId = {};
+                ids.forEach(function (fid) {
+                    var p =
+                        typeof mockAPI !== 'undefined' && mockAPI.getPropertyById
+                            ? mockAPI.getPropertyById(fid)
                             : null;
+                    if (p) byId[fid] = p;
+                });
+                var missing = ids.filter(function (fid) {
+                    return !byId[fid];
+                });
+                if (
+                    missing.length &&
+                    window.silvaSupabaseAuth &&
+                    typeof window.silvaSupabaseAuth.fetchPropertiesByIds === 'function'
+                ) {
+                    try {
+                        var fetched = await window.silvaSupabaseAuth.fetchPropertiesByIds(missing);
+                        (fetched || []).forEach(function (p) {
+                            if (p && p.id != null) byId[String(p.id)] = p;
+                        });
+                        if (
+                            typeof mockAPI !== 'undefined' &&
+                            typeof mockAPI.appendPropertiesToCache === 'function' &&
+                            fetched &&
+                            fetched.length
+                        ) {
+                            mockAPI.appendPropertiesToCache(fetched);
+                        }
+                    } catch (e) {}
+                }
+                var properties = ids
+                    .map(function (fid) {
+                        return byId[fid] || null;
                     })
                     .filter(Boolean);
 
@@ -84,10 +122,6 @@
             }
 
             document.addEventListener('DOMContentLoaded', function () {
-                if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
-                    window.location.href = 'login.html';
-                    return;
-                }
                 renderFavorites();
                 window.addEventListener('silva-favorites-changed', function () {
                     renderFavorites();

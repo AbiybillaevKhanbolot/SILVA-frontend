@@ -16,8 +16,10 @@
         .page-catalog .filter-option,
         .page-catalog .filter-amenity,
         .page-catalog .mobile-filter-panel,
+        .page-catalog .catalog-favorites-panel,
         .page-catalog .mobile-filter-panel h3,
         .page-catalog .mobile-filter-panel h4,
+        .page-catalog .catalog-favorites-panel h3,
         .page-catalog h1, .page-catalog h2, .page-catalog h3, .page-catalog h4 {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
@@ -309,7 +311,7 @@
             top: 5.5rem;
             bottom: 1.5rem;
             width: 100%;
-            max-width: 20rem;
+            max-width: 28rem;
             background: var(--color-white);
             z-index: 50;
             overflow-y: auto;
@@ -478,6 +480,138 @@
             border-radius: 5px;
             background: transparent;
         }
+
+        .catalog-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #catalog-favorites-overlay {
+            z-index: 55;
+        }
+        #catalog-favorites-panel.catalog-favorites-panel {
+            max-width: min(100%, 42rem);
+        }
+        @media (min-width: 1024px) {
+            #catalog-favorites-panel.catalog-favorites-panel {
+                max-width: min(100%, 56rem);
+            }
+        }
+        /* Компактные карточки только в модалке «Избранное» (каталог) */
+        #catalog-favorites-grid.properties-grid {
+            gap: 0.75rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        @media (min-width: 520px) {
+            #catalog-favorites-grid.properties-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 900px) {
+            #catalog-favorites-grid.properties-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+        #catalog-favorites-panel .property-card {
+            border-radius: 5px;
+        }
+        #catalog-favorites-panel .property-card-image {
+            height: 5.25rem;
+            min-height: 5.25rem;
+            aspect-ratio: auto;
+        }
+        #catalog-favorites-panel .property-card-image img {
+            transition: transform 0.35s ease;
+        }
+        #catalog-favorites-panel .property-card-placeholder-icon {
+            width: 2rem;
+            height: 2rem;
+        }
+        #catalog-favorites-panel .property-card-favorite {
+            top: 0.35rem;
+            right: 0.35rem;
+            width: 1.625rem;
+            height: 1.625rem;
+            border-radius: 5px;
+        }
+        #catalog-favorites-panel .property-card-favorite svg {
+            width: 0.8125rem;
+            height: 0.8125rem;
+        }
+        #catalog-favorites-panel .property-card-rating--overlay {
+            top: 0.35rem;
+            left: 0.35rem;
+            padding: 0.1rem 0.28rem;
+            gap: 0.15rem;
+        }
+        #catalog-favorites-panel .property-card-rating-star {
+            width: 0.65rem;
+            height: 0.65rem;
+        }
+        #catalog-favorites-panel .property-card-rating--overlay .property-card-rating-value,
+        #catalog-favorites-panel .property-card-rating--overlay .property-card-rating-count {
+            font-size: 0.65rem;
+        }
+        #catalog-favorites-panel .property-card-content {
+            padding: 0.45rem 0.5rem 0.5rem;
+            gap: 0.2rem;
+        }
+        #catalog-favorites-panel .property-card-title {
+            font-size: 0.75rem;
+            line-height: 1.25;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        #catalog-favorites-panel .property-card-location svg {
+            width: 0.65rem;
+            height: 0.65rem;
+        }
+        #catalog-favorites-panel .property-card-location-text {
+            font-size: 0.65rem;
+        }
+        #catalog-favorites-panel .property-card-details {
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            padding-top: 0.1rem;
+            align-items: flex-start;
+        }
+        #catalog-favorites-panel .property-card-details-left {
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+        #catalog-favorites-panel .property-card-detail {
+            font-size: 0.65rem;
+            gap: 0.15rem;
+        }
+        #catalog-favorites-panel .property-card-detail svg {
+            width: 0.65rem;
+            height: 0.65rem;
+        }
+        #catalog-favorites-panel .property-card-price-amount {
+            font-size: 0.75rem;
+        }
+        #catalog-favorites-panel .property-card-price-unit {
+            font-size: 0.6rem;
+        }
+        #catalog-favorites-panel .property-card-more {
+            --silva-btn-fill-height: 26px;
+            --silva-btn-font-size: 0.6875rem;
+            margin-top: 0.15rem;
+            padding: 0 0.5rem;
+            min-height: 26px;
+            height: 26px;
+        }
+        .catalog-favorites-empty {
+            padding: 2rem 0;
+            text-align: center;
+            color: var(--color-gray-600);
+            font-size: 0.9375rem;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body class="page-catalog">
@@ -532,10 +666,16 @@
                             <span class="silva-icon select-arrow" data-icon="chevron-down" data-w="16" data-h="16" aria-hidden="true"></span>
                         </div>
                         
-                        <button type="button" id="mobile-filter-btn" class="header-auth-link header-auth-link-primary catalog-filter-btn">
-                            Фильтры
-                            <span class="filter-badge" id="filter-badge" style="display: none;">0</span>
-                        </button>
+                        <div class="catalog-header-actions">
+                            <button type="button" id="catalog-favorites-btn" class="header-auth-link catalog-filter-btn" aria-label="Открыть избранное" aria-expanded="false" aria-controls="catalog-favorites-panel">
+                                Избранное
+                                <span class="filter-badge" id="catalog-favorites-badge" style="display: none;">0</span>
+                            </button>
+                            <button type="button" id="mobile-filter-btn" class="header-auth-link header-auth-link-primary catalog-filter-btn">
+                                Фильтры
+                                <span class="filter-badge" id="filter-badge" style="display: none;">0</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -576,6 +716,19 @@
                 <button class="mobile-filter-close" id="mobile-filter-close" type="button" aria-label="Закрыть фильтры"><span class="close-x">×</span></button>
             </div>
             <div id="mobile-filters"></div>
+        </div>
+    </div>
+
+    <div class="mobile-filter-overlay" id="catalog-favorites-overlay" aria-hidden="true">
+        <div class="mobile-filter-panel catalog-favorites-panel" id="catalog-favorites-panel" role="dialog" aria-modal="true" aria-labelledby="catalog-favorites-title">
+            <div class="mobile-filter-header">
+                <h3 id="catalog-favorites-title" style="font-weight: 600; color: var(--color-gray-900);">Избранное</h3>
+                <button class="mobile-filter-close" id="catalog-favorites-close" type="button" aria-label="Закрыть избранное"><span class="close-x">×</span></button>
+            </div>
+            <p class="catalog-favorites-empty" id="catalog-favorites-empty" style="display: none;">
+                Пока ничего не сохранено. Нажмите на сердечко на карточке объекта — он появится здесь. Без входа список хранится только в этом браузере.
+            </p>
+            <div id="catalog-favorites-grid" class="properties-grid" style="display: none;"></div>
         </div>
     </div>
     
