@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     'use strict';
     if (typeof requireOwnerOrRedirect !== 'function' || !requireOwnerOrRedirect()) return;
     if (typeof initOwnerSubnav === 'function') initOwnerSubnav();
@@ -21,6 +21,33 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
+    }
+
+    /** Нормализованный id объекта (строка), без Number() — иначе большие bigint и нецифровые id дают NaN в ссылке. */
+    function propertyKey(prop) {
+        if (!prop) return '';
+        return typeof mockAPI._normalizePropertyId === 'function'
+            ? mockAPI._normalizePropertyId(prop.id) || ''
+            : String(prop.id != null ? prop.id : '').trim();
+    }
+
+    async function prefetchServerReviewsForListings(listings) {
+        var supa = window.silvaSupabaseAuth;
+        if (
+            !supa ||
+            typeof supa.fetchReviewsForProperty !== 'function' ||
+            typeof supa.normalizeReviewPropertyId !== 'function'
+        ) {
+            return;
+        }
+        for (var i = 0; i < listings.length; i++) {
+            var k = propertyKey(listings[i]);
+            if (!k || supa.normalizeReviewPropertyId(k) == null) continue;
+            try {
+                var list = await supa.fetchReviewsForProperty(k);
+                mockAPI.setServerReviewsForProperty(k, list);
+            } catch (e) {}
+        }
     }
 
     /** Имя для отображения: не показываем почту; для старых записей с email — только локальная часть как псевдо-имя */
@@ -83,15 +110,16 @@ document.addEventListener('DOMContentLoaded', function () {
         var total = 0;
 
         listings.forEach(function (prop) {
-            var pid = Number(prop.id);
-            var reviews = mockAPI.getReviewsForProperty(pid);
+            var pidKey = propertyKey(prop);
+            if (!pidKey) return;
+            var reviews = mockAPI.getReviewsForProperty(pidKey);
             if (!reviews.length) return;
             total += reviews.length;
 
             var block =
                 '<section class="owner-review-block">' +
                 '<h3>' +
-                escapeHtml(prop.title || 'Объект №' + pid) +
+                escapeHtml(prop.title || 'Объект №' + pidKey) +
                 ' · ' +
                 reviews.length +
                 ' ' +
@@ -123,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 block +=
                     '<div class="owner-review-item" data-property-id="' +
-                    pid +
+                    escapeHtml(pidKey) +
                     '" data-review-id="' +
                     escapeHtml(rid) +
                     '">' +
@@ -142,10 +170,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     '</div>' +
                     '<div class="owner-review-item-actions">' +
                     '<a class="property-card-more" href="property.html?id=' +
-                    encodeURIComponent(pid) +
+                    encodeURIComponent(pidKey) +
                     '">Страница объекта</a>' +
                     '<button type="button" class="property-card-more owner-review-reply-btn" data-property-id="' +
-                    pid +
+                    escapeHtml(pidKey) +
                     '" data-review-id="' +
                     escapeHtml(rid) +
                     '">' +
@@ -174,6 +202,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (container) container.innerHTML = htmlParts.join('');
     }
 
+    var listings = typeof getMyOwnerListings === 'function' ? getMyOwnerListings() : [];
+    await prefetchServerReviewsForListings(listings);
     render();
 
     if (container) {
@@ -203,18 +233,59 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function saveReply() {
         if (pendingPid == null || pendingRid == null) return;
+        var pidStr = String(pendingPid);
+        var rid = String(pendingRid);
         var text = modalText ? modalText.value.trim() : '';
         if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.syncLocalUserFromSupabase === 'function') {
             try {
                 await window.silvaSupabaseAuth.syncLocalUserFromSupabase();
             } catch (e) {}
         }
-        mockAPI.updateReviewHotelResponse(pendingPid, pendingRid, text);
+
+        var supa = window.silvaSupabaseAuth;
+        var isDbReview = rid.indexOf('db-') === 0;
+        var ownerAvatar = null;
+        try {
+            var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            ownerAvatar = u && u.avatar ? u.avatar : null;
+        } catch (e) {}
+
+        if (
+            isDbReview &&
+            supa &&
+            typeof supa.upsertReviewResponse === 'function' &&
+            typeof supa.deleteReviewResponse === 'function'
+        ) {
+            try {
+                if (!text) {
+                    await supa.deleteReviewResponse(rid);
+                } else {
+                    await supa.upsertReviewResponse({
+                        reviewId: rid,
+                        text: text,
+                        ownerAvatarUrl: ownerAvatar
+                    });
+                }
+                if (typeof mockAPI.clearReviewResponseOverride === 'function') {
+                    mockAPI.clearReviewResponseOverride(pidStr, rid);
+                }
+                if (typeof supa.fetchReviewsForProperty === 'function') {
+                    var list = await supa.fetchReviewsForProperty(pidStr);
+                    mockAPI.setServerReviewsForProperty(pidStr, list);
+                }
+            } catch (err) {
+                mockAPI.updateReviewHotelResponse(pidStr, rid, text);
+            }
+        } else {
+            mockAPI.updateReviewHotelResponse(pidStr, rid, text);
+        }
         closeModal();
         render();
     }
 
-    if (modalSave) modalSave.addEventListener('click', saveReply);
+    if (modalSave) modalSave.addEventListener('click', function () {
+        saveReply();
+    });
     if (modalCancel) modalCancel.addEventListener('click', closeModal);
     if (modalClose) modalClose.addEventListener('click', closeModal);
     if (modal) {

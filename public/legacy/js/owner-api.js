@@ -110,8 +110,16 @@
         var published = listings.filter(function (p) {
             return p.status === 'published';
         });
-        var myIds = listings.map(function (p) {
-            return Number(p.id);
+        var myIds = listings
+            .map(function (p) {
+                return typeof mockAPI._normalizePropertyId === 'function'
+                    ? mockAPI._normalizePropertyId(p.id)
+                    : String(p.id != null ? p.id : '').trim();
+            })
+            .filter(Boolean);
+        var myIdSet = {};
+        myIds.forEach(function (id) {
+            myIdSet[String(id)] = true;
         });
         var bookingsCount = 0;
         try {
@@ -119,8 +127,11 @@
             var bl = raw ? JSON.parse(raw) : [];
             if (Array.isArray(bl)) {
                 bl.forEach(function (b) {
-                    var pid = Number(b.propertyId);
-                    if (myIds.indexOf(pid) !== -1) bookingsCount++;
+                    var pk =
+                        typeof mockAPI._normalizePropertyId === 'function'
+                            ? mockAPI._normalizePropertyId(b.propertyId)
+                            : String(b.propertyId != null ? b.propertyId : '').trim();
+                    if (pk && myIdSet[pk]) bookingsCount++;
                 });
             }
         } catch (e) {}

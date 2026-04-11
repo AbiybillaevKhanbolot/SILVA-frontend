@@ -518,6 +518,57 @@
         return ins.data;
     }
 
+    function parseDbReviewId(reviewIdStr) {
+        var s = String(reviewIdStr || '');
+        if (s.indexOf('db-') !== 0) return null;
+        var rest = s.slice(3);
+        if (!/^\d+$/.test(rest)) return null;
+        var n = parseInt(rest, 10);
+        return isNaN(n) ? null : n;
+    }
+
+    async function upsertReviewResponse(payload) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK не загружен');
+        var user = await getSessionUser();
+        if (!user || !user.id) throw new Error('Войдите в аккаунт');
+        var reviewIdNum = parseDbReviewId(payload && payload.reviewId);
+        if (reviewIdNum == null) throw new Error('Ответ доступен только к отзывам из базы');
+        var text = payload && payload.text != null ? String(payload.text).trim() : '';
+        if (!text) throw new Error('Введите текст ответа');
+        var ownerAvatarUrl =
+            payload && payload.ownerAvatarUrl != null && String(payload.ownerAvatarUrl).trim()
+                ? String(payload.ownerAvatarUrl).trim()
+                : null;
+        var row = {
+            review_id: reviewIdNum,
+            owner_id: user.id,
+            text: text,
+            owner_avatar_url: ownerAvatarUrl
+        };
+        var q = await sb.from('review_responses').upsert(row, { onConflict: 'review_id' });
+        if (q.error) throw q.error;
+        return q.data;
+    }
+
+    async function deleteReviewResponse(reviewIdRaw) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK не загружен');
+        var user = await getSessionUser();
+        if (!user || !user.id) throw new Error('Войдите в аккаунт');
+        var reviewIdNum =
+            typeof reviewIdRaw === 'number' && Number.isFinite(reviewIdRaw)
+                ? Math.trunc(reviewIdRaw)
+                : parseDbReviewId(reviewIdRaw);
+        if (reviewIdNum == null) return;
+        var q = await sb
+            .from('review_responses')
+            .delete()
+            .eq('review_id', reviewIdNum)
+            .eq('owner_id', user.id);
+        if (q.error) throw q.error;
+    }
+
     /**
      * Вставка в public.bookings под прод-схему SILVA (без nights / adults / yookassa_payment_id в insert).
      * Поля: user_id, guest_id, property_id, check_in, check_out, guests, children, total_price, total_amount, pay_type, status.
@@ -859,6 +910,8 @@
         fetchReviewsForProperty: fetchReviewsForProperty,
         insertReview: insertReview,
         normalizeReviewPropertyId: normalizeReviewPropertyId,
+        upsertReviewResponse: upsertReviewResponse,
+        deleteReviewResponse: deleteReviewResponse,
         readLocalUser: readLocalUser,
         clearLocalUser: clearLocalUser,
         bootAuthSync: bootAuthSync

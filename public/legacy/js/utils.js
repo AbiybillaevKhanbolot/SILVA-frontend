@@ -277,6 +277,19 @@ const mockAPI = {
         return true;
     },
 
+    clearReviewResponseOverride: function(propertyId, reviewId) {
+        var respKey = this._reviewResponsesStorageKey(propertyId);
+        if (!respKey || typeof localStorage === 'undefined') return;
+        var rid = String(reviewId);
+        try {
+            var o = this.getReviewResponseOverrides(propertyId);
+            if (!o || !Object.prototype.hasOwnProperty.call(o, rid)) return;
+            var copy = Object.assign({}, o);
+            delete copy[rid];
+            localStorage.setItem(respKey, JSON.stringify(copy));
+        } catch (e) {}
+    },
+
     addReviewForProperty: function(propertyId, review) {
         var revKey = this._reviewsStorageKey(propertyId);
         if (!revKey) return null;
