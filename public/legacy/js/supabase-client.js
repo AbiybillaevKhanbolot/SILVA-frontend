@@ -430,20 +430,25 @@
         var g = Number(payload.guests);
         if (isNaN(g) || g < 1) g = 1;
         var payType = normalizeBookingPayType(payload.payType);
-        var ins = await sb.from('bookings').insert({
-            user_id: uid,
-            guest_id: uid,
-            property_id: pid,
-            check_in: payload.checkIn,
-            check_out: payload.checkOut,
-            guests: g,
-            children: ch,
-            total_price: amount,
-            total_amount: amount,
-            pay_type: payType,
-            status: 'pending'
-        });
+        var ins = await sb
+            .from('bookings')
+            .insert({
+                user_id: uid,
+                guest_id: uid,
+                property_id: pid,
+                check_in: payload.checkIn,
+                check_out: payload.checkOut,
+                guests: g,
+                children: ch,
+                total_price: amount,
+                total_amount: amount,
+                pay_type: payType,
+                status: 'pending'
+            })
+            .select('id')
+            .single();
         if (ins.error) throw ins.error;
+        return ins.data && ins.data.id != null ? ins.data.id : null;
     }
 
     async function fetchMyBookings() {
@@ -551,6 +556,64 @@
         if (!ok[String(status || '')]) throw new Error('Недопустимый статус');
         var res = await sb.from('bookings').update({ status: status }).eq('id', bid);
         if (res.error) throw res.error;
+    }
+
+    async function fetchLoyaltyPoints() {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var user = await getSessionUser();
+        if (!user) return 0;
+        var q = await sb.from('loyalty_accounts').select('points').eq('user_id', user.id).maybeSingle();
+        if (q.error) throw q.error;
+        if (!q.data) return 0;
+        return Number(q.data.points) || 0;
+    }
+
+    /** Только после оплаты: начисление в loyalty_accounts + запись в loyalty_transactions. */
+    async function incrementLoyaltyPointsAfterPayment(delta, reason, bookingRowId) {
+        var d = Math.floor(Number(delta));
+        if (!isFinite(d) || d < 1) return;
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var user = await getSessionUser();
+        if (!user) throw new Error('Нет сессии');
+        var uid = user.id;
+        var curRow = await sb.from('loyalty_accounts').select('points').eq('user_id', uid).maybeSingle();
+        if (curRow.error) throw curRow.error;
+        var pts = curRow.data ? Number(curRow.data.points) || 0 : 0;
+        var next = pts + d;
+        var nowIso = new Date().toISOString();
+        if (!curRow.data) {
+            var insAcc = await sb.from('loyalty_accounts').insert({ user_id: uid, points: next, updated_at: nowIso });
+            if (insAcc.error) throw insAcc.error;
+        } else {
+            var updAcc = await sb
+                .from('loyalty_accounts')
+                .update({ points: next, updated_at: nowIso })
+                .eq('user_id', uid);
+            if (updAcc.error) throw updAcc.error;
+        }
+        var bookingFk = null;
+        if (bookingRowId != null) {
+            var norm = normalizeBookingRowId(bookingRowId);
+            if (typeof norm === 'number' && isFinite(norm)) bookingFk = norm;
+            else if (typeof norm === 'string' && /^-?\d+$/.test(norm)) {
+                var bn = parseInt(norm, 10);
+                if (!isNaN(bn)) bookingFk = bn;
+            }
+        }
+        var txRow = {
+            user_id: uid,
+            amount: d,
+            reason: reason || 'Оплата бронирования'
+        };
+        if (bookingFk != null) txRow.booking_id = bookingFk;
+        var tx = await sb.from('loyalty_transactions').insert(txRow);
+        if (tx.error && bookingFk != null) {
+            delete txRow.booking_id;
+            tx = await sb.from('loyalty_transactions').insert(txRow);
+        }
+        if (tx.error) throw tx.error;
     }
 
     async function signIn(email, password) {
@@ -682,6 +745,8 @@
         fetchBookingsByPropertyIds: fetchBookingsByPropertyIds,
         fetchBookingsForOwner: fetchBookingsForOwner,
         updateBookingStatus: updateBookingStatus,
+        fetchLoyaltyPoints: fetchLoyaltyPoints,
+        incrementLoyaltyPointsAfterPayment: incrementLoyaltyPointsAfterPayment,
         readLocalUser: readLocalUser,
         clearLocalUser: clearLocalUser,
         bootAuthSync: bootAuthSync

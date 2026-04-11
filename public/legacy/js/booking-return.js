@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             throw new Error('Supabase недоступен');
         }
 
-        await window.silvaSupabaseAuth.createBooking({
+        var newBookingId = await window.silvaSupabaseAuth.createBooking({
             propertyId: pending.propertyId,
             checkIn: pending.checkIn,
             checkOut: pending.checkOut,
@@ -162,6 +162,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         var lpAward = Math.floor(Number(pending.loyaltyPointsToAward) || 0);
         if (lpAward > 0) {
+            if (window.silvaSupabaseAuth.incrementLoyaltyPointsAfterPayment) {
+                try {
+                    await window.silvaSupabaseAuth.incrementLoyaltyPointsAfterPayment(
+                        lpAward,
+                        'Оплата бронирования',
+                        newBookingId
+                    );
+                } catch (loyErr) {
+                    console.warn('Loyalty increment:', loyErr);
+                }
+            }
             var lpKey = loyaltyPointsKeyForCurrentUser();
             var cur = parseInt(localStorage.getItem(lpKey) || '0', 10) || 0;
             localStorage.setItem(lpKey, String(cur + lpAward));

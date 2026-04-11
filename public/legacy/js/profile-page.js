@@ -25,19 +25,22 @@
         return email ? 'silva_loyalty_points_' + email : 'silva_loyalty_points';
     }
 
-    function personalBookingsKey() {
-        var email = getCurrentUserEmail();
-        return email ? 'silva_bookings_' + email : 'silva_bookings';
-    }
-
     function getLoyaltyPoints() {
         try {
-            var bookings = JSON.parse(localStorage.getItem(personalBookingsKey()) || '[]');
-            if (!Array.isArray(bookings) || bookings.length === 0) return 0;
             var raw = localStorage.getItem(loyaltyPointsKey());
             if (raw !== null && raw !== '') return parseInt(raw, 10) || 0;
         } catch (e) {}
         return 0;
+    }
+
+    async function syncLoyaltyPointsFromSupabase() {
+        if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.fetchLoyaltyPoints !== 'function') return;
+        try {
+            var p = await window.silvaSupabaseAuth.fetchLoyaltyPoints();
+            if (typeof p === 'number' && p >= 0) {
+                localStorage.setItem(loyaltyPointsKey(), String(p));
+            }
+        } catch (e) {}
     }
 
     function getLevelState(points) {
@@ -371,14 +374,15 @@
 
         if (typeof SilvaIcons !== 'undefined' && SilvaIcons.hydrate) SilvaIcons.hydrate(document);
 
-        function refreshPage() {
+        async function refreshPage() {
+            await syncLoyaltyPointsFromSupabase();
             var u = loadUser();
             renderViewAvatar(document.getElementById('profile-view-avatar'), u.avatar, u.name);
             renderViewFields(u);
             renderSecondaryCard(u);
         }
 
-        refreshPage();
+        await refreshPage();
 
         document.getElementById('profile-open-edit').addEventListener('click', openModal);
 
@@ -474,7 +478,7 @@
                     }, 4000);
                 }
                 if (typeof initHeader === 'function') initHeader();
-                refreshPage();
+                await refreshPage();
                 if (typeof SilvaIcons !== 'undefined' && SilvaIcons.hydrate) SilvaIcons.hydrate(document);
             } catch (err) {
                 alert(err && err.message ? err.message : 'Не удалось сохранить профиль.');

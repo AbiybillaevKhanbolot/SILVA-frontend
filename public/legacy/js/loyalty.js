@@ -1,5 +1,5 @@
 // Loyalty page logic
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function () {
     function getCurrentUserEmail() {
         try {
             var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
@@ -12,11 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function loyaltyPointsKey() {
         var email = getCurrentUserEmail();
         return email ? 'silva_loyalty_points_' + email : 'silva_loyalty_points';
-    }
-
-    function personalBookingsKey() {
-        var email = getCurrentUserEmail();
-        return email ? 'silva_bookings_' + email : 'silva_bookings';
     }
 
     const levels = [
@@ -62,16 +57,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     ];
     
-    // Баллы: начисляются после оплаты брони (см. booking.js) и хранятся в localStorage
+    // Баллы после оплаты: Supabase loyalty_accounts + зеркало в localStorage
+    if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchLoyaltyPoints === 'function') {
+        try {
+            var serverPts = await window.silvaSupabaseAuth.fetchLoyaltyPoints();
+            if (typeof serverPts === 'number' && serverPts >= 0) {
+                localStorage.setItem(loyaltyPointsKey(), String(serverPts));
+            }
+        } catch (e) {}
+    }
     var userPoints = 0;
     try {
-        var myBookings = JSON.parse(localStorage.getItem(personalBookingsKey()) || '[]');
-        if (!Array.isArray(myBookings) || myBookings.length === 0) {
-            userPoints = 0;
-        } else {
         var lp = localStorage.getItem(loyaltyPointsKey());
         if (lp !== null && lp !== '') userPoints = parseInt(lp, 10) || 0;
-        }
     } catch (e) {}
     const currentLevelIndex = levels.findIndex(function(l, i) {
         var next = levels[i + 1];
