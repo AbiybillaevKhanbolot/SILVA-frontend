@@ -19,9 +19,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         return email ? 'silva_loyalty_points_' + email : 'silva_loyalty_points';
     }
 
-    if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
-        if (typeof window.showAuthRequiredModal === 'function') window.showAuthRequiredModal();
-    }
     const propertyId = getUrlParameter('property');
     const fromDateStr = getUrlParameter('from');
     const toDateStr = getUrlParameter('to');
