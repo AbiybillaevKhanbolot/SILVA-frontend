@@ -5,6 +5,7 @@ function initFooter() {
 
     const currentYear = new Date().getFullYear();
     const ic = typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg.bind(SilvaIcons) : function () { return ''; };
+    const lh = typeof silvaLegacyHref === 'function' ? silvaLegacyHref : function (f) { return f; };
 
     footerContainer.innerHTML = `
         <footer class="footer">
@@ -34,7 +35,8 @@ function initFooter() {
                     <div>
                         <h4 class="footer-column-title">Гостям</h4>
                         <ul class="footer-links">
-                            <li><a href="catalog.html" class="footer-link">Каталог</a></li>
+                            <li><a href="${lh('catalog.html')}" class="footer-link">Каталог</a></li>
+                            <li><a href="${lh('contact.html')}" class="footer-link">Контакты</a></li>
                             <li><a href="#" class="footer-link">Как забронировать</a></li>
                             <li><a href="loyalty.html" class="footer-link">Программа лояльности</a></li>
                             <li><a href="#" class="footer-link">Отзывы</a></li>
