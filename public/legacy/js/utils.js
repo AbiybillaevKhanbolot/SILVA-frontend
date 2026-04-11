@@ -319,6 +319,27 @@ const mockAPI = {
         }
     },
 
+    /** Добавить объекты в silva_owner_properties без дубликатов (например, подтянутые для избранного). */
+    appendPropertiesToCache: function(extraList) {
+        if (!Array.isArray(extraList) || !extraList.length) return;
+        var existing = this.getOwnerListingsFromStorage();
+        var seen = {};
+        existing.forEach(function (p) {
+            var k = mockAPI._normalizePropertyId(p && p.id);
+            if (k) seen[k] = true;
+        });
+        var toAdd = [];
+        extraList.forEach(function (p) {
+            var k = mockAPI._normalizePropertyId(p && p.id);
+            if (k && !seen[k]) {
+                seen[k] = true;
+                toAdd.push(p);
+            }
+        });
+        if (!toAdd.length) return;
+        this.saveOwnerListingsToStorage(existing.concat(toAdd));
+    },
+
     refreshPropertiesFromSupabase: async function () {
         if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.fetchPropertiesCache !== 'function') {
             return this.getOwnerListingsFromStorage();
@@ -391,6 +412,22 @@ const mockAPI = {
         
         if (filters.guests) {
             result = result.filter(p => p.max_guests >= filters.guests);
+        }
+
+        if (filters.amenities && filters.amenities.length) {
+            const required = filters.amenities.map(function (x) {
+                return String(x || '').toLowerCase();
+            });
+            result = result.filter(function (p) {
+                const pa = Array.isArray(p.amenities)
+                    ? p.amenities.map(function (a) {
+                          return String(a || '').toLowerCase();
+                      })
+                    : [];
+                return required.every(function (req) {
+                    return pa.indexOf(req) !== -1;
+                });
+            });
         }
         
         return result;
