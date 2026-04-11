@@ -1,6 +1,7 @@
 export const legacyRoutes = [
   { path: "/", file: "index.html" },
   { path: "/catalog", file: "catalog.html" },
+  { path: "/contacts", file: "contact.html" },
   { path: "/property", file: "property.html" },
   { path: "/booking", file: "booking.html" },
   { path: "/loyalty", file: "loyalty.html" },
