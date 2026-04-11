@@ -811,6 +811,46 @@ document.addEventListener('DOMContentLoaded', async function() {
         return 0;
     }
 
+    function getCurrentViewerId() {
+        try {
+            var u = JSON.parse(localStorage.getItem('silva_user') || '{}');
+            return u && u.id != null ? String(u.id) : '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    var reviewsListDeleteBound = false;
+    function bindReviewsListDeleteOnce() {
+        if (reviewsListDeleteBound || !reviewsList) return;
+        reviewsListDeleteBound = true;
+        reviewsList.addEventListener('click', async function (e) {
+            var del = e.target.closest('.review-card-delete');
+            if (!del || del.disabled) return;
+            var rid = del.getAttribute('data-delete-review');
+            if (!rid) return;
+            if (!confirm('Удалить этот отзыв? Восстановить его будет нельзя.')) return;
+            var supa = window.silvaSupabaseAuth;
+            if (!supa || typeof supa.deleteMyReview !== 'function') return;
+            del.disabled = true;
+            try {
+                await supa.deleteMyReview(rid);
+                if (typeof supa.fetchReviewsForProperty === 'function') {
+                    var list = await supa.fetchReviewsForProperty(reviewSupabasePropertyId);
+                    if (reviewsListKey) mockAPI.setServerReviewsForProperty(reviewsListKey, list);
+                }
+                renderReviews();
+            } catch (err) {
+                del.disabled = false;
+                var msg =
+                    err && err.message
+                        ? String(err.message)
+                        : 'Не удалось удалить отзыв. Проверьте вход или права в базе.';
+                alert(msg);
+            }
+        });
+    }
+
     function renderReviews() {
         let reviews = mockAPI.getReviewsForProperty(propertyId);
         const sortVal = reviewsSortSelect ? reviewsSortSelect.value : 'useful';
@@ -862,6 +902,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             } catch (e) { return { yes: 0, no: 0 }; }
         }
         if (reviewsList) {
+            var viewerId = getCurrentViewerId();
             reviewsList.innerHTML = reviews.map(r => {
                 const stored = getStoredHelpful(propertyId, r.id);
                 const yes = (r.helpfulYes || 0) + (stored.yes || 0);
@@ -877,7 +918,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                     : '<span class="review-card-owner-avatar" aria-hidden="true">В</span>';
                 const hotelResp = r.hotelResponse ? '<div class="review-card-hotel-response"><div class="review-card-hotel-response-head"><span class="review-card-owner-avatar-wrap">' + ownerAvatar + '</span><strong>Ответ владельца</strong></div><div>' + escapeHtml(r.hotelResponse) + '</div></div>' : '';
                 const guestPhotos = (r.photos && r.photos.length) ? '<div class="review-card-guest-photos" style="margin-top:0.75rem;"><strong>Фотографии от гостя</strong><div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">' + r.photos.map(p => '<img src="' + (typeof p === 'string' ? p : (p.url || '')) + '" alt="" style="width:4rem;height:4rem;object-fit:cover;border-radius:5px;">').join('') + '</div></div>' : '';
-                return '<div class="review-card" data-review-id="' + (r.id || '') + '"><div class="review-card-header"><div class="review-card-author-wrap"><div class="review-card-avatar">' + guestAvatar + '</div><div><span class="review-card-author">' + escapeHtml(r.author || 'Гость') + '</span> <span class="review-card-meta">' + escapeHtml(r.stayType || '') + ', ' + escapeHtml(r.stayDate || '') + '<br>' + escapeHtml(r.roomInfo || '') + '</span></div></div><div><span class="review-card-score">' + (r.rating != null ? (String(r.rating).replace('.', ',') + ' ' + escapeHtml(r.ratingLabel || ratingLabel(r.rating))) : '—') + '</span></div></div><div class="review-card-text-wrap"><p class="review-card-text review-card-text-content">' + escapeHtml(r.text || '') + '</p><button type="button" class="review-card-expand" style="display:none;">Развернуть отзыв</button></div>' + guestPhotos + '<div class="review-card-helpful">' + helpful + '</div>' + hotelResp + '</div>';
+                var isOwnDbReview =
+                    viewerId &&
+                    r._authorUserId &&
+                    String(r._authorUserId) === viewerId &&
+                    typeof r.id === 'string' &&
+                    r.id.indexOf('db-') === 0;
+                var deleteBtn = isOwnDbReview
+                    ? '<button type="button" class="review-card-delete" data-delete-review="' + escapeHtml(r.id) + '">Удалить отзыв</button>'
+                    : '';
+                return '<div class="review-card" data-review-id="' + (r.id || '') + '"><div class="review-card-header"><div class="review-card-author-wrap"><div class="review-card-avatar">' + guestAvatar + '</div><div><span class="review-card-author">' + escapeHtml(r.author || 'Гость') + '</span> <span class="review-card-meta">' + escapeHtml(r.stayType || '') + ', ' + escapeHtml(r.stayDate || '') + '<br>' + escapeHtml(r.roomInfo || '') + '</span></div></div><div><span class="review-card-score">' + (r.rating != null ? (String(r.rating).replace('.', ',') + ' ' + escapeHtml(r.ratingLabel || ratingLabel(r.rating))) : '—') + '</span></div></div><div class="review-card-text-wrap"><p class="review-card-text review-card-text-content">' + escapeHtml(r.text || '') + '</p><button type="button" class="review-card-expand" style="display:none;">Развернуть отзыв</button></div>' + guestPhotos + '<div class="review-card-helpful">' + helpful + '</div>' + deleteBtn + hotelResp + '</div>';
             }).join('');
         }
 
@@ -920,6 +970,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         }
     }
+
+    bindReviewsListDeleteOnce();
 
     if (typeof window.silvaSupabaseAuth !== 'undefined' && typeof window.silvaSupabaseAuth.fetchReviewsForProperty === 'function') {
         try {

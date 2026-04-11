@@ -464,9 +464,11 @@
         var ratingUi = ratingDb * 2;
         var created = row.created_at ? new Date(row.created_at) : new Date();
         var idStr = 'db-' + String(row.id);
+        var uid = row.user_id != null ? String(row.user_id) : null;
         return {
             id: idStr,
             _dbReviewId: row.id,
+            _authorUserId: uid,
             _createdAt: row.created_at || null,
             author: prof.full_name || 'Гость',
             authorCountry: 'RU',
@@ -618,6 +620,21 @@
             await fetchPropertiesCache();
         } catch (eCache) {}
         return ins.data;
+    }
+
+    async function deleteMyReview(reviewIdUi) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK не загружен');
+        var user = await getAuthUserForWrite();
+        if (!user || !user.id) throw new Error('Войдите снова — сессия истекла.');
+        var rid = parseDbReviewId(reviewIdUi);
+        if (rid == null) throw new Error('Некорректный отзыв');
+        var q = await sb.from('reviews').delete().eq('id', rid).eq('user_id', user.id);
+        if (q.error) throw q.error;
+        try {
+            await fetchPropertiesCache();
+        } catch (eCache) {}
+        return true;
     }
 
     /** PK отзыва в БД: bigint или uuid (после префикса db- в UI). */
@@ -1018,6 +1035,7 @@
         incrementLoyaltyPointsAfterPayment: incrementLoyaltyPointsAfterPayment,
         fetchReviewsForProperty: fetchReviewsForProperty,
         insertReview: insertReview,
+        deleteMyReview: deleteMyReview,
         normalizeReviewPropertyId: normalizeReviewPropertyId,
         upsertReviewResponse: upsertReviewResponse,
         deleteReviewResponse: deleteReviewResponse,
