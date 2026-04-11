@@ -1001,7 +1001,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     if (reviewForm) {
-        reviewForm.addEventListener('submit', function(e) {
+        reviewForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             clearReviewFormError();
             if (selectedStars === 0) {
@@ -1047,35 +1047,27 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
 
             if (tryRemote) {
-                supa
-                    .insertReview({
+                try {
+                    await supa.insertReview({
                         propertyId: reviewSupabasePropertyId,
                         rating: selectedStars,
                         text: text,
                         avatarUrl: avatar
-                    })
-                    .then(function () {
-                        return supa.fetchReviewsForProperty(reviewSupabasePropertyId);
-                    })
-                    .then(function (list) {
-                        mockAPI.setServerReviewsForProperty(reviewsListKey || propertyId, list);
-                        afterSuccess();
-                    })
-                    .catch(function (err) {
-                        mockAPI.addReviewForProperty(propertyId, {
-                            author: author,
-                            avatar: avatar,
-                            rating: rating,
-                            ratingLabel: ratingLabel(rating),
-                            text: text,
-                            photos: [],
-                            stayDate: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
-                        });
-                        showReviewFormError(
-                            remoteFailMessage(err) + ' Отзыв сохранён только на этом устройстве.'
-                        );
-                        renderReviews();
                     });
+                    var listAfter = await supa.fetchReviewsForProperty(reviewSupabasePropertyId);
+                    mockAPI.setServerReviewsForProperty(reviewsListKey || propertyId, listAfter);
+                    afterSuccess();
+                } catch (err) {
+                    showReviewFormError(remoteFailMessage(err));
+                    renderReviews();
+                }
+                return;
+            }
+
+            if (normPid != null) {
+                showReviewFormError(
+                    'Отзыв можно отправить только через сервер. Обновите страницу или войдите в аккаунт.'
+                );
                 return;
             }
 

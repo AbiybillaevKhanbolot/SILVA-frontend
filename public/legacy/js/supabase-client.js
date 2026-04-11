@@ -64,6 +64,19 @@
         return resp && resp.data ? resp.data.user : null;
     }
 
+    /** Для insert/update: актуальный JWT из сессии (иначе отзыв уходит только в localStorage). */
+    async function getAuthUserForWrite() {
+        var sb = ensureClient();
+        if (!sb) return null;
+        try {
+            await sb.auth.refreshSession();
+        } catch (e1) {}
+        var s = await sb.auth.getSession();
+        if (s.data && s.data.session && s.data.session.user) return s.data.session.user;
+        var g = await sb.auth.getUser();
+        return g && g.data && g.data.user ? g.data.user : null;
+    }
+
     async function fetchProfile(userId) {
         var sb = ensureClient();
         if (!sb || !userId) return null;
@@ -479,7 +492,13 @@
             });
         if (!ids.length) return rows;
         var rres = await sb.from('review_responses').select('review_id, text, owner_avatar_url').in('review_id', ids);
-        if (rres.error || !rres.data) return rows;
+        if (rres.error) {
+            if (typeof console !== 'undefined' && console.warn) {
+                console.warn('[Silva] review_responses batch:', rres.error.message || rres.error.code || rres.error);
+            }
+            return rows;
+        }
+        if (!rres.data) return rows;
         var byRid = {};
         rres.data.forEach(function (x) {
             if (x && x.review_id != null) byRid[String(x.review_id)] = x;
@@ -503,6 +522,9 @@
         var selFull =
             'id, property_id, user_id, rating, text, avatar_url, created_at, profiles(full_name, avatar_url), review_responses(text, owner_avatar_url)';
         var q = await sb.from('reviews').select(selFull).eq('property_id', pid).order('created_at', order);
+        if (q.error && typeof console !== 'undefined' && console.warn) {
+            console.warn('[Silva] reviews select (full):', q.error.message || q.error.code || q.error);
+        }
         if (!q.error && q.data) {
             return (q.data || []).map(mapReviewRowToLegacy);
         }
@@ -510,13 +532,22 @@
         var selNoProfiles =
             'id, property_id, user_id, rating, text, avatar_url, created_at, review_responses(text, owner_avatar_url)';
         var q2 = await sb.from('reviews').select(selNoProfiles).eq('property_id', pid).order('created_at', order);
+        if (q2.error && typeof console !== 'undefined' && console.warn) {
+            console.warn('[Silva] reviews select (no profiles):', q2.error.message || q2.error.code || q2.error);
+        }
         if (!q2.error && q2.data) {
             return (q2.data || []).map(mapReviewRowToLegacy);
         }
 
         var selBare = 'id, property_id, user_id, rating, text, avatar_url, created_at';
         var q3 = await sb.from('reviews').select(selBare).eq('property_id', pid).order('created_at', order);
-        if (q3.error || !q3.data) return [];
+        if (q3.error) {
+            if (typeof console !== 'undefined' && console.warn) {
+                console.warn('[Silva] reviews select (bare):', q3.error.message || q3.error.code || q3.error);
+            }
+            return [];
+        }
+        if (!q3.data) return [];
         var withResp = await attachReviewResponses(sb, q3.data);
         return (withResp || []).map(mapReviewRowToLegacy);
     }
@@ -524,8 +555,12 @@
     async function insertReview(payload) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK не загружен');
-        var user = await getSessionUser();
-        if (!user || !user.id) throw new Error('Войдите в аккаунт, чтобы оставить отзыв');
+        var user = await getAuthUserForWrite();
+        if (!user || !user.id) {
+            throw new Error(
+                'Войдите снова (сессия истекла). Без входа отзыв сохранится только в этом браузере.'
+            );
+        }
         var pid = normalizeReviewPropertyId(payload && payload.propertyId);
         if (pid == null) throw new Error('Некорректный объект');
         var stars = Number(payload && payload.rating);
@@ -546,8 +581,13 @@
                 avatar_url: avatarUrl
             })
             .select('id')
-            .single();
+            .maybeSingle();
         if (ins.error) throw ins.error;
+        if (!ins.data || ins.data.id == null) {
+            throw new Error(
+                'Отзыв не подтверждён базой (проверьте RLS: insert и select для authenticated на reviews).'
+            );
+        }
         try {
             await fetchPropertiesCache();
         } catch (eCache) {}
@@ -566,8 +606,8 @@
     async function upsertReviewResponse(payload) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK не загружен');
-        var user = await getSessionUser();
-        if (!user || !user.id) throw new Error('Войдите в аккаунт');
+        var user = await getAuthUserForWrite();
+        if (!user || !user.id) throw new Error('Войдите снова — сессия истекла.');
         var reviewIdNum = parseDbReviewId(payload && payload.reviewId);
         if (reviewIdNum == null) throw new Error('Ответ доступен только к отзывам из базы');
         var text = payload && payload.text != null ? String(payload.text).trim() : '';
@@ -590,8 +630,8 @@
     async function deleteReviewResponse(reviewIdRaw) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK не загружен');
-        var user = await getSessionUser();
-        if (!user || !user.id) throw new Error('Войдите в аккаунт');
+        var user = await getAuthUserForWrite();
+        if (!user || !user.id) throw new Error('Войдите снова — сессия истекла.');
         var reviewIdNum =
             typeof reviewIdRaw === 'number' && Number.isFinite(reviewIdRaw)
                 ? Math.trunc(reviewIdRaw)

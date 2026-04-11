@@ -162,6 +162,14 @@ const mockAPI = {
         this._serverReviewsByProperty[n] = Array.isArray(list) ? list.slice() : [];
     },
 
+    /** Объект из каталога Supabase (bigint id) — отзывы и ответы только из БД, не из localStorage. */
+    usesSupabaseReviewsCache: function(propertyId) {
+        if (typeof window === 'undefined' || !window.silvaSupabaseAuth) return false;
+        var fn = window.silvaSupabaseAuth.normalizeReviewPropertyId;
+        if (typeof fn !== 'function') return false;
+        return fn(propertyId) != null;
+    },
+
     _getAllReviewsRawForLookup: function(propertyId) {
         var n = this._normalizePropertyId(propertyId);
         if (!n) return [];
@@ -216,12 +224,16 @@ const mockAPI = {
         if (!this._normalizePropertyId(propertyId)) return [];
         var n = this._normalizePropertyId(propertyId);
         var server = (this._serverReviewsByProperty && this._serverReviewsByProperty[n]) || [];
-        const raw = server.concat(this._getReviewsRaw(propertyId));
-        const overrides = this.getReviewResponseOverrides(propertyId);
+        var serverOnly = this.usesSupabaseReviewsCache(propertyId);
+        var raw = serverOnly ? server.slice() : server.concat(this._getReviewsRaw(propertyId));
+        var overrides = serverOnly ? {} : this.getReviewResponseOverrides(propertyId);
         return raw.map(function (r) {
             if (!r || r.id == null) return r;
             const oid = String(r.id);
             const out = Object.assign({}, r);
+            if (serverOnly && oid.indexOf('db-') === 0) {
+                return out;
+            }
             if (Object.prototype.hasOwnProperty.call(overrides, oid)) {
                 var ov = overrides[oid];
                 if (ov && typeof ov === 'object') {
@@ -239,6 +251,9 @@ const mockAPI = {
         var revKey = this._reviewsStorageKey(propertyId);
         var respKey = this._reviewResponsesStorageKey(propertyId);
         const rid = String(reviewId);
+        if (this.usesSupabaseReviewsCache(propertyId) && rid.indexOf('db-') === 0) {
+            return false;
+        }
         if (!revKey || !respKey) return false;
         const raw = this._getAllReviewsRawForLookup(propertyId);
         const target = raw.find(function (r) {
@@ -291,6 +306,9 @@ const mockAPI = {
     },
 
     addReviewForProperty: function(propertyId, review) {
+        if (this.usesSupabaseReviewsCache(propertyId)) {
+            return null;
+        }
         var revKey = this._reviewsStorageKey(propertyId);
         if (!revKey) return null;
         const raw = this._getReviewsRaw(propertyId);

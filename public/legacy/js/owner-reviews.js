@@ -273,12 +273,18 @@ document.addEventListener('DOMContentLoaded', async function () {
                     var list = await supa.fetchReviewsForProperty(pidStr);
                     mockAPI.setServerReviewsForProperty(pidStr, list);
                 }
+                closeModal();
+                render();
             } catch (err) {
-                mockAPI.updateReviewHotelResponse(pidStr, rid, text);
+                var em =
+                    err && err.message
+                        ? String(err.message)
+                        : 'Не удалось сохранить ответ на сервере.';
+                alert(em);
             }
-        } else {
-            mockAPI.updateReviewHotelResponse(pidStr, rid, text);
+            return;
         }
+        mockAPI.updateReviewHotelResponse(pidStr, rid, text);
         closeModal();
         render();
     }
