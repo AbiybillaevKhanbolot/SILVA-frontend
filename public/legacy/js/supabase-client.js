@@ -171,6 +171,44 @@
         return mapped;
     }
 
+    /** Объекты по списку id (для избранного, если id ещё нет в локальном кэше). */
+    async function fetchPropertiesByIds(propertyIds) {
+        var sb = ensureClient();
+        if (!sb) return [];
+        var rawIds = (propertyIds || [])
+            .map(function (x) {
+                return String(x || '').trim();
+            })
+            .filter(Boolean);
+        if (!rawIds.length) return [];
+        var q = await sb
+            .from('properties')
+            .select('id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, created_at')
+            .in('id', rawIds);
+        if (q.error) return [];
+        var rows = q.data || [];
+        if (!rows.length) return [];
+        var ids = rows.map(function (r) {
+            return r.id;
+        });
+        var imgQ = await sb
+            .from('property_images')
+            .select('property_id, image_url, position')
+            .in('property_id', ids)
+            .order('position', { ascending: true });
+        var byProperty = {};
+        if (!imgQ.error && imgQ.data) {
+            imgQ.data.forEach(function (img) {
+                var pid = String(img.property_id);
+                if (!byProperty[pid]) byProperty[pid] = [];
+                byProperty[pid].push(img);
+            });
+        }
+        return rows.map(function (row) {
+            return mapPropertyRowToLegacy(row, byProperty[String(row.id)] || []);
+        });
+    }
+
     async function saveOwnerProperty(payload) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
@@ -252,11 +290,35 @@
         if (!sb) throw new Error('Supabase SDK is not loaded');
         var q = await sb.from('favorites').select('property_id').order('created_at', { ascending: false });
         if (q.error) throw q.error;
-        var ids = (q.data || []).map(function (x) { return String(x.property_id); }).filter(Boolean);
+        var serverIds = (q.data || []).map(function (x) { return String(x.property_id); }).filter(Boolean);
         var email = normalizeEmail((readLocalUser() || {}).email);
         var key = email ? 'silva_favorites_' + email : 'silva_favorites';
-        localStorage.setItem(key, JSON.stringify(ids));
-        return ids;
+        var prev = [];
+        try {
+            prev = JSON.parse(localStorage.getItem(key) || '[]');
+            if (!Array.isArray(prev)) prev = [];
+        } catch (e) {
+            prev = [];
+        }
+        var prevStr = prev.map(function (x) { return String(x); });
+        var serverSet = {};
+        serverIds.forEach(function (id) {
+            serverSet[id] = true;
+        });
+        var extra = prevStr.filter(function (id) {
+            return id && !serverSet[id];
+        });
+        var merged = serverIds.concat(extra);
+        var seen = {};
+        var final = [];
+        merged.forEach(function (id) {
+            if (id && !seen[id]) {
+                seen[id] = true;
+                final.push(id);
+            }
+        });
+        localStorage.setItem(key, JSON.stringify(final));
+        return final;
     }
 
     async function setFavorite(propertyId, isFavorite) {
@@ -436,6 +498,7 @@
         saveProfile: saveProfile,
         uploadAvatar: uploadAvatar,
         fetchPropertiesCache: fetchPropertiesCache,
+        fetchPropertiesByIds: fetchPropertiesByIds,
         saveOwnerProperty: saveOwnerProperty,
         deleteOwnerProperty: deleteOwnerProperty,
         fetchFavorites: fetchFavorites,
