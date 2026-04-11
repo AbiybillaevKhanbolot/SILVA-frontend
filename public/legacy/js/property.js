@@ -757,6 +757,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     
     // Reviews: overview, categories, guest photos, sort, cards, leave-review (logged-in only), modal
+    var reviewSupabasePropertyId =
+        property && property.id != null && String(property.id).trim() !== '' ? property.id : propertyId;
+
     const reviewsList = document.getElementById('reviews-list');
     const reviewsCountEl = document.getElementById('reviews-count');
     const reviewsOverviewNum = document.getElementById('reviews-overview-num');
@@ -774,9 +777,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const reviewForm = document.getElementById('review-form');
     const reviewStars = document.getElementById('review-stars');
     const reviewText = document.getElementById('review-text');
-    const reviewPhotosInput = document.getElementById('review-photos');
-    const reviewPhotosPreview = document.getElementById('review-photos-preview');
-    const reviewUploadZone = document.getElementById('review-upload-zone');
     const reviewFormError = document.getElementById('review-form-error');
 
     const ratingLabel = (n) => {
@@ -878,46 +878,48 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         // Expand/collapse review text
-        reviewsList.querySelectorAll('.review-card-text-content').forEach(p => {
-            const wrap = p.closest('.review-card-text-wrap');
-            const btn = wrap && wrap.querySelector('.review-card-expand');
-            if (!btn) return;
-            if (p.offsetHeight < p.scrollHeight || p.textContent.length > 250) {
-                wrap.classList.add('collapsed');
-                p.style.maxHeight = '4.5em';
-                p.style.overflow = 'hidden';
-                btn.style.display = 'inline';
-                btn.textContent = 'Развернуть отзыв';
-                btn.onclick = function() {
-                    const on = wrap.classList.toggle('collapsed');
-                    p.style.maxHeight = on ? '4.5em' : 'none';
-                    p.style.overflow = on ? 'hidden' : 'visible';
-                    btn.textContent = on ? 'Развернуть отзыв' : 'Свернуть отзыв';
-                };
-            }
-        });
-
-        // Helpful click (localStorage for demo)
-        reviewsList.querySelectorAll('.review-card-helpful [data-helpful]').forEach(span => {
-            span.style.cursor = 'pointer';
-            span.addEventListener('click', function() {
-                const id = this.getAttribute('data-review-id');
-                const kind = this.getAttribute('data-helpful');
-                let key = 'silva_helpful_' + propertyId;
-                try {
-                    let data = JSON.parse(localStorage.getItem(key) || '{}');
-                    if (!data[id]) data[id] = { yes: 0, no: 0 };
-                    data[id][kind] = (data[id][kind] || 0) + 1;
-                    localStorage.setItem(key, JSON.stringify(data));
-                } catch (e) {}
-                renderReviews();
+        if (reviewsList) {
+            reviewsList.querySelectorAll('.review-card-text-content').forEach(p => {
+                const wrap = p.closest('.review-card-text-wrap');
+                const btn = wrap && wrap.querySelector('.review-card-expand');
+                if (!btn) return;
+                if (p.offsetHeight < p.scrollHeight || p.textContent.length > 250) {
+                    wrap.classList.add('collapsed');
+                    p.style.maxHeight = '4.5em';
+                    p.style.overflow = 'hidden';
+                    btn.style.display = 'inline';
+                    btn.textContent = 'Развернуть отзыв';
+                    btn.onclick = function() {
+                        const on = wrap.classList.toggle('collapsed');
+                        p.style.maxHeight = on ? '4.5em' : 'none';
+                        p.style.overflow = on ? 'hidden' : 'visible';
+                        btn.textContent = on ? 'Развернуть отзыв' : 'Свернуть отзыв';
+                    };
+                }
             });
-        });
+
+            // Helpful click (localStorage for demo)
+            reviewsList.querySelectorAll('.review-card-helpful [data-helpful]').forEach(span => {
+                span.style.cursor = 'pointer';
+                span.addEventListener('click', function() {
+                    const id = this.getAttribute('data-review-id');
+                    const kind = this.getAttribute('data-helpful');
+                    let key = 'silva_helpful_' + propertyId;
+                    try {
+                        let data = JSON.parse(localStorage.getItem(key) || '{}');
+                        if (!data[id]) data[id] = { yes: 0, no: 0 };
+                        data[id][kind] = (data[id][kind] || 0) + 1;
+                        localStorage.setItem(key, JSON.stringify(data));
+                    } catch (e) {}
+                    renderReviews();
+                });
+            });
+        }
     }
 
     if (typeof window.silvaSupabaseAuth !== 'undefined' && typeof window.silvaSupabaseAuth.fetchReviewsForProperty === 'function') {
         try {
-            var serverReviews = await window.silvaSupabaseAuth.fetchReviewsForProperty(propertyId);
+            var serverReviews = await window.silvaSupabaseAuth.fetchReviewsForProperty(reviewSupabasePropertyId);
             mockAPI.setServerReviewsForProperty(propertyId, serverReviews);
         } catch (errReviews) {}
     }
@@ -936,35 +938,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!reviewFormError) return;
         reviewFormError.textContent = msg;
         reviewFormError.hidden = !msg;
-    }
-
-    function assignReviewPhotoFiles(fileList) {
-        if (!reviewPhotosInput) return;
-        var arr = Array.from(fileList || []).filter(function (f) {
-            return f && f.type && f.type.indexOf('image/') === 0;
-        }).slice(0, 5);
-        var dt = new DataTransfer();
-        arr.forEach(function (f) {
-            dt.items.add(f);
-        });
-        reviewPhotosInput.files = dt.files;
-    }
-
-    function renderReviewPhotoPreviews() {
-        if (!reviewPhotosPreview || !reviewPhotosInput) return;
-        reviewPhotosPreview.innerHTML = '';
-        var files = Array.from(reviewPhotosInput.files || []).slice(0, 5);
-        files.forEach(function (file) {
-            if (file.type.indexOf('image/') !== 0) return;
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                var img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = '';
-                reviewPhotosPreview.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        });
     }
 
     let selectedStars = 0;
@@ -986,8 +959,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 });
             }
             if (reviewText) reviewText.value = '';
-            assignReviewPhotoFiles([]);
-            renderReviewPhotoPreviews();
         });
     }
 
@@ -1019,39 +990,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    if (reviewPhotosInput && reviewPhotosPreview) {
-        reviewPhotosInput.addEventListener('change', function () {
-            assignReviewPhotoFiles(this.files);
-            renderReviewPhotoPreviews();
-        });
-    }
-
-    if (reviewUploadZone && reviewPhotosInput) {
-        ['dragenter', 'dragover'].forEach(function (ev) {
-            reviewUploadZone.addEventListener(ev, function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                reviewUploadZone.classList.add('is-dragover');
-            });
-        });
-        reviewUploadZone.addEventListener('dragleave', function (e) {
-            e.preventDefault();
-            if (!reviewUploadZone.contains(e.relatedTarget)) {
-                reviewUploadZone.classList.remove('is-dragover');
-            }
-        });
-        reviewUploadZone.addEventListener('drop', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            reviewUploadZone.classList.remove('is-dragover');
-            var dt = e.dataTransfer;
-            if (dt && dt.files && dt.files.length) {
-                assignReviewPhotoFiles(dt.files);
-                renderReviewPhotoPreviews();
-            }
-        });
-    }
-
     if (reviewForm) {
         reviewForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1065,15 +1003,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 showReviewFormError('Напишите текст отзыва.');
                 return;
             }
-            const files = reviewPhotosInput && reviewPhotosInput.files ? Array.from(reviewPhotosInput.files).filter(f => f.type.startsWith('image/')).slice(0, 5) : [];
-            const readPhotos = () => {
-                if (files.length === 0) return Promise.resolve([]);
-                return Promise.all(files.map(file => new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = function(ev) { resolve(ev.target.result); };
-                    reader.readAsDataURL(file);
-                })));
-            };
             let author = 'Гость';
             let avatar = null;
             try {
@@ -1083,66 +1012,73 @@ document.addEventListener('DOMContentLoaded', async function() {
                 avatar = u.avatar || null;
             } catch (e) {}
             const rating = selectedStars * 2;
-            readPhotos().then(function (photos) {
-                var supa = window.silvaSupabaseAuth;
-                var tryRemote =
-                    supa && typeof supa.insertReview === 'function' && typeof supa.fetchReviewsForProperty === 'function';
 
-                function afterSuccess() {
-                    clearReviewFormError();
-                    if (reviewModal) reviewModal.classList.remove('open');
-                    renderReviews();
-                }
+            var supa = window.silvaSupabaseAuth;
+            var normPid =
+                supa && typeof supa.normalizeReviewPropertyId === 'function'
+                    ? supa.normalizeReviewPropertyId(reviewSupabasePropertyId)
+                    : null;
+            var tryRemote =
+                normPid != null &&
+                supa &&
+                typeof supa.insertReview === 'function' &&
+                typeof supa.fetchReviewsForProperty === 'function';
 
-                function remoteFailMessage(err) {
-                    if (err && err.message) return String(err.message);
-                    if (err && err.error && err.error.message) return String(err.error.message);
-                    return 'Не удалось отправить отзыв на сервер.';
-                }
+            function afterSuccess() {
+                clearReviewFormError();
+                if (reviewModal) reviewModal.classList.remove('open');
+                renderReviews();
+            }
 
-                if (tryRemote) {
-                    return supa
-                        .insertReview({
-                            propertyId: propertyId,
-                            rating: selectedStars,
+            function remoteFailMessage(err) {
+                if (err && err.message) return String(err.message);
+                if (err && err.error && err.error.message) return String(err.error.message);
+                return 'Не удалось отправить отзыв на сервер.';
+            }
+
+            if (tryRemote) {
+                supa
+                    .insertReview({
+                        propertyId: reviewSupabasePropertyId,
+                        rating: selectedStars,
+                        text: text,
+                        avatarUrl: avatar
+                    })
+                    .then(function () {
+                        return supa.fetchReviewsForProperty(reviewSupabasePropertyId);
+                    })
+                    .then(function (list) {
+                        mockAPI.setServerReviewsForProperty(propertyId, list);
+                        afterSuccess();
+                    })
+                    .catch(function (err) {
+                        mockAPI.addReviewForProperty(propertyId, {
+                            author: author,
+                            avatar: avatar,
+                            rating: rating,
+                            ratingLabel: ratingLabel(rating),
                             text: text,
-                            avatarUrl: avatar
-                        })
-                        .then(function () {
-                            return supa.fetchReviewsForProperty(propertyId);
-                        })
-                        .then(function (list) {
-                            mockAPI.setServerReviewsForProperty(propertyId, list);
-                            afterSuccess();
-                        })
-                        .catch(function (err) {
-                            mockAPI.addReviewForProperty(propertyId, {
-                                author: author,
-                                avatar: avatar,
-                                rating: rating,
-                                ratingLabel: ratingLabel(rating),
-                                text: text,
-                                photos: photos,
-                                stayDate: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
-                            });
-                            showReviewFormError(
-                                remoteFailMessage(err) + ' Отзыв сохранён только на этом устройстве.'
-                            );
-                            renderReviews();
+                            photos: [],
+                            stayDate: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
                         });
-                }
+                        showReviewFormError(
+                            remoteFailMessage(err) + ' Отзыв сохранён только на этом устройстве.'
+                        );
+                        renderReviews();
+                    });
+                return;
+            }
 
-                mockAPI.addReviewForProperty(propertyId, {
-                    author: author,
-                    avatar: avatar,
-                    rating: rating,
-                    ratingLabel: ratingLabel(rating),
-                    text: text,
-                    photos: photos,
-                    stayDate: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
-                });
-                afterSuccess();
+            mockAPI.addReviewForProperty(propertyId, {
+                author: author,
+                avatar: avatar,
+                rating: rating,
+                ratingLabel: ratingLabel(rating),
+                text: text,
+                photos: [],
+                stayDate: new Date().toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
             });
+            afterSuccess();
         });
     }
 });

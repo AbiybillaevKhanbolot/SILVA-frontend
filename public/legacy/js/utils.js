@@ -49,7 +49,10 @@ function formatDate(date, format = 'ru') {
 // Get URL parameter
 function getUrlParameter(name) {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
+    const v = urlParams.get(name);
+    if (v == null) return null;
+    const t = v.trim();
+    return t === '' ? null : t;
 }
 
 // Debounce function

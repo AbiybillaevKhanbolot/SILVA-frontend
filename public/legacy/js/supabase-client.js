@@ -409,12 +409,19 @@
         return 'full';
     }
 
-    /** property_id в public.reviews — bigint из урла (как в public.properties.id). */
+    /** property_id в public.reviews — положительный bigint (id из public.properties). */
     function normalizeReviewPropertyId(raw) {
         if (raw == null || raw === '') return null;
+        if (typeof raw === 'number' && Number.isFinite(raw)) {
+            var ti = Math.trunc(raw);
+            if (ti === raw && ti >= 1) return ti;
+        }
         var s = String(raw).trim();
-        var n = parseInt(s, 10);
-        if (!isNaN(n) && String(n) === s) return n;
+        if (!s) return null;
+        if (/^\d+$/.test(s)) {
+            var n = parseInt(s, 10);
+            if (!isNaN(n) && n >= 1) return n;
+        }
         return null;
     }
 
@@ -851,6 +858,7 @@
         incrementLoyaltyPointsAfterPayment: incrementLoyaltyPointsAfterPayment,
         fetchReviewsForProperty: fetchReviewsForProperty,
         insertReview: insertReview,
+        normalizeReviewPropertyId: normalizeReviewPropertyId,
         readLocalUser: readLocalUser,
         clearLocalUser: clearLocalUser,
         bootAuthSync: bootAuthSync
