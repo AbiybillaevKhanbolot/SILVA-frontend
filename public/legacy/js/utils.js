@@ -167,7 +167,7 @@ const mockAPI = {
         this._serverReviewsByProperty[n] = Array.isArray(list) ? list.slice() : [];
     },
 
-    /** Объект из каталога Supabase (bigint id) — отзывы и ответы только из БД, не из localStorage. */
+    /** Объект из каталога Supabase (uuid или числовой id) — отзывы только из БД, не из localStorage. */
     usesSupabaseReviewsCache: function(propertyId) {
         if (typeof window === 'undefined' || !window.silvaSupabaseAuth) return false;
         var fn = window.silvaSupabaseAuth.normalizeReviewPropertyId;

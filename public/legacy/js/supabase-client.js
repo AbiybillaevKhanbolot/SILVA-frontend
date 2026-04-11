@@ -422,15 +422,21 @@
         return 'full';
     }
 
-    /** property_id в public.reviews — положительный bigint (id из public.properties). */
+    /**
+     * property_id в public.reviews — как у public.properties.id:
+     * uuid (прод) или положительный bigint (старая схема миграций SILVA).
+     */
     function normalizeReviewPropertyId(raw) {
         if (raw == null || raw === '') return null;
+        var s = String(raw).trim();
+        if (!s) return null;
+        var uuidRx =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (uuidRx.test(s)) return s;
         if (typeof raw === 'number' && Number.isFinite(raw)) {
             var ti = Math.trunc(raw);
             if (ti === raw && ti >= 1) return ti;
         }
-        var s = String(raw).trim();
-        if (!s) return null;
         if (/^\d+$/.test(s)) {
             var n = parseInt(s, 10);
             if (!isNaN(n) && n >= 1) return n;
@@ -614,13 +620,20 @@
         return ins.data;
     }
 
+    /** PK отзыва в БД: bigint или uuid (после префикса db- в UI). */
     function parseDbReviewId(reviewIdStr) {
         var s = String(reviewIdStr || '');
         if (s.indexOf('db-') !== 0) return null;
         var rest = s.slice(3);
-        if (!/^\d+$/.test(rest)) return null;
-        var n = parseInt(rest, 10);
-        return isNaN(n) ? null : n;
+        if (!rest) return null;
+        var uuidRx =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (uuidRx.test(rest)) return rest;
+        if (/^\d+$/.test(rest)) {
+            var n = parseInt(rest, 10);
+            return isNaN(n) ? null : n;
+        }
+        return null;
     }
 
     async function upsertReviewResponse(payload) {
@@ -628,8 +641,8 @@
         if (!sb) throw new Error('Supabase SDK не загружен');
         var user = await getAuthUserForWrite();
         if (!user || !user.id) throw new Error('Войдите снова — сессия истекла.');
-        var reviewIdNum = parseDbReviewId(payload && payload.reviewId);
-        if (reviewIdNum == null) throw new Error('Ответ доступен только к отзывам из базы');
+        var reviewIdParsed = parseDbReviewId(payload && payload.reviewId);
+        if (reviewIdParsed == null) throw new Error('Ответ доступен только к отзывам из базы');
         var text = payload && payload.text != null ? String(payload.text).trim() : '';
         if (!text) throw new Error('Введите текст ответа');
         var ownerAvatarUrl =
@@ -637,7 +650,7 @@
                 ? String(payload.ownerAvatarUrl).trim()
                 : null;
         var row = {
-            review_id: reviewIdNum,
+            review_id: reviewIdParsed,
             owner_id: user.id,
             text: text,
             owner_avatar_url: ownerAvatarUrl
@@ -652,15 +665,15 @@
         if (!sb) throw new Error('Supabase SDK не загружен');
         var user = await getAuthUserForWrite();
         if (!user || !user.id) throw new Error('Войдите снова — сессия истекла.');
-        var reviewIdNum =
+        var reviewIdParsed =
             typeof reviewIdRaw === 'number' && Number.isFinite(reviewIdRaw)
                 ? Math.trunc(reviewIdRaw)
                 : parseDbReviewId(reviewIdRaw);
-        if (reviewIdNum == null) return;
+        if (reviewIdParsed == null) return;
         var q = await sb
             .from('review_responses')
             .delete()
-            .eq('review_id', reviewIdNum)
+            .eq('review_id', reviewIdParsed)
             .eq('owner_id', user.id);
         if (q.error) throw q.error;
     }
