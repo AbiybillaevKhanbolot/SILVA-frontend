@@ -2604,9 +2604,25 @@ input[type="reset"] {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.page-contacts a.contacts-card {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.page-contacts a.contacts-card:focus-visible {
+    outline: 2px solid var(--color-emerald-500);
+    outline-offset: 2px;
+}
+
 .page-contacts .contacts-card:hover {
     border-color: var(--color-gray-300);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.page-contacts a.contacts-card:hover .contacts-card-value {
+    color: var(--color-emerald-700);
 }
 
 .page-contacts .contacts-card-icon {
@@ -2632,16 +2648,6 @@ input[type="reset"] {
     color: var(--color-gray-600);
     line-height: 1.5;
     margin: 0;
-}
-
-.page-contacts .contacts-card-value a {
-    color: var(--color-gray-700);
-    text-decoration: none;
-}
-
-.page-contacts .contacts-card-value a:hover {
-    color: var(--color-gray-900);
-    text-decoration: underline;
 }
 
 .page-contacts .contacts-card-note {
