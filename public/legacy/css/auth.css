@@ -117,6 +117,21 @@ body.auth-body textarea {
     }
 }
 
+/* Регистрация: без вертикального центрирования — при переключении «Владелец» верх формы не смещается вверх */
+body.auth-body--register .auth-form-column {
+    justify-content: flex-start;
+    padding-top: 3.75rem;
+    padding-bottom: 2rem;
+    box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+    body.auth-body--register .auth-form-column {
+        padding-top: 4rem;
+        padding-bottom: 2.5rem;
+    }
+}
+
 .auth-card {
     width: 100%;
     max-width: 20rem;
