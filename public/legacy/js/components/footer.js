@@ -57,15 +57,15 @@ function initFooter() {
                         <h4 class="footer-column-title">Контакты</h4>
                         <div class="footer-contact-item">
                             ${ic('phone', 20, 20)}
-                            <span>8 (800) 123-45-67</span>
+                            <span>8 (961) 808 4453</span>
                         </div>
                         <div class="footer-contact-item">
                             ${ic('mail', 20, 20)}
-                            <span>info@dachagrad.ru</span>
+                            <span>sillvva.001@gmail.com</span>
                         </div>
                         <div class="footer-contact-item">
                             ${ic('map-pin', 20, 20)}
-                            <span>Москва, ул. Природная, 42</span>
+                            <span>Пр.Ударников д. 29 к. 1</span>
                         </div>
                     </div>
                 </div>
