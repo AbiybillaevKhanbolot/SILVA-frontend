@@ -21,11 +21,12 @@
             <!-- Search Card -->
             <div class="search-card">
                 <div class="search-grid">
-                    <div class="search-item">
+                    <div class="search-item" data-search-field="region">
                         <label class="search-label">Район</label>
-                        <div class="search-input-wrapper search-dropdown-wrapper">
+                        <div class="search-input-wrapper search-dropdown-wrapper search-input-wrapper--region">
                             <span class="silva-icon search-icon" data-icon="map-pin" data-w="20" data-h="20" aria-hidden="true"></span>
-                            <input type="text" placeholder="Район СПб" class="search-input" id="region-input">
+                            <input type="text" placeholder="Район СПб" class="search-input" id="region-input" autocomplete="off">
+                            <button type="button" class="search-region-clear" id="region-clear-btn" aria-label="Закрыть выбор района" title="Закрыть">×</button>
                             <div class="search-dropdown" id="region-dropdown">
                                 <div class="search-dropdown-item" data-value="Адмиралтейский">Адмиралтейский</div>
                                 <div class="search-dropdown-item" data-value="Василеостровский">Василеостровский</div>
@@ -48,7 +49,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="search-item">
+                    <div class="search-item" data-search-field="checkin">
                         <label class="search-label">Заезд</label>
                         <div class="search-input-wrapper search-dropdown-wrapper">
                             <span class="silva-icon search-icon" data-icon="calendar" data-w="20" data-h="20" aria-hidden="true"></span>
@@ -72,7 +73,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="search-item">
+                    <div class="search-item" data-search-field="checkout">
                         <label class="search-label">Выезд</label>
                         <div class="search-input-wrapper search-dropdown-wrapper">
                             <span class="silva-icon search-icon" data-icon="calendar" data-w="20" data-h="20" aria-hidden="true"></span>
@@ -96,7 +97,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="search-item">
+                    <div class="search-item" data-search-field="people">
                         <label class="search-label">Гости</label>
                         <div class="search-input-wrapper search-people-wrapper">
                             <span class="silva-icon search-icon" data-icon="users" data-w="20" data-h="20" aria-hidden="true"></span>

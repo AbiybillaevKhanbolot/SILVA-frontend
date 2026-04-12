@@ -217,48 +217,107 @@ document.addEventListener('DOMContentLoaded', function() {
         gardenCardsObserver.observe(gardenCardsGrid);
     }
 
-    // Region dropdown
+    // Hero search: только одно поле раскрыто; остальные неактивны (см. .search-grid--picker-open)
+    const searchGrid = document.querySelector('.search-card .search-grid');
     const regionInput = document.getElementById('region-input');
     const regionDropdown = document.getElementById('region-dropdown');
-    
+    const regionClearBtn = document.getElementById('region-clear-btn');
+    const checkinInput = document.getElementById('checkin-input');
+    const checkinDropdown = document.getElementById('checkin-dropdown');
+    const checkoutInput = document.getElementById('checkout-input');
+    const checkoutDropdown = document.getElementById('checkout-dropdown');
+    const peopleInput = document.getElementById('people-input');
+    const peopleDropdown = document.getElementById('people-dropdown');
+
+    const searchPickerDropdowns = {
+        region: regionDropdown,
+        checkin: checkinDropdown,
+        checkout: checkoutDropdown,
+        people: peopleDropdown
+    };
+
+    let activeSearchPicker = null;
+
+    function updateSearchPickerUi() {
+        if (searchGrid) {
+            searchGrid.classList.toggle('search-grid--picker-open', activeSearchPicker !== null);
+            searchGrid.querySelectorAll('.search-item[data-search-field]').forEach(function (item) {
+                var f = item.getAttribute('data-search-field');
+                item.classList.toggle(
+                    'search-item--active',
+                    activeSearchPicker !== null && f === activeSearchPicker
+                );
+            });
+        }
+    }
+
+    function closeAllSearchPickers() {
+        activeSearchPicker = null;
+        Object.keys(searchPickerDropdowns).forEach(function (key) {
+            var el = searchPickerDropdowns[key];
+            if (el) el.classList.remove('active');
+        });
+        updateSearchPickerUi();
+    }
+
+    function openSearchPicker(name) {
+        var dd = searchPickerDropdowns[name];
+        if (!dd) return;
+        if (activeSearchPicker === name && dd.classList.contains('active')) {
+            closeAllSearchPickers();
+            return;
+        }
+        activeSearchPicker = name;
+        Object.keys(searchPickerDropdowns).forEach(function (key) {
+            var el = searchPickerDropdowns[key];
+            if (el) el.classList.toggle('active', key === name);
+        });
+        updateSearchPickerUi();
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!searchGrid || !searchGrid.contains(e.target)) {
+            closeAllSearchPickers();
+        }
+    });
+
     if (regionInput && regionDropdown) {
-        regionInput.addEventListener('click', (e) => {
+        regionInput.addEventListener('click', function (e) {
             e.stopPropagation();
-            regionDropdown.classList.add('active');
+            openSearchPicker('region');
         });
 
-        regionInput.addEventListener('focus', (e) => {
+        regionInput.addEventListener('focus', function (e) {
             e.stopPropagation();
-            regionDropdown.classList.add('active');
+            openSearchPicker('region');
         });
 
-        regionInput.addEventListener('input', (e) => {
-            const searchValue = e.target.value.toLowerCase();
-            const items = regionDropdown.querySelectorAll('.search-dropdown-item');
-            
-            items.forEach(item => {
-                const text = item.textContent.toLowerCase();
-                if (text.includes(searchValue)) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
-                }
+        regionInput.addEventListener('input', function (e) {
+            var searchValue = e.target.value.toLowerCase();
+            regionDropdown.querySelectorAll('.search-dropdown-item').forEach(function (item) {
+                var text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchValue) ? '' : 'none';
             });
         });
 
-        regionDropdown.querySelectorAll('.search-dropdown-item').forEach(item => {
-            item.addEventListener('click', () => {
+        regionDropdown.querySelectorAll('.search-dropdown-item').forEach(function (item) {
+            item.addEventListener('click', function () {
                 regionInput.value = item.dataset.value;
-                regionDropdown.classList.remove('active');
+                closeAllSearchPickers();
             });
         });
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!regionInput.contains(e.target) && !regionDropdown.contains(e.target)) {
-                regionDropdown.classList.remove('active');
-            }
-        });
+        if (regionClearBtn) {
+            regionClearBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                regionInput.value = '';
+                regionDropdown.querySelectorAll('.search-dropdown-item').forEach(function (item) {
+                    item.style.display = '';
+                });
+                closeAllSearchPickers();
+            });
+        }
     }
 
     // Smart search: pass guest preferences to catalog
@@ -272,13 +331,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // People dropdown
-    const peopleInput = document.getElementById('people-input');
-    const peopleDropdown = document.getElementById('people-dropdown');
     let adultsCount = 2;
     let childrenCount = 0;
 
     function updatePeopleInput() {
-        const total = adultsCount + childrenCount;
+        if (!peopleInput) return;
         let text = '';
         if (adultsCount > 0) {
             text += adultsCount + ' взросл' + (adultsCount === 1 ? 'ый' : adultsCount < 5 ? 'ых' : 'ых');
@@ -294,16 +351,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (peopleInput && peopleDropdown) {
         updatePeopleInput();
 
-        peopleInput.addEventListener('click', (e) => {
+        peopleInput.addEventListener('click', function (e) {
             e.stopPropagation();
-            peopleDropdown.classList.toggle('active');
+            openSearchPicker('people');
         });
 
-        peopleDropdown.querySelectorAll('.search-people-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+        peopleDropdown.querySelectorAll('.search-people-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
                 e.stopPropagation();
-                const type = btn.dataset.type;
-                const action = btn.dataset.action;
+                var type = btn.dataset.type;
+                var action = btn.dataset.action;
 
                 if (type === 'adults') {
                     if (action === 'increase') {
@@ -311,40 +368,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (action === 'decrease' && adultsCount > 1) {
                         adultsCount--;
                     }
-                    document.getElementById('adults-count').textContent = adultsCount;
+                    var ac = document.getElementById('adults-count');
+                    if (ac) ac.textContent = adultsCount;
                 } else if (type === 'children') {
                     if (action === 'increase') {
                         childrenCount++;
                     } else if (action === 'decrease' && childrenCount > 0) {
                         childrenCount--;
                     }
-                    document.getElementById('children-count').textContent = childrenCount;
+                    var cc = document.getElementById('children-count');
+                    if (cc) cc.textContent = childrenCount;
                 }
 
                 updatePeopleInput();
 
-                // Update button states
-                const decreaseBtn = btn.parentElement.querySelector('[data-action="decrease"]');
-                if (type === 'adults') {
-                    decreaseBtn.disabled = adultsCount <= 1;
-                } else {
-                    decreaseBtn.disabled = childrenCount <= 0;
+                var decreaseBtn = btn.parentElement.querySelector('[data-action="decrease"]');
+                if (decreaseBtn) {
+                    if (type === 'adults') {
+                        decreaseBtn.disabled = adultsCount <= 1;
+                    } else {
+                        decreaseBtn.disabled = childrenCount <= 0;
+                    }
                 }
             });
         });
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!peopleInput.contains(e.target) && !peopleDropdown.contains(e.target)) {
-                peopleDropdown.classList.remove('active');
-            }
-        });
-
-        // Initialize button states
-        document.querySelectorAll('[data-type="adults"][data-action="decrease"]').forEach(btn => {
+        document.querySelectorAll('[data-type="adults"][data-action="decrease"]').forEach(function (btn) {
             btn.disabled = adultsCount <= 1;
         });
-        document.querySelectorAll('[data-type="children"][data-action="decrease"]').forEach(btn => {
+        document.querySelectorAll('[data-type="children"][data-action="decrease"]').forEach(function (btn) {
             btn.disabled = childrenCount <= 0;
         });
     }
@@ -431,8 +483,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Check-in calendar
-    const checkinInput = document.getElementById('checkin-input');
-    const checkinDropdown = document.getElementById('checkin-dropdown');
     let checkinCurrentMonth = new Date();
     let checkinSelectedDate = null;
     const today = new Date();
@@ -442,9 +492,9 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCalendar('checkin-dropdown', 'checkin-month-year', 'checkin-calendar-days', 
                       checkinCurrentMonth, checkinSelectedDate, today);
         
-        checkinInput.addEventListener('click', (e) => {
+        checkinInput.addEventListener('click', function (e) {
             e.stopPropagation();
-            checkinDropdown.classList.toggle('active');
+            openSearchPicker('checkin');
         });
         
         document.getElementById('checkin-prev-month').addEventListener('click', (e) => {
@@ -466,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const date = new Date(e.target.dataset.date);
                 checkinSelectedDate = date;
                 checkinInput.value = formatDateForInput(date);
-                checkinDropdown.classList.remove('active');
+                closeAllSearchPickers();
                 
                 // Update checkout calendar
                 if (checkoutCurrentMonth) {
@@ -477,17 +527,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
-        
-        document.addEventListener('click', (e) => {
-            if (!checkinInput.contains(e.target) && !checkinDropdown.contains(e.target)) {
-                checkinDropdown.classList.remove('active');
-            }
-        });
     }
 
     // Check-out calendar
-    const checkoutInput = document.getElementById('checkout-input');
-    const checkoutDropdown = document.getElementById('checkout-dropdown');
     let checkoutCurrentMonth = new Date();
     checkoutCurrentMonth.setMonth(checkoutCurrentMonth.getMonth() + 1);
     let checkoutSelectedDate = null;
@@ -498,9 +540,9 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCalendar('checkout-dropdown', 'checkout-month-year', 'checkout-calendar-days', 
                       checkoutCurrentMonth, checkoutSelectedDate, minCheckoutDate);
         
-        checkoutInput.addEventListener('click', (e) => {
+        checkoutInput.addEventListener('click', function (e) {
             e.stopPropagation();
-            checkoutDropdown.classList.toggle('active');
+            openSearchPicker('checkout');
         });
         
         document.getElementById('checkout-prev-month').addEventListener('click', (e) => {
@@ -522,13 +564,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const date = new Date(e.target.dataset.date);
                 checkoutSelectedDate = date;
                 checkoutInput.value = formatDateForInput(date);
-                checkoutDropdown.classList.remove('active');
-            }
-        });
-        
-        document.addEventListener('click', (e) => {
-            if (!checkoutInput.contains(e.target) && !checkoutDropdown.contains(e.target)) {
-                checkoutDropdown.classList.remove('active');
+                closeAllSearchPickers();
             }
         });
     }
@@ -536,6 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (findBtn) {
         findBtn.addEventListener('click', function (e) {
             e.preventDefault();
+            closeAllSearchPickers();
             const regionValue = regionInput ? String(regionInput.value || '').trim() : '';
             const totalGuests = Math.max(1, adultsCount + childrenCount);
             const checkinIso = toISODate(checkinSelectedDate);
