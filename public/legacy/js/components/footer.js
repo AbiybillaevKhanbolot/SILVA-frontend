@@ -23,10 +23,10 @@ function initFooter() {
                             природу и качественный сервис.
                         </p>
                         <div class="footer-social">
-                            <a href="#" class="footer-social-link" aria-label="Instagram">
-                                ${ic('instagram', 20, 20)}
+                            <a href="mailto:sillvva.001@gmail.com" class="footer-social-link" aria-label="Написать на почту">
+                                ${ic('mail', 20, 20)}
                             </a>
-                            <a href="#" class="footer-social-link" aria-label="Telegram">
+                            <a href="https://t.me/@khan_fs" class="footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
                                 ${ic('send', 20, 20)}
                             </a>
                         </div>
@@ -37,8 +37,7 @@ function initFooter() {
                         <ul class="footer-links">
                             <li><a href="${lh('catalog.html')}" class="footer-link">Каталог</a></li>
                             <li><a href="${lh('contact.html')}" class="footer-link">Контакты</a></li>
-                            <li><a href="#" class="footer-link">Как забронировать</a></li>
-                            <li><a href="loyalty.html" class="footer-link">Программа лояльности</a></li>
+                            <li><a href="${lh('loyalty.html')}" class="footer-link">Программа лояльности</a></li>
                             <li><a href="#" class="footer-link">Отзывы</a></li>
                         </ul>
                     </div>
@@ -46,7 +45,7 @@ function initFooter() {
                     <div>
                         <h4 class="footer-column-title">Владельцам</h4>
                         <ul class="footer-links">
-                            <li><a href="#" class="footer-link footer-link-require-auth">Разместить объект</a></li>
+                            <li><a href="${lh('owner-properties.html')}" class="footer-link footer-link-place-object">Разместить объект</a></li>
                             <li><a href="#" class="footer-link footer-link-require-auth">Условия сотрудничества</a></li>
                             <li><a href="#" class="footer-link footer-link-require-auth">Личный кабинет</a></li>
                             <li><a href="#" class="footer-link footer-link-require-auth">Поддержка</a></li>
@@ -84,6 +83,21 @@ function initFooter() {
         </footer>
     `;
     
+    var placeObjectLink = footerContainer.querySelector('.footer-link-place-object');
+    if (placeObjectLink) {
+        placeObjectLink.addEventListener('click', function (e) {
+            if (typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
+                return;
+            }
+            e.preventDefault();
+            if (typeof window.showAuthRequiredModal === 'function') {
+                window.showAuthRequiredModal(
+                    'Чтобы разместить объект, войдите в аккаунт или зарегистрируйтесь как владелец.'
+                );
+            }
+        });
+    }
+
     footerContainer.querySelectorAll('.footer-link-require-auth').forEach(function(link) {
         link.addEventListener('click', function(e) {
             e.preventDefault();
