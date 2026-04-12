@@ -1011,6 +1011,74 @@
         if (tx.error) throw tx.error;
     }
 
+    /** URL для письма сброса: на Vercel в строке браузера /login, legacy в iframe — берём родителя с тем же origin. */
+    function passwordRecoveryRedirectUrl() {
+        try {
+            var win = window;
+            try {
+                if (win.parent && win.parent !== win && win.parent.location.origin === win.location.origin) {
+                    win = win.parent;
+                }
+            } catch (e) {}
+
+            var u = new URL(win.location.href);
+            var path = (u.pathname || '').replace(/\/+$/, '') || '/';
+
+            if (path === '/login') {
+                return u.origin + '/login';
+            }
+            if (path.indexOf('/legacy/login') !== -1 || (/login/i.test(path) && /\.html$/i.test(path))) {
+                return u.origin + path.split('?')[0];
+            }
+            return u.origin + '/login';
+        } catch (e) {
+            return typeof window !== 'undefined' && window.location ? window.location.origin + '/login' : '';
+        }
+    }
+
+    /**
+     * Шаг 1 сброса пароля: письмо с кодом (и/или ссылкой).
+     * В Dashboard → Authentication → Email templates → «Reset password» добавьте в текст {{ .Token }}, иначе в письме может не быть цифрового кода.
+     */
+    async function requestPasswordReset(email) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var e = normalizeEmail(email);
+        if (!e) throw new Error('Укажите почту');
+        var res = await sb.auth.resetPasswordForEmail(e, {
+            redirectTo: passwordRecoveryRedirectUrl()
+        });
+        if (res.error) throw res.error;
+    }
+
+    /** Шаг 2: проверка кода из письма (type recovery). После успеха — сессия recovery, можно вызвать setNewPasswordAfterRecovery. */
+    async function verifyPasswordRecoveryOtp(email, token) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var e = normalizeEmail(email);
+        var t = String(token || '').replace(/\s/g, '');
+        if (!e || !t) throw new Error('Введите код из письма');
+        var res = await sb.auth.verifyOtp({
+            email: e,
+            token: t,
+            type: 'recovery'
+        });
+        if (res.error) throw res.error;
+        return res.data;
+    }
+
+    /** Шаг 3: новый пароль в auth.users, затем выход — пользователь входит заново с почтой и паролем. */
+    async function setNewPasswordAfterRecovery(newPassword) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var p = String(newPassword || '');
+        if (p.length < 6) throw new Error('Пароль не короче 6 символов');
+        var res = await sb.auth.updateUser({ password: p });
+        if (res.error) throw res.error;
+        await sb.auth.signOut();
+        clearLocalUser();
+    }
+
     async function signIn(email, password) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
@@ -1123,6 +1191,9 @@
         ensureClient: ensureClient,
         getSessionUser: getSessionUser,
         syncLocalUserFromSupabase: syncLocalUserFromSupabase,
+        requestPasswordReset: requestPasswordReset,
+        verifyPasswordRecoveryOtp: verifyPasswordRecoveryOtp,
+        setNewPasswordAfterRecovery: setNewPasswordAfterRecovery,
         signIn: signIn,
         signUp: signUp,
         signOut: signOut,

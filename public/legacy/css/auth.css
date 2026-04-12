@@ -493,3 +493,83 @@ body.auth-body--register .auth-card .auth-btn-submit.btn-primary {
     margin-top: 0.2rem;
     text-align: center;
 }
+
+/* Модальное восстановление пароля (login.html) */
+button.auth-forgot.auth-forgot--btn {
+    display: block;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: 0.8125rem;
+    color: var(--color-emerald-600);
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+button.auth-forgot.auth-forgot--btn:hover {
+    text-decoration: underline;
+    color: var(--color-emerald-700);
+}
+
+.forgot-password-overlay {
+    z-index: 1100;
+}
+
+.forgot-password-dialog {
+    text-align: left;
+    max-width: 22rem;
+}
+
+.forgot-password-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 0 0 0.75rem;
+    padding-right: 1.75rem;
+}
+
+.forgot-pw-step {
+    display: none;
+}
+
+.forgot-pw-step.is-active {
+    display: block;
+}
+
+.forgot-pw-hint {
+    font-size: 0.8125rem;
+    color: var(--color-gray-600);
+    line-height: 1.45;
+    margin: 0 0 1rem;
+}
+
+.forgot-password-dialog .input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+    border-radius: 5px;
+}
+
+.forgot-password-dialog .auth-password-field {
+    margin-bottom: 0.75rem;
+}
+
+.forgot-password-dialog .auth-password-field .input {
+    margin-bottom: 0;
+}
+
+.forgot-password-dialog .btn {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0.25rem;
+}
+
+.forgot-password-dialog .forgot-pw-resend {
+    margin-top: 0.5rem;
+}
