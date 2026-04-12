@@ -235,16 +235,6 @@
         .payment-method-option.selected svg {
             color: var(--color-emerald-600);
         }
-        .payment-sbp-note {
-            background: var(--color-gray-50);
-            border-radius: 5px;
-            padding: 1rem 1.25rem;
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            color: var(--color-gray-600);
-            line-height: 1.5;
-            border: 1px solid var(--color-gray-100);
-        }
         .payment-card {
             background: var(--color-gray-50);
             border-radius: 5px;
@@ -370,15 +360,10 @@
                             <h2 class="form-step-title">Оплата</h2>
                         </div>
                         
-                        <div class="payment-method-option selected" data-method="card" onclick="selectPaymentMethod('card')">
+                        <div class="payment-method-option selected" data-method="card">
                             <input type="radio" name="payment-method" id="pay-card" value="card" checked>
                             <span class="silva-icon" data-icon="credit-card" data-w="24" data-h="24" aria-hidden="true"></span>
                             <span class="payment-method-option-label">Оплата картой</span>
-                        </div>
-                        <div class="payment-method-option" data-method="sbp" onclick="selectPaymentMethod('sbp')">
-                            <input type="radio" name="payment-method" id="pay-sbp" value="sbp">
-                            <span class="silva-icon" data-icon="qr-code" data-w="24" data-h="24" aria-hidden="true"></span>
-                            <span class="payment-method-option-label">Оплата через Систему Быстрых Платежей (СБП)</span>
                         </div>
                         
                         <div id="payment-card-block" class="payment-card payment-card-fields">
@@ -397,10 +382,6 @@
                                     <input type="text" id="card-cvv" class="form-input" placeholder="CVV">
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div id="payment-sbp-block" class="payment-sbp-note" style="display: none;">
-                            После нажатия на «Забронировать» у вас будет 15 минут для оплаты бронирования через Систему Быстрых Платежей, используя QR-код.
                         </div>
                         
                         <div style="display: flex; align-items: center; gap: 0.75rem; color: var(--color-gray-600); font-size: 0.875rem; margin-top: 1rem;">

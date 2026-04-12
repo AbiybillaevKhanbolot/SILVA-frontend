@@ -202,17 +202,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     };
     
-    window.selectPaymentMethod = function(method) {
-        const options = document.querySelectorAll('.payment-method-option');
-        const cardBlock = document.getElementById('payment-card-block');
-        const sbpBlock = document.getElementById('payment-sbp-block');
-        options.forEach(el => {
-            el.classList.toggle('selected', el.getAttribute('data-method') === method);
-            const radio = el.querySelector('input[type="radio"]');
-            if (radio) radio.checked = el.getAttribute('data-method') === method;
-        });
-        if (cardBlock) cardBlock.style.display = method === 'card' ? 'block' : 'none';
-        if (sbpBlock) sbpBlock.style.display = method === 'sbp' ? 'block' : 'none';
+    window.selectPaymentMethod = function() {
+        /* Оставлено для совместимости; способ оплаты — только карта (ЮKassa). */
     };
     
     window.processBooking = async function() {
