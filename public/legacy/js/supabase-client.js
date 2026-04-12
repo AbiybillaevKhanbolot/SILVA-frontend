@@ -1036,6 +1036,31 @@
         }
     }
 
+    /** Ссылка в письме «Подтвердите регистрацию» (должна быть в Redirect URLs в Supabase). */
+    function signupEmailRedirectUrl() {
+        try {
+            var win = window;
+            try {
+                if (win.parent && win.parent !== win && win.parent.location.origin === win.location.origin) {
+                    win = win.parent;
+                }
+            } catch (e) {}
+
+            var u = new URL(win.location.href);
+            var path = (u.pathname || '').replace(/\/+$/, '') || '/';
+
+            if (path === '/register') {
+                return u.origin + '/register';
+            }
+            if (path.indexOf('/legacy/register') !== -1 || (/register/i.test(path) && /\.html$/i.test(path))) {
+                return u.origin + path.split('?')[0];
+            }
+            return u.origin + '/register';
+        } catch (e) {
+            return typeof window !== 'undefined' && window.location ? window.location.origin + '/register' : '';
+        }
+    }
+
     /**
      * Шаг 1 сброса пароля: письмо с кодом (и/или ссылкой).
      * В Dashboard → Authentication → Email templates → «Reset password» добавьте в текст {{ .Token }}, иначе в письме может не быть цифрового кода.
@@ -1092,12 +1117,16 @@
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
 
+        var role = payload.role || 'guest';
         var signUpRes = await sb.auth.signUp({
             email: payload.email,
             password: payload.password,
             options: {
+                emailRedirectTo: signupEmailRedirectUrl(),
                 data: {
-                    full_name: payload.full_name || ''
+                    full_name: payload.full_name || '',
+                    role: role,
+                    newsletter: !!payload.newsletter
                 }
             }
         });
@@ -1105,24 +1134,63 @@
         if (!signUpRes.data || !signUpRes.data.user) return signUpRes.data;
 
         var userId = signUpRes.data.user.id;
+        var session = signUpRes.data.session;
         var profilePatch = {
             full_name: payload.full_name || '',
             email: payload.email,
-            role: payload.role || 'guest',
+            role: role,
             newsletter: !!payload.newsletter,
-            owner_verification_status: payload.role === 'owner' ? 'pending' : 'pending'
+            owner_verification_status: 'pending'
         };
 
-        var updateRes = await sb.from('profiles').update(profilePatch).eq('id', userId);
-        if (updateRes.error) throw updateRes.error;
-
-        // Fresh guest account starts from zero personal state.
-        if ((payload.role || 'guest') === 'guest') {
-            initPersonalGuestStorage(payload.email);
+        if (session) {
+            var updateRes = await sb.from('profiles').update(profilePatch).eq('id', userId);
+            if (updateRes.error) throw updateRes.error;
+            if (role === 'guest') {
+                initPersonalGuestStorage(payload.email);
+            }
+            await syncLocalUserFromSupabase();
+        } else {
+            clearLocalUser();
         }
 
-        await syncLocalUserFromSupabase();
         return signUpRes.data;
+    }
+
+    /**
+     * Подтверждение регистрации по коду из письма.
+     * В Dashboard → Email templates → «Confirm sign up» добавьте {{ .Token }}.
+     */
+    async function verifySignupOtp(email, token) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var e = normalizeEmail(email);
+        var t = String(token || '').replace(/\s/g, '');
+        if (!e || !t) throw new Error('Введите код из письма');
+        var res = await sb.auth.verifyOtp({ email: e, token: t, type: 'signup' });
+        if (res.error) {
+            res = await sb.auth.verifyOtp({ email: e, token: t, type: 'email' });
+        }
+        if (res.error) throw res.error;
+        await syncLocalUserFromSupabase();
+        var lu = readLocalUser();
+        if (lu && lu.role === 'guest' && lu.email) {
+            initPersonalGuestStorage(lu.email);
+        }
+        return res.data;
+    }
+
+    async function resendSignupConfirmationEmail(email) {
+        var sb = ensureClient();
+        if (!sb) throw new Error('Supabase SDK is not loaded');
+        var addr = normalizeEmail(email);
+        if (!addr) throw new Error('Укажите почту');
+        var res = await sb.auth.resend({
+            type: 'signup',
+            email: addr,
+            options: { emailRedirectTo: signupEmailRedirectUrl() }
+        });
+        if (res.error) throw res.error;
     }
 
     async function signOut() {
@@ -1196,6 +1264,8 @@
         setNewPasswordAfterRecovery: setNewPasswordAfterRecovery,
         signIn: signIn,
         signUp: signUp,
+        verifySignupOtp: verifySignupOtp,
+        resendSignupConfirmationEmail: resendSignupConfirmationEmail,
         signOut: signOut,
         saveProfile: saveProfile,
         uploadAvatar: uploadAvatar,
