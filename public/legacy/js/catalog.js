@@ -11,13 +11,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const mobileFilterOverlay = document.getElementById('mobile-filter-overlay');
     const mobileFilterPanel = document.getElementById('mobile-filter-panel');
     const mobileFilterClose = document.getElementById('mobile-filter-close');
-    const catalogFavoritesBtn = document.getElementById('catalog-favorites-btn');
-    const catalogFavoritesOverlay = document.getElementById('catalog-favorites-overlay');
-    const catalogFavoritesPanel = document.getElementById('catalog-favorites-panel');
-    const catalogFavoritesClose = document.getElementById('catalog-favorites-close');
-    const catalogFavoritesGrid = document.getElementById('catalog-favorites-grid');
-    const catalogFavoritesEmpty = document.getElementById('catalog-favorites-empty');
-    const catalogFavoritesBadge = document.getElementById('catalog-favorites-badge');
     
     let filters = {
         search: '',
@@ -435,142 +428,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
-    function forceCloseCatalogFavorites() {
-        if (!catalogFavoritesOverlay || !catalogFavoritesPanel) return;
-        catalogFavoritesPanel.classList.remove('open', 'closing');
-        catalogFavoritesOverlay.classList.remove('open');
-        catalogFavoritesOverlay.setAttribute('aria-hidden', 'true');
-        if (catalogFavoritesBtn) catalogFavoritesBtn.setAttribute('aria-expanded', 'false');
-    }
-
     function forceCloseMobileFilters() {
         if (!mobileFilterOverlay || !mobileFilterPanel) return;
         mobileFilterPanel.classList.remove('open', 'closing');
         mobileFilterOverlay.classList.remove('open');
     }
 
-    function updateCatalogFavoritesBadge() {
-        if (!catalogFavoritesBadge) return;
-        var n = 0;
-        try {
-            if (typeof getFavorites === 'function') n = getFavorites().length;
-            else {
-                var key = typeof getFavoritesStorageKey === 'function' ? getFavoritesStorageKey() : 'silva_favorites';
-                n = JSON.parse(localStorage.getItem(key) || '[]').length;
-            }
-        } catch (e) {}
-        if (n > 0) {
-            catalogFavoritesBadge.textContent = String(n);
-            catalogFavoritesBadge.style.display = 'flex';
-        } else {
-            catalogFavoritesBadge.style.display = 'none';
-        }
-    }
-
-    async function renderCatalogFavoritesPanel() {
-        if (!catalogFavoritesGrid || !catalogFavoritesEmpty) return;
-        if (
-            window.silvaSupabaseAuth &&
-            typeof window.silvaSupabaseAuth.fetchFavorites === 'function' &&
-            typeof window.isLoggedIn === 'function' &&
-            window.isLoggedIn()
-        ) {
-            try {
-                await window.silvaSupabaseAuth.fetchFavorites();
-            } catch (e) {}
-        }
-        if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
-            try {
-                await mockAPI.refreshPropertiesFromSupabase();
-            } catch (e) {}
-        }
-        var ids = [];
-        try {
-            var key = typeof getFavoritesStorageKey === 'function' ? getFavoritesStorageKey() : 'silva_favorites';
-            var parsed = JSON.parse(localStorage.getItem(key) || '[]');
-            ids = Array.isArray(parsed) ? parsed.map(function (x) { return String(x); }) : [];
-        } catch (e) {
-            ids = [];
-        }
-        var byId = {};
-        ids.forEach(function (fid) {
-            var p =
-                typeof mockAPI !== 'undefined' && mockAPI.getPropertyById ? mockAPI.getPropertyById(fid) : null;
-            if (p) byId[fid] = p;
-        });
-        var missing = ids.filter(function (fid) {
-            return !byId[fid];
-        });
-        if (
-            missing.length &&
-            window.silvaSupabaseAuth &&
-            typeof window.silvaSupabaseAuth.fetchPropertiesByIds === 'function'
-        ) {
-            try {
-                var fetched = await window.silvaSupabaseAuth.fetchPropertiesByIds(missing);
-                (fetched || []).forEach(function (p) {
-                    if (p && p.id != null) byId[String(p.id)] = p;
-                });
-                if (
-                    typeof mockAPI !== 'undefined' &&
-                    typeof mockAPI.appendPropertiesToCache === 'function' &&
-                    fetched &&
-                    fetched.length
-                ) {
-                    mockAPI.appendPropertiesToCache(fetched);
-                }
-            } catch (e) {}
-        }
-        var properties = ids
-            .map(function (fid) {
-                return byId[fid] || null;
-            })
-            .filter(Boolean);
-        if (properties.length === 0) {
-            catalogFavoritesEmpty.style.display = 'block';
-            catalogFavoritesGrid.innerHTML = '';
-            catalogFavoritesGrid.style.display = 'none';
-        } else {
-            catalogFavoritesEmpty.style.display = 'none';
-            catalogFavoritesGrid.style.display = 'grid';
-            if (typeof renderPropertyCards === 'function') {
-                renderPropertyCards(catalogFavoritesGrid, properties);
-            }
-        }
-        updateCatalogFavoritesBadge();
-    }
-
-    function openCatalogFavorites() {
-        if (!catalogFavoritesOverlay || !catalogFavoritesPanel) return;
-        forceCloseMobileFilters();
-        catalogFavoritesOverlay.classList.add('open');
-        catalogFavoritesOverlay.setAttribute('aria-hidden', 'false');
-        catalogFavoritesPanel.classList.remove('closing');
-        catalogFavoritesPanel.classList.add('open');
-        if (catalogFavoritesBtn) catalogFavoritesBtn.setAttribute('aria-expanded', 'true');
-        renderCatalogFavoritesPanel();
-    }
-
-    function closeCatalogFavorites() {
-        if (!catalogFavoritesOverlay || !catalogFavoritesPanel) return;
-        if (catalogFavoritesPanel.classList.contains('closing')) return;
-        catalogFavoritesPanel.classList.add('closing');
-        var handleAnimationEnd = function (event) {
-            if (event.target !== catalogFavoritesPanel) return;
-            catalogFavoritesPanel.classList.remove('open');
-            catalogFavoritesPanel.classList.remove('closing');
-            catalogFavoritesOverlay.classList.remove('open');
-            catalogFavoritesOverlay.setAttribute('aria-hidden', 'true');
-            catalogFavoritesPanel.removeEventListener('animationend', handleAnimationEnd);
-            if (catalogFavoritesBtn) catalogFavoritesBtn.setAttribute('aria-expanded', 'false');
-        };
-        catalogFavoritesPanel.addEventListener('animationend', handleAnimationEnd);
-    }
-
     // Mobile filter toggle with open/close animations
     function openMobileFilters() {
         if (!mobileFilterOverlay || !mobileFilterPanel) return;
-        forceCloseCatalogFavorites();
+        if (typeof window.silvaCloseHeaderFavorites === 'function') {
+            window.silvaCloseHeaderFavorites();
+        }
         mobileFilterOverlay.classList.add('open');
         mobileFilterPanel.classList.remove('closing');
         mobileFilterPanel.classList.add('open');
@@ -610,25 +479,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    if (catalogFavoritesBtn) {
-        catalogFavoritesBtn.addEventListener('click', openCatalogFavorites);
-    }
-    if (catalogFavoritesClose) {
-        catalogFavoritesClose.addEventListener('click', closeCatalogFavorites);
-    }
-    if (catalogFavoritesOverlay) {
-        catalogFavoritesOverlay.addEventListener('click', function (e) {
-            if (e.target === catalogFavoritesOverlay) closeCatalogFavorites();
-        });
-    }
-
-    window.addEventListener('silva-favorites-changed', function () {
-        updateCatalogFavoritesBadge();
-        if (catalogFavoritesPanel && catalogFavoritesPanel.classList.contains('open')) {
-            renderCatalogFavoritesPanel();
-        }
-    });
-    
     // Initial load
     smartSearch = parseSmartSearchParams();
     if (smartSearch) {
@@ -642,6 +492,5 @@ document.addEventListener('DOMContentLoaded', async function() {
     initFilters();
     filterProperties();
     updateActiveFilters();
-    updateCatalogFavoritesBadge();
 });
 

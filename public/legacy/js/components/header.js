@@ -37,6 +37,245 @@ async function silvaPerformLogout() {
 
 window.silvaOpenLogoutConfirmModal = silvaOpenLogoutConfirmModal;
 
+/** Избранное для гостя (без регистрации): модалка в body, кнопка-сердечко в шапке */
+(function () {
+    var OV_ID = 'header-favorites-overlay';
+    var PN_ID = 'header-favorites-panel';
+
+    function ensureDom() {
+        if (document.getElementById(OV_ID)) return;
+        document.body.insertAdjacentHTML(
+            'beforeend',
+            '<div class="header-favorites-overlay" id="' +
+                OV_ID +
+                '" aria-hidden="true">' +
+                '<div class="header-favorites-panel" id="' +
+                PN_ID +
+                '" role="dialog" aria-modal="true" aria-labelledby="header-favorites-title">' +
+                '<div class="mobile-filter-header">' +
+                '<h3 id="header-favorites-title" style="font-weight:600;color:var(--color-gray-900);">Избранное</h3>' +
+                '<button type="button" class="mobile-filter-close" id="header-favorites-close" aria-label="Закрыть избранное"><span class="close-x">\u00d7</span></button>' +
+                '</div>' +
+                '<p class="header-favorites-empty" id="header-favorites-empty" style="display:none;">' +
+                'Пока ничего не сохранено. Нажмите на сердечко на карточке объекта — он появится здесь. Без входа список хранится только в этом браузере.' +
+                '</p>' +
+                '<div id="header-favorites-grid" class="properties-grid" style="display:none;"></div>' +
+                '</div></div>'
+        );
+    }
+
+    function hfGetFavoritesCount() {
+        var n = 0;
+        try {
+            if (typeof getFavorites === 'function') n = getFavorites().length;
+            else {
+                var key =
+                    typeof getFavoritesStorageKey === 'function'
+                        ? getFavoritesStorageKey()
+                        : 'silva_favorites';
+                var raw = JSON.parse(localStorage.getItem(key) || '[]');
+                n = Array.isArray(raw) ? raw.length : 0;
+            }
+        } catch (e) {}
+        return n;
+    }
+
+    function updateBadges() {
+        var n = hfGetFavoritesCount();
+        document.querySelectorAll('[data-header-favorites-badge]').forEach(function (el) {
+            if (n > 0) {
+                el.textContent = String(n);
+                el.style.display = 'flex';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+    }
+
+    async function renderPanel() {
+        ensureDom();
+        var grid = document.getElementById('header-favorites-grid');
+        var emptyEl = document.getElementById('header-favorites-empty');
+        if (!grid || !emptyEl) return;
+
+        if (
+            window.silvaSupabaseAuth &&
+            typeof window.silvaSupabaseAuth.fetchFavorites === 'function' &&
+            typeof window.isLoggedIn === 'function' &&
+            window.isLoggedIn()
+        ) {
+            try {
+                await window.silvaSupabaseAuth.fetchFavorites();
+            } catch (e) {}
+        }
+        if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
+            try {
+                await mockAPI.refreshPropertiesFromSupabase();
+            } catch (e) {}
+        }
+
+        var ids = [];
+        try {
+            var key =
+                typeof getFavoritesStorageKey === 'function'
+                    ? getFavoritesStorageKey()
+                    : 'silva_favorites';
+            var parsed = JSON.parse(localStorage.getItem(key) || '[]');
+            ids = Array.isArray(parsed) ? parsed.map(function (x) { return String(x); }) : [];
+        } catch (e) {
+            ids = [];
+        }
+
+        var byId = {};
+        ids.forEach(function (fid) {
+            var p =
+                typeof mockAPI !== 'undefined' && mockAPI.getPropertyById ? mockAPI.getPropertyById(fid) : null;
+            if (p) byId[fid] = p;
+        });
+        var missing = ids.filter(function (fid) {
+            return !byId[fid];
+        });
+        if (
+            missing.length &&
+            window.silvaSupabaseAuth &&
+            typeof window.silvaSupabaseAuth.fetchPropertiesByIds === 'function'
+        ) {
+            try {
+                var fetched = await window.silvaSupabaseAuth.fetchPropertiesByIds(missing);
+                (fetched || []).forEach(function (p) {
+                    if (p && p.id != null) byId[String(p.id)] = p;
+                });
+                if (
+                    typeof mockAPI !== 'undefined' &&
+                    typeof mockAPI.appendPropertiesToCache === 'function' &&
+                    fetched &&
+                    fetched.length
+                ) {
+                    mockAPI.appendPropertiesToCache(fetched);
+                }
+            } catch (e) {}
+        }
+
+        var properties = ids
+            .map(function (fid) {
+                return byId[fid] || null;
+            })
+            .filter(Boolean);
+
+        if (properties.length === 0) {
+            emptyEl.style.display = 'block';
+            grid.innerHTML = '';
+            grid.style.display = 'none';
+        } else {
+            emptyEl.style.display = 'none';
+            grid.style.display = 'grid';
+            if (typeof renderPropertyCards === 'function') {
+                renderPropertyCards(grid, properties);
+            } else {
+                var lh =
+                    typeof silvaLegacyHref === 'function'
+                        ? silvaLegacyHref
+                        : function (f) {
+                              return f;
+                          };
+                grid.innerHTML = properties
+                    .map(function (p) {
+                        var t = (p.title || 'Объект').replace(/</g, '&lt;');
+                        return (
+                            '<a class="header-auth-link" style="display:block;margin-bottom:0.5rem;" href="' +
+                            lh('property.html') +
+                            '?id=' +
+                            encodeURIComponent(p.id) +
+                            '">' +
+                            t +
+                            '</a>'
+                        );
+                    })
+                    .join('');
+            }
+        }
+        updateBadges();
+    }
+
+    function silvaOpenHeaderFavorites() {
+        ensureDom();
+        var ov = document.getElementById(OV_ID);
+        var pn = document.getElementById(PN_ID);
+        if (!ov || !pn) return;
+        ov.classList.add('open');
+        ov.setAttribute('aria-hidden', 'false');
+        pn.classList.remove('closing');
+        pn.classList.add('open');
+        document.querySelectorAll('[data-header-favorites-trigger]').forEach(function (btn) {
+            btn.setAttribute('aria-expanded', 'true');
+        });
+        renderPanel();
+    }
+
+    function silvaCloseHeaderFavorites() {
+        var ov = document.getElementById(OV_ID);
+        var pn = document.getElementById(PN_ID);
+        if (!ov || !pn) return;
+        if (pn.classList.contains('closing')) return;
+        pn.classList.add('closing');
+        var onEnd = function (event) {
+            if (event.target !== pn) return;
+            pn.classList.remove('open');
+            pn.classList.remove('closing');
+            ov.classList.remove('open');
+            ov.setAttribute('aria-hidden', 'true');
+            pn.removeEventListener('animationend', onEnd);
+            document.querySelectorAll('[data-header-favorites-trigger]').forEach(function (btn) {
+                btn.setAttribute('aria-expanded', 'false');
+            });
+        };
+        pn.addEventListener('animationend', onEnd);
+    }
+
+    function bindGlobalOnce() {
+        if (window._silvaHeaderFavoritesBound) return;
+        window._silvaHeaderFavoritesBound = true;
+        document.body.addEventListener('click', function (e) {
+            if (e.target.closest('[data-header-favorites-trigger]')) {
+                e.preventDefault();
+                silvaOpenHeaderFavorites();
+                return;
+            }
+            if (e.target.closest('#header-favorites-close')) {
+                e.preventDefault();
+                silvaCloseHeaderFavorites();
+                return;
+            }
+            if (e.target.id === OV_ID) {
+                silvaCloseHeaderFavorites();
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            var ov = document.getElementById(OV_ID);
+            var pn = document.getElementById(PN_ID);
+            if (ov && ov.classList.contains('open') && pn && pn.classList.contains('open')) {
+                silvaCloseHeaderFavorites();
+            }
+        });
+        window.addEventListener('silva-favorites-changed', function () {
+            updateBadges();
+            var pn = document.getElementById(PN_ID);
+            if (pn && pn.classList.contains('open')) renderPanel();
+        });
+    }
+
+    window.silvaCloseHeaderFavorites = silvaCloseHeaderFavorites;
+    window.silvaOpenHeaderFavorites = silvaOpenHeaderFavorites;
+    window.silvaUpdateHeaderFavoritesBadges = updateBadges;
+    window.silvaEnsureHeaderFavoritesDom = ensureDom;
+    window.silvaBindHeaderGuestFavorites = function () {
+        bindGlobalOnce();
+        ensureDom();
+        updateBadges();
+    };
+})();
+
 function initHeader() {
     const headerContainer = document.getElementById('header-container');
     if (!headerContainer) return;
@@ -165,6 +404,10 @@ function initHeader() {
             `
             : `
                         <div class="header-auth-buttons">
+                            <button type="button" class="header-auth-link header-auth-link-primary header-favorites-icon-btn" data-header-favorites-trigger="1" aria-label="Избранное" aria-expanded="false" aria-controls="header-favorites-panel">
+                                ${ic('heart', 20, 20, { fill: 'none' })}
+                                <span class="filter-badge header-favorites-badge" data-header-favorites-badge="1" style="display: none;">0</span>
+                            </button>
                             <a href="${lh('login.html')}" class="header-auth-link">Вход</a>
                             <a href="${lh('register.html')}" class="header-auth-link header-auth-link-primary">Регистрация</a>
                         </div>`;
@@ -218,7 +461,14 @@ function initHeader() {
                             : (isOwner
                                 ? '<a href="' + lh('profile.html') + '" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="' + lh('owner-dashboard.html') + '" class="mobile-menu-link">Панель владельца</a>'
                                 : '<a href="' + lh('profile.html') + '" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>'))
-                        : '<a href="' + lh('login.html') + '" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="' + lh('register.html') + '" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
+                        : '<button type="button" class="header-auth-link header-auth-link-primary header-favorites-icon-btn mobile-menu-favorites-btn" data-header-favorites-trigger="1" aria-label="Избранное">' +
+                            (typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg('heart', 20, 20, { fill: 'none' }) : '') +
+                            '<span class="filter-badge header-favorites-badge" data-header-favorites-badge="1" style="display: none;">0</span></button>' +
+                            '<a href="' +
+                            lh('login.html') +
+                            '" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="' +
+                            lh('register.html') +
+                            '" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
                     }</div>
                 </div>
             </div>
@@ -316,6 +566,14 @@ function initHeader() {
                 var m = document.getElementById('header-logout-modal');
                 if (m && m.classList.contains('is-open')) silvaCloseLogoutConfirmModal();
             });
+        }
+
+        if (!loggedIn) {
+            if (typeof window.silvaBindHeaderGuestFavorites === 'function') {
+                window.silvaBindHeaderGuestFavorites();
+            }
+        } else if (typeof window.silvaCloseHeaderFavorites === 'function') {
+            window.silvaCloseHeaderFavorites();
         }
     }
 

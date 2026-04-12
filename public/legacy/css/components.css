@@ -1450,3 +1450,283 @@ body.page-home .feedback-section .feedback-form button.header-auth-link-primary:
     border-color: var(--color-gray-300) !important;
 }
 
+/* Гость: кнопка «Избранное» (сердечко) слева от «Вход» */
+.header-favorites-icon-btn {
+    position: relative;
+    padding: 0 0.625rem;
+    min-width: var(--silva-btn-fill-height, 36px);
+    justify-content: center;
+}
+
+.header-favorites-icon-btn svg {
+    flex-shrink: 0;
+}
+
+.mobile-menu-favorites-btn {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Модалка избранного (шапка, все страницы) */
+.header-favorites-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 55;
+    display: none;
+}
+
+.header-favorites-overlay.open {
+    display: block;
+}
+
+.header-favorites-panel {
+    position: fixed;
+    right: 0;
+    top: 5.5rem;
+    bottom: 1.5rem;
+    width: 100%;
+    max-width: 28rem;
+    background: var(--color-white);
+    z-index: 56;
+    overflow-y: auto;
+    padding: 1.5rem;
+    transform: translateX(100%) scale(0.98);
+    opacity: 0;
+    border-radius: 8px 0 0 8px;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.header-favorites-panel.open {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    animation: silvaHeaderFavSlideIn 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.header-favorites-panel.closing {
+    animation: silvaHeaderFavSlideOut 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes silvaHeaderFavSlideIn {
+    0% {
+        transform: translateX(100%) scale(0.96);
+        opacity: 0;
+    }
+    60% {
+        transform: translateX(-4%) scale(1.02);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes silvaHeaderFavSlideOut {
+    0% {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+    40% {
+        transform: translateX(-2%) scale(0.99);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100%) scale(0.96);
+        opacity: 0;
+    }
+}
+
+.header-favorites-panel .mobile-filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.mobile-filter-close .close-x {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+}
+
+.header-favorites-panel .mobile-filter-close {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-gray-200);
+    background: var(--color-white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--color-gray-600);
+    flex-shrink: 0;
+}
+
+.header-favorites-panel .mobile-filter-close:hover {
+    background: var(--color-gray-50);
+    color: var(--color-gray-900);
+}
+
+#header-favorites-panel.header-favorites-panel {
+    max-width: min(100%, 42rem);
+}
+
+@media (min-width: 1024px) {
+    #header-favorites-panel.header-favorites-panel {
+        max-width: min(100%, 56rem);
+    }
+}
+
+#header-favorites-grid.properties-grid {
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 520px) {
+    #header-favorites-grid.properties-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 900px) {
+    #header-favorites-grid.properties-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+#header-favorites-panel .property-card {
+    border-radius: 5px;
+}
+
+#header-favorites-panel .property-card-image {
+    height: 5.25rem;
+    min-height: 5.25rem;
+    aspect-ratio: auto;
+}
+
+#header-favorites-panel .property-card-image img {
+    transition: transform 0.35s ease;
+}
+
+#header-favorites-panel .property-card-placeholder-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+#header-favorites-panel .property-card-favorite {
+    top: 0.35rem;
+    right: 0.35rem;
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 5px;
+}
+
+#header-favorites-panel .property-card-favorite svg {
+    width: 0.8125rem;
+    height: 0.8125rem;
+}
+
+#header-favorites-panel .property-card-rating--overlay {
+    top: 0.35rem;
+    left: 0.35rem;
+    padding: 0.1rem 0.28rem;
+    gap: 0.15rem;
+}
+
+#header-favorites-panel .property-card-rating-star {
+    width: 0.65rem;
+    height: 0.65rem;
+}
+
+#header-favorites-panel .property-card-rating--overlay .property-card-rating-value,
+#header-favorites-panel .property-card-rating--overlay .property-card-rating-count {
+    font-size: 0.65rem;
+}
+
+#header-favorites-panel .property-card-content {
+    padding: 0.45rem 0.5rem 0.5rem;
+    gap: 0.2rem;
+}
+
+#header-favorites-panel .property-card-title {
+    font-size: 0.75rem;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#header-favorites-panel .property-card-location svg {
+    width: 0.65rem;
+    height: 0.65rem;
+}
+
+#header-favorites-panel .property-card-location-text {
+    font-size: 0.65rem;
+}
+
+#header-favorites-panel .property-card-details {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding-top: 0.1rem;
+    align-items: flex-start;
+}
+
+#header-favorites-panel .property-card-details-left {
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+#header-favorites-panel .property-card-detail {
+    font-size: 0.65rem;
+    gap: 0.15rem;
+}
+
+#header-favorites-panel .property-card-detail svg {
+    width: 0.65rem;
+    height: 0.65rem;
+}
+
+#header-favorites-panel .property-card-price-amount {
+    font-size: 0.75rem;
+}
+
+#header-favorites-panel .property-card-price-unit {
+    font-size: 0.6rem;
+}
+
+#header-favorites-panel .property-card-more {
+    --silva-btn-fill-height: 26px;
+    --silva-btn-font-size: 0.6875rem;
+    margin-top: 0.15rem;
+    padding: 0 0.5rem;
+    min-height: 26px;
+    height: 26px;
+}
+
+.header-favorites-empty {
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--color-gray-600);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+.header-favorites-badge.filter-badge {
+    position: absolute;
+    top: -0.35rem;
+    right: -0.35rem;
+    min-width: 1.125rem;
+    height: 1.125rem;
+    font-size: 0.7rem;
+    border-radius: 5px;
+}
+
