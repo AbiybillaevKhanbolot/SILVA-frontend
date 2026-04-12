@@ -135,9 +135,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (propertyStatsText) {
         propertyStatsText.textContent = [
             `Гостей: до ${property.max_guests}`,
-            `Спален: ${property.bedrooms || 1}`,
-            `Ванных: ${property.bathrooms || 1}`,
-            `Площадь: ${property.area || 100} м²`
+            `Спален: ${property.bedrooms != null ? property.bedrooms : 1}`,
+            `Санузлов: ${property.bathrooms != null ? property.bathrooms : 1}`,
+            `Площадь: ${property.area != null ? property.area : 50} м²`
         ].join(' · ');
     }
 

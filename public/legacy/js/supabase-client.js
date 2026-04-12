@@ -144,9 +144,9 @@
             property_type: row.property_type || 'cottage',
             price_per_night: Number(row.price_per_night) || 0,
             max_guests: Number(row.max_guests) || 1,
-            bedrooms: 1,
-            bathrooms: 1,
-            area: 50,
+            bedrooms: row.bedrooms != null && row.bedrooms !== '' ? Number(row.bedrooms) : 1,
+            bathrooms: row.bathrooms != null && row.bathrooms !== '' ? Number(row.bathrooms) : 1,
+            area: row.area != null && row.area !== '' ? Number(row.area) : 50,
             rating: Number(row.rating) || 0,
             reviews_count: Number(row.reviews_count) || 0,
             gallery_images: gallery,
@@ -179,7 +179,7 @@
         var q = await sb
             .from('properties')
             .select(
-                'id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, created_at, amenities'
+                'id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, bedrooms, bathrooms, area, status, created_at, amenities'
             )
             .order('created_at', { ascending: false });
         if (q.error) throw q.error;
@@ -221,7 +221,7 @@
         var q = await sb
             .from('properties')
             .select(
-                'id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, status, created_at, amenities'
+                'id, owner_id, title, address, region, property_type, description, price_per_night, max_guests, bedrooms, bathrooms, area, status, created_at, amenities'
             )
             .in('id', rawIds);
         if (q.error) return [];
@@ -274,6 +274,18 @@
             description: payload.description || null,
             price_per_night: Number(payload.price_per_night) || 0,
             max_guests: Number(payload.max_guests) || 1,
+            bedrooms: (function () {
+                var n = parseInt(payload.bedrooms, 10);
+                return isNaN(n) ? 1 : Math.max(0, n);
+            })(),
+            bathrooms: (function () {
+                var n = parseInt(payload.bathrooms, 10);
+                return isNaN(n) ? 1 : Math.max(1, n);
+            })(),
+            area: (function () {
+                var n = parseInt(payload.area, 10);
+                return isNaN(n) ? 50 : Math.max(1, n);
+            })(),
             status: payload.status === 'published' ? 'published' : 'draft',
             rating: Number(payload.rating) || 0,
             reviews_count: Number(payload.reviews_count) || 0,
