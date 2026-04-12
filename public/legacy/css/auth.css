@@ -117,17 +117,17 @@ body.auth-body textarea {
     }
 }
 
-/* Регистрация: без вертикального центрирования — при переключении «Владелец» верх формы не смещается вверх */
+/* Регистрация: flex-start — верх не прыгает при появлении полей владельца; отступ сверху имитирует прежнее «почти по центру» */
 body.auth-body--register .auth-form-column {
     justify-content: flex-start;
-    padding-top: 3.75rem;
+    padding-top: clamp(4.5rem, 18vh, 10rem);
     padding-bottom: 2rem;
     box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
     body.auth-body--register .auth-form-column {
-        padding-top: 4rem;
+        padding-top: clamp(5rem, 20vh, 11rem);
         padding-bottom: 2.5rem;
     }
 }
