@@ -96,16 +96,16 @@ body.auth-body textarea {
     border: 1px solid var(--color-gray-100);
 }
 
-/* На широких экранах ограничиваем ширину карточки — высота идёт от aspect-ratio, без растягивания на всю колонку */
+/* На широких экранах крупное превью, но с потолком — не раздувается на весь ультраширокий монитор */
 @media (min-width: 768px) {
     .auth-visual-card {
-        width: min(100%, 30rem);
+        width: min(100%, 40rem);
     }
 }
 
 @media (min-width: 1200px) {
     .auth-visual-card {
-        width: min(100%, 32rem);
+        width: min(100%, 48rem);
     }
 }
 
