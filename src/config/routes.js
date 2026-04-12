@@ -21,4 +21,6 @@ export const legacyRoutes = [
   { path: "/admin", file: "admin.html" },
   { path: "/privacy", file: "privacy.html" },
   { path: "/terms", file: "terms.html" },
+  { path: "/user-agreement", file: "user-agreement.html" },
+  { path: "/payment-terms", file: "payment-terms.html" },
 ];

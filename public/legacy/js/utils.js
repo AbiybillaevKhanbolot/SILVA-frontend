@@ -17,7 +17,9 @@ function createPageUrl(pageName) {
         'OwnerPropertyEdit': 'owner-property-edit.html',
         'OwnerBookings': 'owner-bookings.html',
         'OwnerReviews': 'owner-reviews.html',
-        'AdminPanel': 'admin.html'
+        'AdminPanel': 'admin.html',
+        'UserAgreement': 'user-agreement.html',
+        'PaymentTerms': 'payment-terms.html'
     };
     return pages[pageName] || 'index.html';
 }

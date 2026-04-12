@@ -272,6 +272,14 @@
         .booking-checkbox-row.required label {
             color: var(--color-gray-700);
         }
+        .booking-checkbox-row label a {
+            color: var(--color-emerald-700);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .booking-checkbox-row label a:hover {
+            color: var(--color-emerald-800);
+        }
         .booking-executor-info {
             margin-top: 2rem;
             padding-top: 1.5rem;
@@ -411,7 +419,7 @@
                         </div>
                         <div class="booking-checkbox-row required">
                             <input type="checkbox" id="rules-consent" required>
-                            <label for="rules-consent">Нажимая «Забронировать», я подтверждаю, что ознакомился с правилами бронирования и принимаю их</label>
+                            <label for="rules-consent">Нажимая «Забронировать», я подтверждаю, что ознакомился с <a href="user-agreement.html#bronirovanie" target="_blank" rel="noopener noreferrer">правилами бронирования</a>, <a href="payment-terms.html" target="_blank" rel="noopener noreferrer">условиями оплаты</a> и принимаю их</label>
                         </div>
                         <div class="booking-executor-info">
                             <strong>Информация об исполнителе.</strong> ООО «Сильва», ИНН 1234567890, юридический адрес: г. Санкт-Петербург, ул. Примерная, д. 1. Услуги по бронированию размещения предоставляются на основании оферты.

@@ -2665,3 +2665,75 @@ body.page-contacts .feedback-section .feedback-form button.header-auth-link-prim
     border-color: var(--color-gray-300) !important;
 }
 
+/* ── Юридические документы (соглашения, политика) ───────────────────────── */
+.legal-doc-page .legal-doc {
+    padding: 6rem 0 4rem;
+}
+
+.legal-doc__inner {
+    max-width: 48rem;
+    margin: 0 auto;
+}
+
+.legal-doc__inner h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin: 0 0 0.5rem;
+    line-height: 1.25;
+}
+
+.legal-doc__meta {
+    font-size: 0.875rem;
+    color: var(--color-gray-500);
+    margin: 0 0 2rem;
+    line-height: 1.5;
+}
+
+.legal-doc__inner h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin: 2rem 0 0.75rem;
+    scroll-margin-top: 5rem;
+}
+
+.legal-doc__inner h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-gray-800);
+    margin: 1.25rem 0 0.5rem;
+}
+
+.legal-doc__inner p,
+.legal-doc__inner li {
+    font-size: 0.9375rem;
+    color: var(--color-gray-600);
+    line-height: 1.65;
+    margin: 0 0 0.75rem;
+}
+
+.legal-doc__inner ul,
+.legal-doc__inner ol {
+    margin: 0 0 1rem;
+    padding-left: 1.35rem;
+}
+
+.legal-doc__inner a {
+    color: var(--color-emerald-700);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.legal-doc__inner a:hover {
+    color: var(--color-emerald-800);
+}
+
+.legal-doc__note {
+    font-size: 0.8125rem;
+    color: var(--color-gray-500);
+    border-left: 3px solid var(--color-gray-200);
+    padding-left: 1rem;
+    margin-top: 2rem;
+}
+

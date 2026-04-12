@@ -77,9 +77,10 @@ function initFooter() {
                         © ${currentYear} Silva. Все права защищены.
                     </p>
                     <div class="footer-legal">
-                        <a href="#" class="footer-legal-link">Пользовательское соглашение</a>
-                        <a href="#" class="footer-legal-link">Политика конфиденциальности</a>
-                        <a href="#" class="footer-legal-link">Условия оплаты</a>
+                        <a href="${lh('user-agreement.html')}" class="footer-legal-link">Пользовательское соглашение</a>
+                        <a href="${lh('terms.html')}" class="footer-legal-link">Условия использования</a>
+                        <a href="${lh('privacy.html')}" class="footer-legal-link">Политика конфиденциальности</a>
+                        <a href="${lh('payment-terms.html')}" class="footer-legal-link">Условия оплаты</a>
                     </div>
                 </div>
             </div>
