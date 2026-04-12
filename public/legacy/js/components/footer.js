@@ -49,7 +49,6 @@ function initFooter() {
                         <h4 class="footer-column-title">Владельцам</h4>
                         <ul class="footer-links">
                             <li><a href="${lh('owner-properties.html')}" class="footer-link footer-link-place-object">Разместить объект</a></li>
-                            <li><a href="#" class="footer-link footer-link-require-auth">Условия сотрудничества</a></li>
                             <li><a href="${lh('profile.html')}" class="footer-link footer-link-profile">Личный кабинет</a></li>
                             <li><a href="${lh('contact.html')}" class="footer-link">Поддержка</a></li>
                         </ul>
@@ -141,15 +140,6 @@ function initFooter() {
             }
         });
     }
-
-    footerContainer.querySelectorAll('.footer-link-require-auth').forEach(function(link) {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
-                if (typeof window.showAuthRequiredModal === 'function') window.showAuthRequiredModal();
-            }
-        });
-    });
 }
 
 // Initialize when DOM is ready
