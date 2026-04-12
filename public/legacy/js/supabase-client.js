@@ -434,6 +434,103 @@
         return 'full';
     }
 
+    /** Локальный YYYY-MM-DD для сравнения с датами из Supabase (date). */
+    function toBookingDateKeyLocal(d) {
+        if (!d || !(d instanceof Date) || isNaN(d.getTime())) return null;
+        var y = d.getFullYear();
+        var m = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + day;
+    }
+
+    function parseBookingDateKeyToLocal(key) {
+        if (!key || typeof key !== 'string') return null;
+        var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key.trim());
+        if (!m) return null;
+        return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+    }
+
+    function bookingDateKeyAddDays(key, deltaDays) {
+        if (!key || typeof key !== 'string') return null;
+        var p = key.split('-');
+        if (p.length !== 3) return null;
+        var dt = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+        if (isNaN(dt.getTime())) return null;
+        dt.setDate(dt.getDate() + (parseInt(deltaDays, 10) || 0));
+        return toBookingDateKeyLocal(dt);
+    }
+
+    /** Ночь dateKey занята, если есть бронь [check_in, check_out) в статусе pending/confirmed/completed. */
+    function isNightBookedInRanges(dateKey, ranges) {
+        if (!dateKey || !ranges || !ranges.length) return false;
+        for (var i = 0; i < ranges.length; i++) {
+            var r = ranges[i];
+            var a = String(r.check_in == null ? '' : r.check_in).slice(0, 10);
+            var b = String(r.check_out == null ? '' : r.check_out).slice(0, 10);
+            if (a && b && dateKey >= a && dateKey < b) return true;
+        }
+        return false;
+    }
+
+    function isStayAvailableInRanges(checkinKey, checkoutKey, ranges) {
+        if (!checkinKey || !checkoutKey || checkinKey >= checkoutKey) return false;
+        var d = checkinKey;
+        var guard = 0;
+        while (d < checkoutKey) {
+            if (isNightBookedInRanges(d, ranges)) return false;
+            d = bookingDateKeyAddDays(d, 1);
+            if (guard++ > 3660) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Первый доступный период: check-in и check-out (локальные Date), ровно nightCount ночей.
+     * nightCount = разница в днях между выездом и заездом (как на странице объекта).
+     */
+    function findFirstAvailableStayDates(todayStart, ranges, nightCount) {
+        var nights = Math.max(1, parseInt(nightCount, 10) || 1);
+        var start = new Date(todayStart);
+        start.setHours(0, 0, 0, 0);
+        var ci = new Date(start);
+        ci.setDate(ci.getDate() + 1);
+        for (var iter = 0; iter < 800; iter++) {
+            var ciKey = toBookingDateKeyLocal(ci);
+            if (!ciKey) break;
+            var coKey = bookingDateKeyAddDays(ciKey, nights);
+            if (coKey && isStayAvailableInRanges(ciKey, coKey, ranges)) {
+                var coParts = coKey.split('-').map(Number);
+                return {
+                    checkin: new Date(ci.getFullYear(), ci.getMonth(), ci.getDate()),
+                    checkout: new Date(coParts[0], coParts[1] - 1, coParts[2])
+                };
+            }
+            ci.setDate(ci.getDate() + 1);
+        }
+        return null;
+    }
+
+    /** Занятые интервалы с RPC property_booked_date_ranges (anon может вызывать). */
+    async function fetchPropertyBookedDateRanges(propertyIdRaw) {
+        var sb = ensureClient();
+        if (!sb) return [];
+        var pid = normalizeBookingPropertyId(propertyIdRaw);
+        var param = pid != null ? String(pid).trim() : String(propertyIdRaw || '').trim();
+        if (!param) return [];
+        if (/^\d+$/.test(param)) {
+            var ni = parseInt(param, 10);
+            if (!isNaN(ni)) param = String(ni);
+        } else {
+            param = param.toLowerCase();
+        }
+        var q = await sb.rpc('property_booked_date_ranges', { p_property_id: param });
+        if (q.error) {
+            console.warn('property_booked_date_ranges', q.error);
+            return [];
+        }
+        return q.data || [];
+    }
+
     /**
      * property_id в public.reviews — как у public.properties.id:
      * uuid (прод) или положительный bigint (старая схема миграций SILVA).
@@ -1038,6 +1135,12 @@
         fetchFavorites: fetchFavorites,
         setFavorite: setFavorite,
         createBooking: createBooking,
+        fetchPropertyBookedDateRanges: fetchPropertyBookedDateRanges,
+        toBookingDateKeyLocal: toBookingDateKeyLocal,
+        parseBookingDateKeyToLocal: parseBookingDateKeyToLocal,
+        isNightBookedInRanges: isNightBookedInRanges,
+        isStayAvailableInRanges: isStayAvailableInRanges,
+        findFirstAvailableStayDates: findFirstAvailableStayDates,
         fetchMyBookings: fetchMyBookings,
         cancelBooking: cancelBooking,
         fetchBookingsByPropertyIds: fetchBookingsByPropertyIds,

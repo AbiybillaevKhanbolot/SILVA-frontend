@@ -766,6 +766,19 @@
             cursor: not-allowed;
             pointer-events: none;
         }
+        .booking-date-dropdown .calendar-day.booked {
+            color: var(--color-gray-400);
+            background: var(--color-gray-100);
+            cursor: not-allowed;
+            pointer-events: none;
+            text-decoration: line-through;
+        }
+        .booking-date-dropdown .calendar-day.booked.in-range,
+        .booking-date-dropdown .calendar-day.booked.range-start,
+        .booking-date-dropdown .calendar-day.booked.range-end {
+            background: var(--color-gray-100);
+            color: var(--color-gray-400);
+        }
         @media (max-width: 767px) {
             .booking-date-dropdown {
                 position: fixed;

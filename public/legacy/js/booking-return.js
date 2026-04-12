@@ -187,6 +187,10 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     } catch (e) {
         var m = e && e.message ? String(e.message) : 'Ошибка';
+        if (/BOOKING_DATES_OVERLAP|23514|занят/i.test(m)) {
+            m =
+                'Эти даты уже заняты другим гостём. Деньги за оплату обычно возвращаются автоматически по правилам ЮKassa; при необходимости обратитесь в поддержку с номером платежа.';
+        }
         setError(
             'Не удалось завершить бронирование',
             m,

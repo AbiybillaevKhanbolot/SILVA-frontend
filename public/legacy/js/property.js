@@ -305,6 +305,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Render booking card with interactive calendar and price calculation
     const bookingCard = document.getElementById('booking-card');
     if (bookingCard) {
+        var bookedRanges = [];
+        if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchPropertyBookedDateRanges === 'function') {
+            try {
+                bookedRanges = await window.silvaSupabaseAuth.fetchPropertyBookedDateRanges(propertyId);
+            } catch (errBr) {
+                console.warn('fetchPropertyBookedDateRanges', errBr);
+            }
+        }
+
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(0, 0, 0, 0);
@@ -314,6 +325,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         let checkinDate = new Date(tomorrow);
         let checkoutDate = new Date(dayAfter);
+        var defaultNightSpan = Math.max(
+            1,
+            Math.round((checkoutDate - checkinDate) / (1000 * 60 * 60 * 24))
+        );
+        if (
+            window.silvaSupabaseAuth &&
+            typeof window.silvaSupabaseAuth.findFirstAvailableStayDates === 'function'
+        ) {
+            var snapped = window.silvaSupabaseAuth.findFirstAvailableStayDates(
+                todayStart,
+                bookedRanges,
+                defaultNightSpan
+            );
+            if (snapped && snapped.checkin && snapped.checkout) {
+                checkinDate = snapped.checkin;
+                checkoutDate = snapped.checkout;
+                checkinDate.setHours(0, 0, 0, 0);
+                checkoutDate.setHours(0, 0, 0, 0);
+            }
+        }
         let adultsCount = 2;
         let childrenCount = 0;
         
@@ -406,6 +437,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+
+            var auth = window.silvaSupabaseAuth;
+            var ciKeyForRange =
+                auth && typeof auth.toBookingDateKeyLocal === 'function'
+                    ? auth.toBookingDateKeyLocal(checkinDate)
+                    : null;
             
             for (let i = startingDayOfWeek - 1; i >= 0; i--) {
                 const dayEl = document.createElement('div');
@@ -421,6 +458,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 dayEl.className = 'calendar-day';
                 dayEl.textContent = day;
                 dayEl.dataset.date = date.toISOString();
+                if (auth && typeof auth.toBookingDateKeyLocal === 'function') {
+                    var dk = auth.toBookingDateKeyLocal(date);
+                    if (dk) dayEl.dataset.dateKey = dk;
+                }
                 
                 if (date.getTime() === today.getTime()) {
                     dayEl.classList.add('today');
@@ -443,6 +484,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 if (minDate && date < minDate) {
                     dayEl.classList.add('disabled');
+                }
+
+                if (auth && typeof auth.isNightBookedInRanges === 'function') {
+                    var dateKey = auth.toBookingDateKeyLocal(date);
+                    if (!isCheckout && dateKey && auth.isNightBookedInRanges(dateKey, bookedRanges)) {
+                        dayEl.classList.add('booked');
+                    }
+                    if (isCheckout && dateKey && ciKeyForRange && date > checkinDate) {
+                        if (!auth.isStayAvailableInRanges(ciKeyForRange, dateKey, bookedRanges)) {
+                            dayEl.classList.add('booked');
+                        }
+                    }
                 }
                 
                 daysEl.appendChild(dayEl);
@@ -603,24 +656,59 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             
             document.getElementById('checkin-calendar-days').addEventListener('click', (e) => {
-                if (e.target.classList.contains('calendar-day') && !e.target.classList.contains('disabled') && !e.target.classList.contains('other-month') && e.target.dataset.date) {
-                    const date = new Date(e.target.dataset.date);
-                    checkinDate = date;
-                    checkinDisplay.textContent = formatDateForInput(date);
-                    checkinCalendar.classList.remove('active');
-                    
-                    // Update checkout minimum date
-                    if (checkoutDate <= checkinDate) {
-                        checkoutDate = new Date(checkinDate);
-                        checkoutDate.setDate(checkoutDate.getDate() + 1);
-                        document.getElementById('checkout-display').textContent = formatDateForInput(checkoutDate);
-                    }
-                    
-                    const newMinCheckout = new Date(checkinDate);
-                    newMinCheckout.setDate(newMinCheckout.getDate() + 1);
-                    renderCalendar('checkout-calendar', 'checkout-month-year', 'checkout-calendar-days', checkoutCurrentMonth, checkoutDate, newMinCheckout, true);
-                    calculatePrice();
+                const t = e.target;
+                if (
+                    !t.classList.contains('calendar-day') ||
+                    t.classList.contains('disabled') ||
+                    t.classList.contains('booked') ||
+                    t.classList.contains('other-month')
+                ) {
+                    return;
                 }
+                const rawKey = t.dataset.dateKey;
+                const date =
+                    rawKey && window.silvaSupabaseAuth && window.silvaSupabaseAuth.parseBookingDateKeyToLocal
+                        ? window.silvaSupabaseAuth.parseBookingDateKeyToLocal(rawKey)
+                        : new Date(t.dataset.date);
+                if (!date || isNaN(date.getTime())) return;
+                checkinDate = date;
+                checkinDate.setHours(0, 0, 0, 0);
+                checkinDisplay.textContent = formatDateForInput(date);
+                checkinCalendar.classList.remove('active');
+
+                if (checkoutDate <= checkinDate) {
+                    checkoutDate = new Date(checkinDate);
+                    checkoutDate.setDate(checkoutDate.getDate() + 1);
+                }
+
+                var sa = window.silvaSupabaseAuth;
+                if (sa && typeof sa.isStayAvailableInRanges === 'function') {
+                    var ck = sa.toBookingDateKeyLocal(checkinDate);
+                    var coK = sa.toBookingDateKeyLocal(checkoutDate);
+                    if (ck && coK && !sa.isStayAvailableInRanges(ck, coK, bookedRanges)) {
+                        var found = false;
+                        for (var step = 1; step < 400; step++) {
+                            var tryCo = new Date(checkinDate);
+                            tryCo.setDate(tryCo.getDate() + step);
+                            var tryKey = sa.toBookingDateKeyLocal(tryCo);
+                            if (tryKey && sa.isStayAvailableInRanges(ck, tryKey, bookedRanges)) {
+                                checkoutDate = tryCo;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            checkoutDate = new Date(checkinDate);
+                            checkoutDate.setDate(checkoutDate.getDate() + 1);
+                        }
+                    }
+                }
+                document.getElementById('checkout-display').textContent = formatDateForInput(checkoutDate);
+
+                const newMinCheckout = new Date(checkinDate);
+                newMinCheckout.setDate(newMinCheckout.getDate() + 1);
+                renderCalendar('checkout-calendar', 'checkout-month-year', 'checkout-calendar-days', checkoutCurrentMonth, checkoutDate, newMinCheckout, true);
+                calculatePrice();
             });
         }
         
@@ -661,19 +749,36 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             
             document.getElementById('checkout-calendar-days').addEventListener('click', (e) => {
-                if (e.target.classList.contains('calendar-day') && !e.target.classList.contains('disabled') && !e.target.classList.contains('other-month') && e.target.dataset.date) {
-                    const date = new Date(e.target.dataset.date);
-                    const minCheckout = new Date(checkinDate);
-                    minCheckout.setDate(minCheckout.getDate() + 1);
-                    if (date >= minCheckout) {
-                        checkoutDate = date;
-                        checkoutDisplay.textContent = formatDateForInput(date);
-                        checkoutCalendar.classList.remove('active');
-                        // Re-render calendar to show updated range
-                        renderCalendar('checkout-calendar', 'checkout-month-year', 'checkout-calendar-days', checkoutCurrentMonth, checkoutDate, minCheckout, true);
-                        calculatePrice();
-                    }
+                const t = e.target;
+                if (
+                    !t.classList.contains('calendar-day') ||
+                    t.classList.contains('disabled') ||
+                    t.classList.contains('booked') ||
+                    t.classList.contains('other-month')
+                ) {
+                    return;
                 }
+                const rawKey = t.dataset.dateKey;
+                const date =
+                    rawKey && window.silvaSupabaseAuth && window.silvaSupabaseAuth.parseBookingDateKeyToLocal
+                        ? window.silvaSupabaseAuth.parseBookingDateKeyToLocal(rawKey)
+                        : new Date(t.dataset.date);
+                if (!date || isNaN(date.getTime())) return;
+                const minCheckout = new Date(checkinDate);
+                minCheckout.setDate(minCheckout.getDate() + 1);
+                if (date < minCheckout) return;
+                var sa = window.silvaSupabaseAuth;
+                if (sa && typeof sa.isStayAvailableInRanges === 'function') {
+                    var ck = sa.toBookingDateKeyLocal(checkinDate);
+                    var coK = sa.toBookingDateKeyLocal(date);
+                    if (!ck || !coK || !sa.isStayAvailableInRanges(ck, coK, bookedRanges)) return;
+                }
+                checkoutDate = date;
+                checkoutDate.setHours(0, 0, 0, 0);
+                checkoutDisplay.textContent = formatDateForInput(date);
+                checkoutCalendar.classList.remove('active');
+                renderCalendar('checkout-calendar', 'checkout-month-year', 'checkout-calendar-days', checkoutCurrentMonth, checkoutDate, minCheckout, true);
+                calculatePrice();
             });
         }
         

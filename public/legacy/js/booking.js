@@ -238,6 +238,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             return;
         }
+
+        if (
+            window.silvaSupabaseAuth &&
+            typeof window.silvaSupabaseAuth.fetchPropertyBookedDateRanges === 'function' &&
+            typeof window.silvaSupabaseAuth.isStayAvailableInRanges === 'function' &&
+            typeof window.silvaSupabaseAuth.toBookingDateKeyLocal === 'function'
+        ) {
+            try {
+                var br = await window.silvaSupabaseAuth.fetchPropertyBookedDateRanges(propertyId);
+                var ciK = window.silvaSupabaseAuth.toBookingDateKeyLocal(checkIn);
+                var coK = window.silvaSupabaseAuth.toBookingDateKeyLocal(checkOut);
+                if (ciK && coK && !window.silvaSupabaseAuth.isStayAvailableInRanges(ciK, coK, br)) {
+                    alert('Эти даты уже заняты. Вернитесь на страницу объекта и выберите другой период.');
+                    return;
+                }
+            } catch (availErr) {
+                console.warn('availability check', availErr);
+            }
+        }
         
         const amountToPay = payAmount === '30' ? total30 : total;
         const loyaltyPointsToAward = Math.floor(amountToPay / 100);
