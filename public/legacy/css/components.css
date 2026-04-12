@@ -744,6 +744,22 @@
     margin-bottom: 1rem;
 }
 
+a.footer-contact-item {
+    text-decoration: none;
+    color: var(--color-gray-500);
+    transition: color 0.2s ease;
+}
+
+a.footer-contact-item:hover {
+    color: var(--color-gray-800);
+}
+
+a.footer-contact-item:focus-visible {
+    outline: 2px solid var(--color-emerald-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
 .footer-contact-item svg {
     width: 1rem;
     height: 1rem;
