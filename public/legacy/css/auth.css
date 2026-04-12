@@ -79,18 +79,34 @@ body.auth-body textarea {
         width: 50%;
         min-height: auto;
         padding: 2.5rem;
+        align-items: center;
+        justify-content: center;
     }
 }
 
 /* Карточка с закруглёнными углами для изображения */
 .auth-visual-card {
     width: 100%;
-    max-width: 130rem;
+    max-width: 100%;
+    flex-shrink: 0;
     aspect-ratio: 4 / 4.7;
     border-radius: 8px;
     overflow: hidden;
     background: var(--color-gray-50);
     border: 1px solid var(--color-gray-100);
+}
+
+/* На широких экранах ограничиваем ширину карточки — высота идёт от aspect-ratio, без растягивания на всю колонку */
+@media (min-width: 768px) {
+    .auth-visual-card {
+        width: min(100%, 30rem);
+    }
+}
+
+@media (min-width: 1200px) {
+    .auth-visual-card {
+        width: min(100%, 32rem);
+    }
 }
 
 .auth-visual-card img {
