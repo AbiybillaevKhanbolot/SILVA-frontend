@@ -542,17 +542,59 @@
     border-top: 1px solid var(--color-gray-200);
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 0.65rem;
     width: 100%;
     max-width: 20rem;
 }
 
+/* Гость: сердечко, Вход и Регистрация — одна ширина и высота */
+.mobile-menu-auth .mobile-menu-stack-btn {
+    width: 100%;
+    max-width: none;
+    min-height: 2.5rem;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
 .mobile-menu-auth .mobile-menu-auth-btn {
     width: 100%;
-    max-width: 18rem;
+    max-width: none;
     justify-content: center;
     box-sizing: border-box;
+    min-height: 2.5rem;
+}
+
+/* Залогиненный: кнопки с серым контуром */
+.mobile-menu-line-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.mobile-menu-line-btn--outline {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid var(--color-gray-300);
+}
+
+.mobile-menu-line-btn--outline:hover {
+    background: #fafafa;
+    border-color: var(--color-gray-400);
 }
 
 .mobile-menu-link {
@@ -1482,7 +1524,6 @@ body.page-home .feedback-section .feedback-form button.header-auth-link-primary:
     width: 100%;
     box-sizing: border-box;
     justify-content: center;
-    margin-bottom: 0.5rem;
 }
 
 /* Модалка избранного (шапка, все страницы) */

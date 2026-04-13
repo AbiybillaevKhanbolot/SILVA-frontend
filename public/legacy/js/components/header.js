@@ -353,6 +353,12 @@ function initHeader() {
                                     Панель владельца
                                 </a>`
             : '';
+        const ownerMobileLink =
+            isOwner && !isAdmin
+                ? '<a href="' +
+                  lh('owner-dashboard.html') +
+                  '" class="mobile-menu-line-btn mobile-menu-line-btn--outline">Панель владельца</a>'
+                : '';
         const guestLinksHtml = !isOwner && !isAdmin
             ? `
                                 <a href="${lh('my-bookings.html')}" class="header-dropdown-link">
@@ -412,6 +418,43 @@ function initHeader() {
                             <a href="${lh('register.html')}" class="header-auth-link header-auth-link-primary">Регистрация</a>
                         </div>`;
 
+        const mobileAuthLoggedOut =
+            '<button type="button" class="header-auth-link header-auth-link-primary header-favorites-icon-btn mobile-menu-favorites-btn mobile-menu-stack-btn" data-header-favorites-trigger="1" aria-label="Избранное">' +
+            (typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg('heart', 20, 20, { fill: 'none' }) : '') +
+            '<span class="filter-badge header-favorites-badge" data-header-favorites-badge="1" style="display: none;">0</span></button>' +
+            '<a href="' +
+            lh('login.html') +
+            '" class="header-auth-link mobile-menu-auth-btn mobile-menu-stack-btn">Вход</a><a href="' +
+            lh('register.html') +
+            '" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn mobile-menu-stack-btn">Регистрация</a>';
+
+        const mobileAuthLoggedInAdmin =
+            '<a href="' +
+            lh('admin.html') +
+            '" class="mobile-menu-line-btn mobile-menu-line-btn--outline">Админ-панель</a>' +
+            '<button type="button" class="mobile-menu-line-btn mobile-menu-line-btn--outline" id="mobile-logout-btn">Выйти</button>';
+
+        const mobileAuthLoggedInUser =
+            '<a href="' +
+            profileHref +
+            '" class="mobile-menu-line-btn mobile-menu-line-btn--outline">' +
+            profileLabel +
+            '</a>' +
+            '<a href="' +
+            lh('my-bookings.html') +
+            '" class="mobile-menu-line-btn mobile-menu-line-btn--outline">Мои бронирования</a>' +
+            '<a href="' +
+            lh('favorites.html') +
+            '" class="mobile-menu-line-btn mobile-menu-line-btn--outline">Избранное</a>' +
+            ownerMobileLink +
+            '<button type="button" class="mobile-menu-line-btn mobile-menu-line-btn--outline" id="mobile-logout-btn">Выйти</button>';
+
+        const mobileAuthBlock = loggedIn
+            ? isAdmin
+                ? mobileAuthLoggedInAdmin
+                : mobileAuthLoggedInUser
+            : mobileAuthLoggedOut;
+
         headerContainer.innerHTML = `
             <header class="header ${headerClass} ${isHomePage ? 'header--home' : ''}">
                 <div class="header-content">
@@ -455,21 +498,7 @@ function initHeader() {
                         <span class="mobile-menu-nav-sep" aria-hidden="true"></span>
                         <a href="${lh('contact.html')}" class="mobile-menu-link${navActive === 'contacts' ? ' mobile-menu-link--active' : ''}"${navActive === 'contacts' ? ' aria-current="page"' : ''}>Контакты</a>
                     </div>
-                    <div class="mobile-menu-auth">${loggedIn
-                        ? (isAdmin
-                            ? '<a href="' + lh('admin.html') + '" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Админ-панель</a>'
-                            : (isOwner
-                                ? '<a href="' + lh('profile.html') + '" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a><a href="' + lh('owner-dashboard.html') + '" class="mobile-menu-link">Панель владельца</a>'
-                                : '<a href="' + lh('profile.html') + '" class="mobile-menu-link mobile-menu-link--profile" id="mobile-profile-link">Профиль</a>'))
-                        : '<button type="button" class="header-auth-link header-auth-link-primary header-favorites-icon-btn mobile-menu-favorites-btn" data-header-favorites-trigger="1" aria-label="Избранное">' +
-                            (typeof SilvaIcons !== 'undefined' ? SilvaIcons.svg('heart', 20, 20, { fill: 'none' }) : '') +
-                            '<span class="filter-badge header-favorites-badge" data-header-favorites-badge="1" style="display: none;">0</span></button>' +
-                            '<a href="' +
-                            lh('login.html') +
-                            '" class="header-auth-link mobile-menu-auth-btn">Вход</a><a href="' +
-                            lh('register.html') +
-                            '" class="header-auth-link header-auth-link-primary mobile-menu-auth-btn">Регистрация</a>'
-                    }</div>
+                    <div class="mobile-menu-auth">${mobileAuthBlock}</div>
                 </div>
             </div>
             ${loggedIn ? `
@@ -489,14 +518,25 @@ function initHeader() {
         const menuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const menuIcon = document.getElementById('menu-icon');
+        var silvaIconPaths = typeof SilvaIcons !== 'undefined' ? SilvaIcons.paths : null;
 
         if (menuBtn && mobileMenu && menuIcon) {
-            var paths = typeof SilvaIcons !== 'undefined' ? SilvaIcons.paths : null;
             menuBtn.addEventListener('click', () => {
                 mobileMenu.classList.toggle('open');
-                if (paths) {
-                    menuIcon.innerHTML = mobileMenu.classList.contains('open') ? paths.x : paths.menu;
+                if (silvaIconPaths) {
+                    menuIcon.innerHTML = mobileMenu.classList.contains('open') ? silvaIconPaths.x : silvaIconPaths.menu;
                 }
+            });
+        }
+
+        var mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+        if (mobileLogoutBtn && mobileMenu) {
+            mobileLogoutBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                mobileMenu.classList.remove('open');
+                var mi = document.getElementById('menu-icon');
+                if (silvaIconPaths && mi) mi.innerHTML = silvaIconPaths.menu;
+                silvaOpenLogoutConfirmModal();
             });
         }
 
