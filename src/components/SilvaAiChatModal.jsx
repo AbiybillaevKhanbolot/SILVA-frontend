@@ -76,7 +76,7 @@ export default function SilvaAiChatModal({ open, onClose }) {
 
   useEffect(() => {
     listEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, open]);
+  }, [messages, open, pending]);
 
   const send = useCallback(async () => {
     const text = draft.trim();
@@ -197,6 +197,21 @@ export default function SilvaAiChatModal({ open, onClose }) {
               {msg.text}
             </div>
           ))}
+          {pending ? (
+            <div
+              className="silva-ai-chat-msg silva-ai-chat-msg--assistant silva-ai-chat-msg--typing"
+              role="status"
+              aria-live="polite"
+              aria-label="Помощник печатает"
+            >
+              <span className="silva-ai-chat-typing-text">Помощник печатает</span>
+              <span className="silva-ai-chat-typing-dots" aria-hidden="true">
+                <span className="silva-ai-chat-typing-dot" />
+                <span className="silva-ai-chat-typing-dot" />
+                <span className="silva-ai-chat-typing-dot" />
+              </span>
+            </div>
+          ) : null}
           <div ref={listEndRef} />
         </div>
         <form className="silva-ai-chat-form" onSubmit={onSubmit}>
