@@ -1,0 +1,316 @@
+/* FAB «ИИ-помощник»: нейтральная палитра Silva (Inter / gray scale), компактный размер */
+
+@property --a {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --l {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --x {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --y {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --o {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --value {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --width-ratio {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --scale {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.silva-ai-fab {
+  --silva-ai-fab-size: 4.25rem;
+  position: fixed;
+  right: 2.25rem;
+  bottom: 2rem;
+  z-index: 2147483000;
+  width: var(--silva-ai-fab-size);
+  height: var(--silva-ai-fab-size);
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18), 0 2px 8px rgba(15, 23, 42, 0.08);
+  transition: transform 0.22s cubic-bezier(0.34, 1.15, 0.64, 1),
+    box-shadow 0.22s cubic-bezier(0.34, 1.15, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.silva-ai-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.22), 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.silva-ai-fab:focus-visible {
+  outline: 2px solid #374151;
+  outline-offset: 3px;
+}
+
+.silva-ai-fab:active {
+  transform: translateY(0);
+}
+
+.silva-ai-orb {
+  --s: calc(var(--silva-ai-fab-size) - 2px);
+  --p: calc(var(--s) / 4);
+  --count: 4;
+  --radius: calc(var(--s) * 0.15);
+  --ring-width: calc(var(--s) * 0.025);
+  --ring-duration: 8s;
+  display: grid;
+  place-items: center;
+  position: relative;
+  width: var(--s);
+  aspect-ratio: 1;
+  margin: auto;
+  border-radius: 50%;
+  --bg-color: color-mix(in srgb, #64748b, transparent 90%);
+  background: radial-gradient(60% 75% at center, var(--bg-color) 50%, transparent 50%),
+    radial-gradient(75% 60% at center, var(--bg-color) 50%, transparent 50%);
+  padding: var(--p);
+  box-sizing: border-box;
+}
+
+.silva-ai-orb__stage {
+  overflow: hidden;
+  width: 100%;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #e5e7eb 0%, #d1d5db 45%, #cbd5e1 100%);
+}
+
+.silva-ai-orb__disc {
+  opacity: var(--o, 1);
+  position: absolute;
+  width: calc(var(--s) * 0.25);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  z-index: 1;
+  --offset-per-item: calc(360deg / var(--count));
+  --current-angle-offset: calc(var(--offset-per-item) * var(--i) + var(--a));
+  translate: calc(cos(var(--current-angle-offset)) * var(--radius) + var(--x, 0))
+    calc(sin(var(--current-angle-offset)) * var(--radius) * -1);
+  scale: calc(0.6 + var(--l));
+  animation: silva-ai-orbit 5.5s cubic-bezier(0.45, -0.35, 0.16, 1.5) infinite;
+  transition: opacity 0.3s linear;
+}
+
+.silva-ai-orb__disc:nth-child(1) {
+  --i: 0;
+}
+
+.silva-ai-orb__disc:nth-child(2) {
+  --i: 1;
+}
+
+.silva-ai-orb__disc:nth-child(3) {
+  --i: 2;
+}
+
+.silva-ai-orb__disc:nth-child(4) {
+  --i: 3;
+}
+
+.silva-ai-orb__disc--d1 {
+  background: radial-gradient(50% 50% at center, #94a3b8, #cbd5e1);
+  --x: calc(var(--s) * 0.025);
+  width: calc(var(--s) * 0.4);
+  animation-timing-function: cubic-bezier(0.12, 0.32, 0.68, 0.24);
+}
+
+.silva-ai-orb__disc--d2 {
+  background: radial-gradient(50% 50% at center, #9ca3af, #f3f4f6);
+  width: calc(var(--s) * 0.375);
+}
+
+.silva-ai-orb__disc--d3 {
+  background: radial-gradient(50% 50% at center, #64748b, transparent);
+  width: calc(var(--s) * 0.125);
+  --x: calc(var(--s) * -0.025);
+}
+
+.silva-ai-orb__disc--d4 {
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  animation-timing-function: cubic-bezier(0.39, -0.03, 0.75, 0.47);
+}
+
+@keyframes silva-ai-orbit {
+  from {
+    --a: 360deg;
+    --l: 0.35;
+    --o: 1;
+  }
+
+  30% {
+    --l: 1.5;
+  }
+
+  70% {
+    --o: 0.4;
+    --l: 0.05;
+  }
+
+  98% {
+    --o: 0.7;
+  }
+
+  to {
+    --a: 0deg;
+    --l: 0.35;
+    --o: 1;
+  }
+}
+
+.silva-ai-orb__rings {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+  perspective: 11rem;
+  opacity: 0.85;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.silva-ai-orb__rings::before,
+.silva-ai-orb__rings::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  --width-ratio: 1;
+  border: calc(var(--ring-width) * var(--width-ratio)) solid transparent;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  background: linear-gradient(white, #64748b, #475569, #334155, #f8fafc) border-box;
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  animation: silva-ai-ring var(--ring-duration) ease-in-out infinite;
+  --start: 180deg;
+  --value: var(--start);
+  --scale: 1;
+  transform: rotateY(var(--value)) rotateX(var(--value)) rotateZ(var(--value)) scale(var(--scale));
+}
+
+.silva-ai-orb__rings::before {
+  --start: 180deg;
+}
+
+.silva-ai-orb__rings::after {
+  --start: 90deg;
+}
+
+@keyframes silva-ai-ring {
+  from {
+    --value: var(--start);
+    --scale: 1;
+  }
+
+  50% {
+    --scale: 1.2;
+    --width-ratio: 1.5;
+  }
+
+  70% {
+    --scale: 1;
+    --value: calc(var(--start) + 180deg);
+    --width-ratio: 1;
+  }
+
+  80% {
+    --scale: 1.2;
+    --width-ratio: 1.5;
+  }
+
+  to {
+    --value: calc(var(--start) + 360deg);
+    --scale: 1;
+    --width-ratio: 1;
+  }
+}
+
+.silva-ai-orb__glass {
+  overflow: hidden;
+  position: absolute;
+  --glass-inset: calc(var(--s) * 0.0125);
+  inset: calc(var(--p) - var(--glass-inset));
+  border-radius: 50%;
+  backdrop-filter: blur(calc(var(--s) * 0.0325));
+  -webkit-backdrop-filter: blur(calc(var(--s) * 0.0325));
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: 0 0 calc(var(--s) * 0.2) color-mix(in srgb, #0f172a, transparent 72%);
+  background: radial-gradient(calc(var(--s) * 0.25) at 70% 30%, rgba(255, 255, 255, 0.65), transparent);
+}
+
+.silva-ai-orb__glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  --line: rgba(255, 255, 255, 0.04);
+  --lw: 0.0625rem;
+  --lg: 0.1875rem;
+  background: repeating-linear-gradient(
+    var(--line),
+    var(--line),
+    var(--lw),
+    transparent var(--lw),
+    transparent calc(var(--lw) + var(--lg))
+  );
+  border-radius: inherit;
+  border: calc(var(--s) * 0.025) solid rgba(255, 255, 255, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .silva-ai-fab:hover {
+    transform: none;
+  }
+
+  .silva-ai-orb__disc {
+    animation: none;
+    translate: 0 0;
+    scale: 1;
+    opacity: 0.9;
+  }
+
+  .silva-ai-orb__rings::before,
+  .silva-ai-orb__rings::after {
+    animation: none;
+    transform: rotateY(180deg) rotateX(180deg) scale(1);
+  }
+}
