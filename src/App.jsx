@@ -1,9 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import SilvaAiAssistant from "./components/SilvaAiAssistant";
 import { legacyRoutes } from "./config/routes";
 import LegacyFramePage from "./pages/LegacyFramePage";
 
 function App() {
   return (
+    <>
     <Routes>
       {legacyRoutes.map((route) => (
         <Route
@@ -14,6 +16,8 @@ function App() {
       ))}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <SilvaAiAssistant />
+    </>
   );
 }
 
