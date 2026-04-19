@@ -61,26 +61,99 @@
 }
 
 
+/* Логотип: без «линии» над иконкой (inline-gap img), мягкий вход и hover в духе Silva */
+@keyframes silva-brand-rise {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 0.4rem, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes silva-brand-shine {
+    from {
+        background-position: 120% 50%;
+    }
+    to {
+        background-position: -40% 50%;
+    }
+}
+
+.silva-brand-logo-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    object-fit: contain;
+    vertical-align: top;
+    position: relative;
+    z-index: 0;
+}
+
 .header-logo {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     text-decoration: none;
-    transition: transform 0.2s;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
 }
 
 .header-logo:hover {
-    transform: scale(1.02);
+    transform: translate3d(0, -1px, 0) scale(1.02);
 }
 
 .header-logo-icon {
+    position: relative;
     width: 2.5rem;
     height: 2.5rem;
+    flex-shrink: 0;
     border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--color-gray-900);
+    overflow: hidden;
+    line-height: 0;
+    isolation: isolate;
+    animation: silva-brand-rise 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.05s;
+    transition: box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.header-logo-icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        transparent 38%,
+        rgba(255, 255, 255, 0.22) 50%,
+        transparent 62%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+}
+
+.header-logo:hover .header-logo-icon {
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+}
+
+.header-logo:hover .header-logo-icon::after {
+    opacity: 1;
+    animation: silva-brand-shine 0.85s ease-out forwards;
 }
 
 .header-logo-icon-white {
@@ -88,17 +161,49 @@
     backdrop-filter: blur(4px);
 }
 
-.header-logo-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+.header-logo:hover .header-logo-icon-white::after {
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        transparent 38%,
+        rgba(255, 255, 255, 0.45) 50%,
+        transparent 62%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
 }
 
 .header-logo-text {
+    position: relative;
+    display: inline-block;
     font-size: 1.25rem;
     font-weight: 600;
     letter-spacing: -0.02em;
     color: var(--color-gray-900);
+    animation: silva-brand-rise 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.14s;
+    transition: color 0.25s ease, letter-spacing 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.header-logo-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.125rem;
+    width: 0;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    opacity: 0.35;
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.header-logo:hover .header-logo-text {
+    letter-spacing: -0.01em;
+}
+
+.header-logo:hover .header-logo-text::after {
+    width: 100%;
 }
 
 .header-logo-text-white {
@@ -684,30 +789,92 @@
     gap: 0.75rem;
     margin-bottom: 1.5rem;
     text-decoration: none;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-logo:hover {
+    transform: translate3d(0, -1px, 0) scale(1.02);
 }
 
 .footer-logo-icon {
+    position: relative;
     width: 3rem;
     height: 3rem;
+    flex-shrink: 0;
     background: var(--color-gray-900);
     border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    line-height: 0;
+    isolation: isolate;
+    animation: silva-brand-rise 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.08s;
+    transition: box-shadow 0.35s ease;
 }
 
-.footer-logo-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+.footer-logo-icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        transparent 38%,
+        rgba(255, 255, 255, 0.2) 50%,
+        transparent 62%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+}
+
+.footer-logo:hover .footer-logo-icon {
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
+}
+
+.footer-logo:hover .footer-logo-icon::after {
+    opacity: 1;
+    animation: silva-brand-shine 0.85s ease-out forwards;
 }
 
 .footer-logo-text {
-    font-family: 'Inter', sans-serif;
+    position: relative;
+    display: inline-block;
+    font-family: "Inter", sans-serif;
     font-style: normal;
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-gray-900);
+    animation: silva-brand-rise 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 0.18s;
+    transition: letter-spacing 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-logo-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.15rem;
+    width: 0;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    opacity: 0.3;
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.footer-logo:hover .footer-logo-text {
+    letter-spacing: -0.015em;
+}
+
+.footer-logo:hover .footer-logo-text::after {
+    width: 100%;
 }
 
 .footer-description {
@@ -1785,5 +1952,36 @@ body.page-home .feedback-section .feedback-form button.header-auth-link-primary:
     height: 1.125rem;
     font-size: 0.7rem;
     border-radius: 5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .header-logo-icon,
+    .header-logo-text,
+    .footer-logo-icon,
+    .footer-logo-text {
+        animation: none !important;
+        opacity: 1;
+        transform: none;
+    }
+
+    .header-logo,
+    .footer-logo {
+        transition: none;
+    }
+
+    .header-logo:hover,
+    .footer-logo:hover {
+        transform: none;
+    }
+
+    .header-logo-icon::after,
+    .footer-logo-icon::after {
+        display: none;
+    }
+
+    .header-logo-text::after,
+    .footer-logo-text::after {
+        display: none;
+    }
 }
 

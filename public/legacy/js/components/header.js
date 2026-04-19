@@ -461,7 +461,7 @@ function initHeader() {
                     <div class="header-left">
                         <a href="${lh('index.html')}" class="header-logo">
                             <div class="header-logo-icon ${iconClass}">
-                                <img src="images/logo.svg" alt="SILVA" style="width: 100%; height: 100%; object-fit: contain;">
+                                <img class="silva-brand-logo-img" src="images/logo.svg" alt="SILVA" width="45" height="44" decoding="async">
                             </div>
                             <span class="header-logo-text ${textClass}">SILVA</span>
                         </a>
