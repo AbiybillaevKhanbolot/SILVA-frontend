@@ -160,14 +160,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             payType: pending.payType
         });
 
-        if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.sendBookingConfirmationEmail === 'function') {
-            try {
-                await window.silvaSupabaseAuth.sendBookingConfirmationEmail(newBookingId);
-            } catch (emailErr) {
-                console.warn('Booking confirmation email:', emailErr);
-            }
-        }
-
         var lpAward = Math.floor(Number(pending.loyaltyPointsToAward) || 0);
         if (lpAward > 0) {
             if (window.silvaSupabaseAuth.incrementLoyaltyPointsAfterPayment) {

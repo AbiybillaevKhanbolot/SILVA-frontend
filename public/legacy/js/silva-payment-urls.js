@@ -11,6 +11,5 @@
   window.SILVA_PAYMENT_URLS = {
     create: base + "/yookassa-create-payment",
     status: base + "/yookassa-payment-status?id=",
-    sendBookingEmail: base + "/send-booking-email",
   };
 })();

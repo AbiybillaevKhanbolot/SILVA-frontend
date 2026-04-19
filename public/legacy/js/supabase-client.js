@@ -808,70 +808,6 @@
      * Вставка в public.bookings под прод-схему SILVA (без nights / adults / yookassa_payment_id в insert).
      * Поля: user_id, guest_id, property_id, check_in, check_out, guests, children, total_price, total_amount, pay_type, status.
      */
-    function getSendBookingEmailUrl() {
-        try {
-            if (window.SILVA_PAYMENT_URLS && window.SILVA_PAYMENT_URLS.sendBookingEmail) {
-                return String(window.SILVA_PAYMENT_URLS.sendBookingEmail).trim();
-            }
-        } catch (e) {}
-        try {
-            if (
-                window.parent &&
-                window.parent !== window &&
-                window.parent.SILVA_PAYMENT_URLS &&
-                window.parent.SILVA_PAYMENT_URLS.sendBookingEmail
-            ) {
-                return String(window.parent.SILVA_PAYMENT_URLS.sendBookingEmail).trim();
-            }
-        } catch (e2) {}
-        return null;
-    }
-
-    /**
-     * Письмо на email гостя после createBooking (Edge send-booking-email + Resend).
-     * Не бросает — при ошибке логирует; бронь уже создана.
-     */
-    async function sendBookingConfirmationEmail(bookingId) {
-        var url = getSendBookingEmailUrl();
-        if (!url || bookingId == null || bookingId === '') {
-            return { skipped: true, reason: 'no_url' };
-        }
-        var sb = ensureClient();
-        if (!sb) {
-            return { skipped: true, reason: 'no_client' };
-        }
-        try {
-            await sb.auth.refreshSession();
-        } catch (e1) {}
-        var sessRes = await sb.auth.getSession();
-        var sess = sessRes.data && sessRes.data.session;
-        var token = sess && sess.access_token;
-        if (!token) {
-            return { skipped: true, reason: 'no_session' };
-        }
-        var res = await fetch(url, {
-            method: 'POST',
-            credentials: 'omit',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: 'Bearer ' + token,
-                apikey: SUPABASE_ANON_KEY,
-            },
-            body: JSON.stringify({ bookingId: bookingId }),
-        });
-        var data = {};
-        try {
-            data = await res.json();
-        } catch (e2) {
-            data = {};
-        }
-        if (!res.ok) {
-            console.warn('sendBookingConfirmationEmail', res.status, data);
-            return { ok: false, status: res.status, detail: data };
-        }
-        return { ok: true, data: data };
-    }
-
     async function createBooking(payload) {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
@@ -1340,7 +1276,6 @@
         fetchFavorites: fetchFavorites,
         setFavorite: setFavorite,
         createBooking: createBooking,
-        sendBookingConfirmationEmail: sendBookingConfirmationEmail,
         fetchPropertyBookedDateRanges: fetchPropertyBookedDateRanges,
         toBookingDateKeyLocal: toBookingDateKeyLocal,
         parseBookingDateKeyToLocal: parseBookingDateKeyToLocal,
