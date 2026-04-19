@@ -12,4 +12,8 @@ yarn-error.log*
 .env.*
 !.env.example
 Диплом_Хан.docx
+Диплом_Згерский.docx
+Структура_файлов.png
+схема_БД_EN.png
+silva-style-guide.png
 черновик.txt
