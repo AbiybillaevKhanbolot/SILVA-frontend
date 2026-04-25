@@ -1,20 +1,7 @@
 (function (window) {
     'use strict';
 
-    var DIRECT_SUPABASE_URL = 'https://siqvswjrhmckufuaomhy.supabase.co';
-    var SUPABASE_URL = (function () {
-        try {
-            var host = (window && window.location && window.location.hostname) || '';
-            if (host === 'localhost' || host === '127.0.0.1') {
-                return DIRECT_SUPABASE_URL;
-            }
-            var origin = (window && window.location && window.location.origin) || '';
-            if (!origin) return DIRECT_SUPABASE_URL;
-            return origin.replace(/\/+$/, '') + '/api/supabase';
-        } catch (e) {
-            return DIRECT_SUPABASE_URL;
-        }
-    })();
+    var SUPABASE_URL = 'https://siqvswjrhmckufuaomhy.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpcXZzd2pyaG1ja3VmdWFvbWh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MzQ1MTIsImV4cCI6MjA5MTIxMDUxMn0.oMSiRHJgogShrO8-LBddhID2IgfaE8NLHicXU1nweGQ';
     var client = null;
 
@@ -47,46 +34,6 @@
 
     function normalizeEmail(email) {
         return String(email || '').trim().toLowerCase();
-    }
-
-    var PROPERTY_COORDS_CACHE_KEY = 'silva_property_coords_by_id';
-
-    function toFiniteNumber(value) {
-        var n = Number(value);
-        return isFinite(n) ? n : null;
-    }
-
-    function readPropertyCoordsCache() {
-        try {
-            var raw = JSON.parse(localStorage.getItem(PROPERTY_COORDS_CACHE_KEY) || '{}');
-            return raw && typeof raw === 'object' ? raw : {};
-        } catch (e) {
-            return {};
-        }
-    }
-
-    function writePropertyCoordsCache(cache) {
-        localStorage.setItem(PROPERTY_COORDS_CACHE_KEY, JSON.stringify(cache || {}));
-    }
-
-    function savePropertyCoordsToCache(propertyId, lat, lng) {
-        var id = String(propertyId || '').trim();
-        if (!id) return;
-        var latNum = toFiniteNumber(lat);
-        var lngNum = toFiniteNumber(lng);
-        if (latNum == null || lngNum == null) return;
-        var cache = readPropertyCoordsCache();
-        cache[id] = { map_lat: latNum, map_lng: lngNum };
-        writePropertyCoordsCache(cache);
-    }
-
-    function removePropertyCoordsFromCache(propertyId) {
-        var id = String(propertyId || '').trim();
-        if (!id) return;
-        var cache = readPropertyCoordsCache();
-        if (!Object.prototype.hasOwnProperty.call(cache, id)) return;
-        delete cache[id];
-        writePropertyCoordsCache(cache);
     }
 
     function initPersonalGuestStorage(email) {
@@ -185,20 +132,10 @@
         return [];
     }
 
-    function mapPropertyRowToLegacy(row, images, coordsById) {
+    function mapPropertyRowToLegacy(row, images) {
         var gallery = (images || []).map(function (img) { return img.image_url; }).filter(Boolean);
-        var rowId = row && row.id != null ? String(row.id) : '';
-        var cachedCoords = rowId && coordsById && coordsById[rowId] ? coordsById[rowId] : null;
-        var lat = toFiniteNumber(row && row.map_lat);
-        if (lat == null) lat = toFiniteNumber(row && row.latitude);
-        if (lat == null) lat = toFiniteNumber(cachedCoords && cachedCoords.map_lat);
-        if (lat == null) lat = 59.9343;
-        var lng = toFiniteNumber(row && row.map_lng);
-        if (lng == null) lng = toFiniteNumber(row && row.longitude);
-        if (lng == null) lng = toFiniteNumber(cachedCoords && cachedCoords.map_lng);
-        if (lng == null) lng = 30.3356;
         return {
-            id: rowId,
+            id: row.id != null ? String(row.id) : '',
             owner_id: row.owner_id,
             ownerEmail: '',
             title: row.title || '',
@@ -223,8 +160,8 @@
             conditions: ['Заезд с 14:00', 'Выезд до 12:00'],
             extra_info: [],
             visa_info: 'Для граждан РФ виза не требуется. Иностранным гостям необходимо иметь действующую визу РФ.',
-            map_lat: lat,
-            map_lng: lng,
+            map_lat: 59.9343,
+            map_lng: 30.3356,
             created_at: row.created_at || null
         };
     }
@@ -239,7 +176,6 @@
     async function fetchPropertiesCache() {
         var sb = ensureClient();
         if (!sb) throw new Error('Supabase SDK is not loaded');
-        var coordsById = readPropertyCoordsCache();
         var q = await sb
             .from('properties')
             .select(
@@ -266,7 +202,7 @@
             byProperty[pid].push(img);
         });
         var mapped = rows.map(function (row) {
-            return mapPropertyRowToLegacy(row, byProperty[String(row.id)] || [], coordsById);
+            return mapPropertyRowToLegacy(row, byProperty[String(row.id)] || []);
         });
         localStorage.setItem('silva_owner_properties', JSON.stringify(mapped));
         return mapped;
@@ -276,7 +212,6 @@
     async function fetchPropertiesByIds(propertyIds) {
         var sb = ensureClient();
         if (!sb) return [];
-        var coordsById = readPropertyCoordsCache();
         var rawIds = (propertyIds || [])
             .map(function (x) {
                 return String(x || '').trim();
@@ -309,7 +244,7 @@
             });
         }
         return rows.map(function (row) {
-            return mapPropertyRowToLegacy(row, byProperty[String(row.id)] || [], coordsById);
+            return mapPropertyRowToLegacy(row, byProperty[String(row.id)] || []);
         });
     }
 
@@ -380,7 +315,6 @@
             saved = ins.data;
         }
         var propertyId = saved.id;
-        savePropertyCoordsToCache(propertyId, payload && payload.map_lat, payload && payload.map_lng);
         if (Array.isArray(payload.gallery_images)) {
             var del = await sb.from('property_images').delete().eq('property_id', propertyId);
             if (del.error) throw del.error;
@@ -412,7 +346,6 @@
         if (id == null) throw new Error('Некорректный идентификатор объекта.');
         var del = await sb.from('properties').delete().eq('id', id);
         if (del.error) throw del.error;
-        removePropertyCoordsFromCache(id);
         await fetchPropertiesCache();
     }
 
