@@ -75,6 +75,67 @@
         return n.slice(dot + 1).toLowerCase() || 'jpg';
     }
 
+    function loadImageFromObjectUrl(url) {
+        return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = function () { resolve(img); };
+            img.onerror = function () { reject(new Error('Не удалось обработать изображение')); };
+            img.src = url;
+        });
+    }
+
+    function canvasToBlob(canvas, mime, quality) {
+        return new Promise(function (resolve, reject) {
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    reject(new Error('Не удалось подготовить изображение'));
+                    return;
+                }
+                resolve(blob);
+            }, mime, quality);
+        });
+    }
+
+    async function optimizePropertyImageForUpload(file) {
+        if (!file || !file.type || !/^image\//i.test(file.type)) return file;
+        var maxSide = 1920;
+        var maxBytes = 1600 * 1024; // Держим запас под base64+JSON лимиты serverless.
+        if (file.size <= maxBytes) return file;
+        var objectUrl = URL.createObjectURL(file);
+        try {
+            var img = await loadImageFromObjectUrl(objectUrl);
+            var w = img.naturalWidth || img.width || 0;
+            var h = img.naturalHeight || img.height || 0;
+            if (!w || !h) return file;
+            var scale = Math.min(1, maxSide / Math.max(w, h));
+            var tw = Math.max(1, Math.round(w * scale));
+            var th = Math.max(1, Math.round(h * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = tw;
+            canvas.height = th;
+            var ctx = canvas.getContext('2d', { alpha: false });
+            if (!ctx) return file;
+            ctx.drawImage(img, 0, 0, tw, th);
+            var qualityList = [0.86, 0.78, 0.7, 0.62];
+            var i;
+            for (i = 0; i < qualityList.length; i++) {
+                var blob = await canvasToBlob(canvas, 'image/webp', qualityList[i]);
+                if (blob.size <= maxBytes || i === qualityList.length - 1) {
+                    if (blob.size >= file.size) return file;
+                    return new File([blob], (file.name || 'photo').replace(/\.\w+$/, '') + '.webp', {
+                        type: 'image/webp',
+                        lastModified: Date.now()
+                    });
+                }
+            }
+            return file;
+        } catch (e) {
+            return file;
+        } finally {
+            URL.revokeObjectURL(objectUrl);
+        }
+    }
+
     async function uploadOwnerPropertyImage(file) {
         var auth = global.silvaSupabaseAuth;
         if (!auth || typeof auth.getSessionUser !== 'function') {
@@ -85,6 +146,7 @@
         var uploadUrl =
             (global.SILVA_UPLOAD_API_URL && String(global.SILVA_UPLOAD_API_URL).trim()) ||
             '/api/storage/upload';
+        var fileForUpload = await optimizePropertyImageForUpload(file);
         var b64 = await new Promise(function (resolve, reject) {
             var r = new FileReader();
             r.onload = function () {
@@ -95,22 +157,23 @@
             r.onerror = function () {
                 reject(new Error('Не удалось прочитать файл'));
             };
-            r.readAsDataURL(file);
+            r.readAsDataURL(fileForUpload);
         });
         var resp = await fetch(uploadUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 ownerId: user.id,
-                fileName: file.name || ('image.' + fileExt(file.name)),
-                contentType: file.type || 'image/jpeg',
+                kind: 'property',
+                fileName: fileForUpload.name || ('image.' + fileExt(fileForUpload.name)),
+                contentType: fileForUpload.type || 'image/jpeg',
                 base64: b64
             })
         });
         var data = await resp.json().catch(function () { return {}; });
         if (!resp.ok || !data || !data.url) {
             throw new Error(
-                (data && data.message) || 'Не удалось загрузить фото. Проверьте /api/storage/upload и ключи хранилища.'
+                (data && data.message) || ('Не удалось загрузить фото (HTTP ' + resp.status + '). Проверьте /api/storage/upload и ключи хранилища.')
             );
         }
         return data.url;

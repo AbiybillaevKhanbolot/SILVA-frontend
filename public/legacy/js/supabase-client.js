@@ -186,7 +186,66 @@
         });
     }
 
+    function loadImageFromObjectUrl(url) {
+        return new Promise(function (resolve, reject) {
+            var img = new Image();
+            img.onload = function () { resolve(img); };
+            img.onerror = function () { reject(new Error('Не удалось обработать изображение')); };
+            img.src = url;
+        });
+    }
+
+    function canvasToBlob(canvas, mime, quality) {
+        return new Promise(function (resolve, reject) {
+            if (!canvas || typeof canvas.toBlob !== 'function') {
+                reject(new Error('toBlob is not supported'));
+                return;
+            }
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    reject(new Error('Не удалось сжать изображение'));
+                    return;
+                }
+                resolve(blob);
+            }, mime, quality);
+        });
+    }
+
+    async function optimizeAvatarForUpload(file) {
+        if (!file || !file.type || !/^image\//i.test(file.type)) return file;
+        // Already small enough: avoid extra processing latency.
+        if (file.size <= 350 * 1024) return file;
+        var objectUrl = URL.createObjectURL(file);
+        try {
+            var img = await loadImageFromObjectUrl(objectUrl);
+            var maxSide = 640;
+            var w = img.naturalWidth || img.width || 0;
+            var h = img.naturalHeight || img.height || 0;
+            if (!w || !h) return file;
+            var scale = Math.min(1, maxSide / Math.max(w, h));
+            var tw = Math.max(1, Math.round(w * scale));
+            var th = Math.max(1, Math.round(h * scale));
+            var canvas = document.createElement('canvas');
+            canvas.width = tw;
+            canvas.height = th;
+            var ctx = canvas.getContext('2d', { alpha: false });
+            if (!ctx) return file;
+            ctx.drawImage(img, 0, 0, tw, th);
+            var blob = await canvasToBlob(canvas, 'image/webp', 0.82);
+            if (!blob || blob.size >= file.size) return file;
+            return new File([blob], (file.name || 'avatar').replace(/\.\w+$/, '') + '.webp', {
+                type: 'image/webp',
+                lastModified: Date.now()
+            });
+        } catch (e) {
+            return file;
+        } finally {
+            URL.revokeObjectURL(objectUrl);
+        }
+    }
+
     async function uploadFileToStorageApi(file, ownerId, kind) {
+        var fileForUpload = (kind || 'avatar') === 'avatar' ? await optimizeAvatarForUpload(file) : file;
         var uploadUrl =
             (window.SILVA_UPLOAD_API_URL && String(window.SILVA_UPLOAD_API_URL).trim()) ||
             '/api/storage/upload';
@@ -200,7 +259,7 @@
             r.onerror = function () {
                 reject(new Error('Не удалось прочитать файл'));
             };
-            r.readAsDataURL(file);
+            r.readAsDataURL(fileForUpload);
         });
         var resp = await fetch(uploadUrl, {
             method: 'POST',
@@ -208,8 +267,8 @@
             body: JSON.stringify({
                 ownerId: ownerId,
                 kind: kind || 'avatar',
-                fileName: file.name || 'image.jpg',
-                contentType: file.type || 'image/jpeg',
+                fileName: fileForUpload.name || 'image.jpg',
+                contentType: fileForUpload.type || 'image/jpeg',
                 base64: b64
             })
         });
