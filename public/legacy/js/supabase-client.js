@@ -584,22 +584,76 @@
         return null;
     }
 
+    function normalizeBookedRangesList(list) {
+        var out = [];
+        var src = Array.isArray(list) ? list : [];
+        for (var i = 0; i < src.length; i++) {
+            var r = src[i] || {};
+            var a = String(r.check_in == null ? '' : r.check_in).slice(0, 10);
+            var b = String(r.check_out == null ? '' : r.check_out).slice(0, 10);
+            if (a && b && a < b) out.push({ check_in: a, check_out: b });
+        }
+        return out;
+    }
+
+    async function refreshPropertyBookedRangesCache(propertyIdRaw) {
+        var pid = normalizeAnyId(propertyIdRaw);
+        if (!pid) return [];
+        var q = await db.collection('bookings').where('property_id', '==', pid).get();
+        var rows = [];
+        q.forEach(function (d) {
+            rows.push(d.data() || {});
+        });
+        var ranges = normalizeBookedRangesList(rows);
+        try {
+            await db.collection('properties').doc(pid).set(
+                {
+                    booked_ranges_cache: ranges,
+                    booked_ranges_updated_at: nowIso()
+                },
+                { merge: true }
+            );
+        } catch (eWrite) {}
+        return ranges;
+    }
+
     async function fetchPropertyBookedDateRanges(propertyIdRaw) {
         await ensureFirebase();
         var pid = normalizeAnyId(propertyIdRaw);
         if (!pid) return [];
-        var q = await db
-            .collection('bookings')
-            .where('property_id', '==', pid)
-            .get();
-        var ranges = [];
-        q.forEach(function (d) {
-            var r = d.data() || {};
-            if (r.check_in && r.check_out) {
-                ranges.push({ check_in: String(r.check_in).slice(0, 10), check_out: String(r.check_out).slice(0, 10) });
+        try {
+            var q = await db
+                .collection('bookings')
+                .where('property_id', '==', pid)
+                .get();
+            var rows = [];
+            q.forEach(function (d) {
+                rows.push(d.data() || {});
+            });
+            var ranges = normalizeBookedRangesList(rows);
+            if (ranges.length) {
+                // Keep a public cache on property for guests without bookings read access.
+                try {
+                    await db.collection('properties').doc(pid).set(
+                        {
+                            booked_ranges_cache: ranges,
+                            booked_ranges_updated_at: nowIso()
+                        },
+                        { merge: true }
+                    );
+                } catch (eWrite) {}
             }
-        });
-        return ranges;
+            return ranges;
+        } catch (eBookings) {
+            try {
+                var ps = await db.collection('properties').doc(pid).get();
+                if (!ps.exists) return [];
+                var pd = ps.data() || {};
+                return normalizeBookedRangesList(pd.booked_ranges_cache);
+            } catch (eProp) {
+                return [];
+            }
+        }
     }
 
     function hasDateOverlap(checkInA, checkOutA, checkInB, checkOutB) {
@@ -663,6 +717,9 @@
             created_at: nowIso()
         };
         var ref = await db.collection('bookings').add(row);
+        try {
+            await refreshPropertyBookedRangesCache(pid);
+        } catch (eCache) {}
         return ref.id;
     }
 
