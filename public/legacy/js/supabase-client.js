@@ -587,7 +587,6 @@
         var q = await db
             .collection('bookings')
             .where('property_id', '==', pid)
-            .where('status', 'in', ['pending', 'confirmed', 'completed'])
             .get();
         var ranges = [];
         q.forEach(function (d) {
@@ -599,12 +598,45 @@
         return ranges;
     }
 
+    function hasDateOverlap(checkInA, checkOutA, checkInB, checkOutB) {
+        var aIn = String(checkInA || '').slice(0, 10);
+        var aOut = String(checkOutA || '').slice(0, 10);
+        var bIn = String(checkInB || '').slice(0, 10);
+        var bOut = String(checkOutB || '').slice(0, 10);
+        if (!aIn || !aOut || !bIn || !bOut) return false;
+        return aIn < bOut && bIn < aOut;
+    }
+
+    async function ensurePropertyDatesAvailable(propertyIdRaw, checkInRaw, checkOutRaw) {
+        var pid = normalizeAnyId(propertyIdRaw);
+        var checkIn = String(checkInRaw || '').slice(0, 10);
+        var checkOut = String(checkOutRaw || '').slice(0, 10);
+        if (!pid || !checkIn || !checkOut) throw new Error('Некорректные даты бронирования');
+        if (!(checkIn < checkOut)) throw new Error('Некорректный период бронирования');
+
+        var q = await db.collection('bookings').where('property_id', '==', pid).get();
+        var conflicted = false;
+        q.forEach(function (d) {
+            if (conflicted) return;
+            var row = d.data() || {};
+            if (hasDateOverlap(checkIn, checkOut, row.check_in, row.check_out)) {
+                conflicted = true;
+            }
+        });
+        if (conflicted) {
+            throw new Error('Выбранные даты уже заняты. Пожалуйста, выберите другие даты.');
+        }
+    }
+
     async function createBooking(payload) {
         await ensureFirebase();
         var user = await getSessionUser();
         if (!user || !user.id) throw new Error('Нужна авторизация для бронирования');
         var pid = normalizeAnyId(payload.propertyId);
         if (!pid) throw new Error('Не указан объект для бронирования');
+        var checkIn = String(payload.checkIn || '').slice(0, 10);
+        var checkOut = String(payload.checkOut || '').slice(0, 10);
+        await ensurePropertyDatesAvailable(pid, checkIn, checkOut);
         var localUser = readLocalUser() || {};
         var fallbackName = String(localUser.name || '').trim();
         var fallbackEmail = String(localUser.email || user.email || '').trim();
@@ -613,8 +645,8 @@
             user_id: user.id,
             guest_id: user.id,
             property_id: pid,
-            check_in: payload.checkIn,
-            check_out: payload.checkOut,
+            check_in: checkIn,
+            check_out: checkOut,
             guests: Number(payload.guests) || 1,
             children: Number(payload.children) || 0,
             total_price: Number(payload.totalRub) || 0,
