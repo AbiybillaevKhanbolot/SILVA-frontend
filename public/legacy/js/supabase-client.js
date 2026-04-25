@@ -1,20 +1,7 @@
 (function (window) {
     'use strict';
 
-    var DIRECT_SUPABASE_URL = 'https://siqvswjrhmckufuaomhy.supabase.co';
-    var SUPABASE_URL = (function () {
-        try {
-            var host = (window && window.location && window.location.hostname) || '';
-            if (host === 'localhost' || host === '127.0.0.1') {
-                return DIRECT_SUPABASE_URL;
-            }
-            var origin = (window && window.location && window.location.origin) || '';
-            if (!origin) return DIRECT_SUPABASE_URL;
-            return origin.replace(/\/+$/, '') + '/api/supabase';
-        } catch (e) {
-            return DIRECT_SUPABASE_URL;
-        }
-    })();
+    var SUPABASE_URL = 'https://siqvswjrhmckufuaomhy.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpcXZzd2pyaG1ja3VmdWFvbWh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MzQ1MTIsImV4cCI6MjA5MTIxMDUxMn0.oMSiRHJgogShrO8-LBddhID2IgfaE8NLHicXU1nweGQ';
     var client = null;
 
