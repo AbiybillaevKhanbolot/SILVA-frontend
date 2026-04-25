@@ -1901,6 +1901,7 @@ input[type="reset"] {
 
 .featured-section {
     padding: 2rem 0 3rem;
+    overflow-x: hidden;
 }
 
 @media (min-width: 768px) {

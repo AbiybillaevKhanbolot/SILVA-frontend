@@ -71,15 +71,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load featured properties
+    // Популярные объекты: 3 случайные карточки
     const propertiesContainer = document.getElementById('properties-container');
+
+    function shuffleArrayInPlace(arr) {
+        var a = arr;
+        var i;
+        var j;
+        var t;
+        for (i = a.length - 1; i > 0; i--) {
+            j = Math.floor(Math.random() * (i + 1));
+            t = a[i];
+            a[i] = a[j];
+            a[j] = t;
+        }
+        return a;
+    }
+
     if (propertiesContainer) {
         (async function () {
             if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
                 await mockAPI.refreshPropertiesFromSupabase();
             }
-            const featuredProperties = mockAPI.getFeaturedProperties();
-            renderPropertyCards(propertiesContainer, featuredProperties);
+            var list = [];
+            if (typeof mockAPI !== 'undefined' && typeof mockAPI.getProperties === 'function') {
+                list = mockAPI.getProperties({}).slice();
+            }
+            shuffleArrayInPlace(list);
+            var top3 = list.slice(0, 3);
+
+            if (!top3.length) {
+                renderPropertyCards(propertiesContainer, []);
+                return;
+            }
+            renderPropertyCards(propertiesContainer, top3);
         })();
     }
 
