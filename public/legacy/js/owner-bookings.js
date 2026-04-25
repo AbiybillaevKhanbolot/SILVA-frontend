@@ -129,22 +129,30 @@ document.addEventListener('DOMContentLoaded', function () {
     var empty = document.getElementById('owner-bookings-empty');
     if (!wrap) return;
 
-    var listings = typeof getMyOwnerListings === 'function' ? getMyOwnerListings() : [];
-    var myIds = {};
-    listings.forEach(function (p) {
-        myIds[Number(p.id)] = true;
-    });
-    var propertyIdList = listings.map(function (p) { return p.id; }).filter(function (id) { return id != null && id !== ''; });
+    function collectOwnerPropertyIds() {
+        var listings = typeof getMyOwnerListings === 'function' ? getMyOwnerListings() : [];
+        var idSet = {};
+        var idList = [];
+        listings.forEach(function (p) {
+            var id = p && p.id != null ? String(p.id).trim() : '';
+            if (!id || idSet[id]) return;
+            idSet[id] = true;
+            idList.push(id);
+        });
+        return { idSet: idSet, idList: idList };
+    }
 
     async function load() {
         var mine = [];
+        var ownerProps = { idSet: {}, idList: [] };
 
         if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchBookingsForOwner === 'function') {
             try {
                 if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
                     await mockAPI.refreshPropertiesFromSupabase();
                 }
-                mine = await window.silvaSupabaseAuth.fetchBookingsForOwner(propertyIdList);
+                ownerProps = collectOwnerPropertyIds();
+                mine = await window.silvaSupabaseAuth.fetchBookingsForOwner(ownerProps.idList);
                 mine.forEach(function (b) {
                     var prop =
                         typeof mockAPI !== 'undefined' ? mockAPI.getPropertyById(b.propertyId) : null;
@@ -158,9 +166,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (!mine.length) {
+            if (!ownerProps.idList.length) ownerProps = collectOwnerPropertyIds();
             var all = loadAllBookingsLocal();
             mine = all.filter(function (b) {
-                return myIds[Number(b.propertyId)];
+                var pid = b && b.propertyId != null ? String(b.propertyId).trim() : '';
+                return !!ownerProps.idSet[pid];
             });
         }
 

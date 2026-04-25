@@ -11,9 +11,11 @@ document.addEventListener('DOMContentLoaded', async function () {
     var published = listings.filter(function (p) {
         return p.status === 'published';
     });
-    var myIds = listings.map(function (p) {
-        return Number(p.id);
-    });
+    var myIds = listings
+        .map(function (p) {
+            return p && p.id != null ? String(p.id).trim() : '';
+        })
+        .filter(Boolean);
 
     var bookingsCount = 0;
     if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchBookingsByPropertyIds === 'function') {
