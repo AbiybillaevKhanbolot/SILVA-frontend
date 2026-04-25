@@ -1,5 +1,5 @@
 /**
- * После signUp без сессии (включено подтверждение почты в Supabase): модалка с вводом кода.
+ * Firebase: подтверждение регистрации по ссылке из e-mail (без ввода OTP-кода в UI).
  */
 (function () {
     var overlay = null;
@@ -24,8 +24,7 @@
             '<h2 id="register-confirm-title" class="forgot-password-title">Подтвердите почту</h2>' +
             '<p class="forgot-pw-hint" id="register-confirm-intro"></p>' +
             '<form id="register-confirm-form">' +
-            '<input type="text" class="input forgot-pw-input" name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="Код из письма" required>' +
-            '<button type="submit" class="btn btn-primary forgot-pw-submit">Подтвердить</button>' +
+            '<button type="submit" class="btn btn-primary forgot-pw-submit">Я подтвердил(а) почту</button>' +
             '<button type="button" class="btn btn-ghost forgot-pw-resend" id="register-confirm-resend">Отправить код снова</button>' +
             '</form></div>';
 
@@ -54,9 +53,9 @@
         if (!intro) return;
         var safe = escapeHtml(email);
         intro.innerHTML =
-            'Чтобы завершить регистрацию, введите код, который мы отправили на <strong>' +
+            'Чтобы завершить регистрацию, перейдите по ссылке из письма, отправленного на <strong>' +
             safe +
-            '</strong>. Проверьте папку «Спам», если письма нет во «Входящих».';
+            '</strong>. После перехода вернитесь сюда и нажмите кнопку подтверждения ниже.';
     }
 
     function setBusy(btn, busy, label) {
@@ -75,13 +74,9 @@
         pendingEmail = String(email || '').trim();
         ensureOverlay();
         setIntro(pendingEmail);
-        var form = overlay.querySelector('#register-confirm-form');
-        if (form) form.reset();
         overlay.classList.add('open');
-        var inp = overlay.querySelector('input[name="code"]');
-        if (inp) setTimeout(function () {
-            inp.focus();
-        }, 50);
+        var btn = overlay.querySelector('#register-confirm-form button[type="submit"]');
+        if (btn) setTimeout(function () { btn.focus(); }, 50);
     }
 
     function close() {
@@ -91,18 +86,17 @@
     async function onSubmit(e) {
         e.preventDefault();
         var auth = getAuth();
-        if (!auth || !auth.verifySignupOtp) return;
+        if (!auth || !auth.syncLocalUserFromSupabase) return;
         var form = e.target;
         var btn = form.querySelector('button[type="submit"]');
-        var code = form.code.value;
         try {
-            setBusy(btn, true, 'Проверка…');
-            await auth.verifySignupOtp(pendingEmail, code);
+            setBusy(btn, true, 'Проверка...');
+            await auth.syncLocalUserFromSupabase();
             close();
             window.location.href = 'index.html';
         } catch (err) {
-            var msg = err && err.message ? err.message : 'Код неверный или устарел.';
-            alert(msg + ' В шаблоне «Confirm sign up» в Supabase должна быть переменная {{ .Token }}.');
+            var msg = err && err.message ? err.message : 'Не удалось подтвердить почту.';
+            alert(msg);
         } finally {
             setBusy(btn, false);
         }
@@ -113,7 +107,7 @@
         if (!auth || !auth.resendSignupConfirmationEmail || !pendingEmail) return;
         try {
             await auth.resendSignupConfirmationEmail(pendingEmail);
-            alert('Письмо с кодом отправлено повторно.');
+            alert('Письмо с подтверждением отправлено повторно.');
         } catch (err) {
             alert(err && err.message ? err.message : 'Не удалось отправить повторно.');
         }

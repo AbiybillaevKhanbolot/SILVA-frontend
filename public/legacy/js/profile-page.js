@@ -180,8 +180,9 @@
     }
 
     function getOwnerVerificationStatus(user) {
-        var raw = user && user.ownerVerificationStatus;
-        if (raw === 'verified' || raw === 'rejected') return raw;
+        var raw = String((user && user.ownerVerificationStatus) || '').trim().toLowerCase();
+        if (raw === 'verified' || raw === 'approved') return 'verified';
+        if (raw === 'rejected' || raw === 'denied') return 'rejected';
         return 'pending';
     }
 

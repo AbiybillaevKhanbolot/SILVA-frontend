@@ -20,15 +20,14 @@ function buildApiMessages(list) {
     .map((m) => ({ role: m.role, content: String(m.text || "").slice(0, 12_000) }));
 }
 
-/** Supabase Edge требует apikey + Authorization (anon) для вызова с браузера. Локальный /api/ai/chat — без них. */
+/** Для удаленного эндпоинта можно передать опциональный bearer-токен через VITE_SILVA_AI_CHAT_BEARER. */
 function buildChatRequestHeaders(endpoint) {
   const headers = { "Content-Type": "application/json" };
   const isRemote = /^https?:\/\//i.test(endpoint);
   if (!isRemote) return headers;
-  const anon = String(import.meta.env.VITE_SUPABASE_ANON_KEY || "").trim();
-  if (anon) {
-    headers.Authorization = `Bearer ${anon}`;
-    headers.apikey = anon;
+  const bearer = String(import.meta.env.VITE_SILVA_AI_CHAT_BEARER || "").trim();
+  if (bearer) {
+    headers.Authorization = `Bearer ${bearer}`;
   }
   return headers;
 }
@@ -96,22 +95,7 @@ export default function SilvaAiChatModal({ open, onClose }) {
       const errLine = {
         id: nextId(),
         role: "assistant",
-        text: "Чат недоступен: для продакшена укажите в .env переменную VITE_SILVA_AI_CHAT_URL (полный URL функции silva-openrouter-chat в Supabase).",
-      };
-      const next = [...afterUser, errLine];
-      messagesRef.current = next;
-      setMessages(next);
-      setPending(false);
-      return;
-    }
-
-    const remote = /^https?:\/\//i.test(endpoint);
-    const anon = String(import.meta.env.VITE_SUPABASE_ANON_KEY || "").trim();
-    if (remote && !anon) {
-      const errLine = {
-        id: nextId(),
-        role: "assistant",
-        text: "Чат недоступен: для вызова Supabase Edge задайте VITE_SUPABASE_ANON_KEY (ключ anon public в Vercel / .env).",
+        text: "Чат недоступен: для продакшена укажите в .env переменную VITE_SILVA_AI_CHAT_URL (полный URL вашего backend endpoint).",
       };
       const next = [...afterUser, errLine];
       messagesRef.current = next;

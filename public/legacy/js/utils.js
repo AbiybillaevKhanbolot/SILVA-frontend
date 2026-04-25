@@ -90,32 +90,85 @@ function isInViewport(element) {
 function geocodeSilvaAddress(addressLine, district) {
     var q = String(addressLine || '').trim();
     if (!q) return Promise.resolve(null);
-    var tail = ['Санкт-Петербург', 'Россия'];
-    if (district && String(district).trim()) {
-        tail.unshift(String(district).trim() + ' район');
+    var districtTrim = district && String(district).trim() ? String(district).trim() : '';
+    var normalized = q
+        .replace(/[,;]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    var compactHouse = normalized
+        .replace(/\b(дом|д\.)\s*/gi, '')
+        .replace(/\b(корпус|корп|к\.)\s*/gi, 'к')
+        .replace(/\s+/g, ' ')
+        .trim();
+    var withoutStreetWord = compactHouse
+        .replace(/\b(улица|ул\.)\s*/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    var queries = [];
+    function pushQuery(v) {
+        var s = String(v || '').trim();
+        if (!s) return;
+        if (queries.indexOf(s) === -1) queries.push(s);
     }
-    var query = q + ', ' + tail.join(', ');
-    var url =
-        'https://nominatim.openstreetmap.org/search?' +
-        new URLSearchParams({ format: 'json', limit: '1', q: query }).toString();
-    return fetch(url, {
-        method: 'GET',
-        headers: { 'Accept-Language': 'ru-RU,ru;q=0.9' },
-        mode: 'cors'
-    })
-        .then(function (r) {
-            return r.json();
+
+    if (districtTrim) {
+        pushQuery(normalized + ', ' + districtTrim + ' район, Санкт-Петербург, Россия');
+        pushQuery(compactHouse + ', ' + districtTrim + ' район, Санкт-Петербург, Россия');
+    }
+    pushQuery(normalized + ', Санкт-Петербург, Россия');
+    pushQuery(compactHouse + ', Санкт-Петербург, Россия');
+    pushQuery(withoutStreetWord + ', Санкт-Петербург, Россия');
+    pushQuery(normalized + ', Россия');
+    pushQuery(compactHouse + ', Россия');
+
+    var baseParams = {
+        format: 'json',
+        limit: '1',
+        countrycodes: 'ru',
+        addressdetails: '1',
+        'accept-language': 'ru-RU,ru;q=0.9'
+    };
+
+    function fetchOne(query, boundedToSpb) {
+        var params = Object.assign({}, baseParams, { q: query });
+        if (boundedToSpb) {
+            // Границы Санкт-Петербурга (приблизительно): left,top,right,bottom
+            params.viewbox = '29.5,60.2,31.6,59.6';
+            params.bounded = '1';
+        }
+        var url = 'https://nominatim.openstreetmap.org/search?' + new URLSearchParams(params).toString();
+        return fetch(url, {
+            method: 'GET',
+            headers: { 'Accept-Language': 'ru-RU,ru;q=0.9' },
+            mode: 'cors'
         })
-        .then(function (arr) {
-            if (!arr || !arr.length) return null;
-            var lat = parseFloat(arr[0].lat);
-            var lng = parseFloat(arr[0].lon);
-            if (isNaN(lat) || isNaN(lng)) return null;
-            return { lat: lat, lng: lng };
-        })
-        .catch(function () {
-            return null;
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (arr) {
+                if (!arr || !arr.length) return null;
+                var lat = parseFloat(arr[0].lat);
+                var lng = parseFloat(arr[0].lon);
+                if (isNaN(lat) || isNaN(lng)) return null;
+                return { lat: lat, lng: lng };
+            })
+            .catch(function () {
+                return null;
+            });
+    }
+
+    function tryQuery(index, boundedToSpb) {
+        if (index >= queries.length) return Promise.resolve(null);
+        return fetchOne(queries[index], boundedToSpb).then(function (coords) {
+            if (coords) return coords;
+            return tryQuery(index + 1, boundedToSpb);
         });
+    }
+
+    return tryQuery(0, true).then(function (coords) {
+        if (coords) return coords;
+        return tryQuery(0, false);
+    });
 }
 
 // Animate on scroll

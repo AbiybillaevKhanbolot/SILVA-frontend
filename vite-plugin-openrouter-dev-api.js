@@ -5,13 +5,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadEnv } from "vite";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
-function readBodyJson(req) {
+function readBodyJson(req, maxLen = 200_000) {
   return new Promise((resolve, reject) => {
     let raw = "";
     req.on("data", (c) => {
       raw += c;
-      if (raw.length > 200_000) {
+      if (raw.length > maxLen) {
         req.destroy();
         reject(new Error("body too large"));
       }
@@ -99,6 +100,23 @@ function sanitizeMessages(raw) {
   return out;
 }
 
+function sanitizeFileName(name) {
+  const base = String(name || "image.jpg")
+    .replace(/[^\w.\-]+/g, "_")
+    .slice(-120);
+  return base || "image.jpg";
+}
+
+function inferExt(contentType, fileName) {
+  const low = String(contentType || "").toLowerCase();
+  if (low.includes("png")) return "png";
+  if (low.includes("webp")) return "webp";
+  if (low.includes("gif")) return "gif";
+  if (low.includes("jpeg") || low.includes("jpg")) return "jpg";
+  const m = /\.([a-z0-9]{1,6})$/i.exec(String(fileName || ""));
+  return m ? String(m[1]).toLowerCase() : "jpg";
+}
+
 export function openrouterDevApiPlugin() {
   return {
     name: "openrouter-dev-api",
@@ -112,6 +130,11 @@ export function openrouterDevApiPlugin() {
         const env = { ...fromDisk, ...fromVite, ...process.env };
         const apiKey = env.OPENROUTER_API_KEY;
         const model = (env.OPENROUTER_MODEL || DEFAULT_MODEL).trim() || DEFAULT_MODEL;
+        const storageEndpoint = String(env.YC_STORAGE_ENDPOINT || "https://storage.yandexcloud.net").trim();
+        const storageRegion = String(env.YC_STORAGE_REGION || "ru-central1").trim();
+        const storageBucket = String(env.YC_STORAGE_BUCKET || "").trim();
+        const storageAccessKeyId = String(env.YC_STORAGE_ACCESS_KEY_ID || "").trim();
+        const storageSecretAccessKey = String(env.YC_STORAGE_SECRET_ACCESS_KEY || "").trim();
 
         if (rawUrl.startsWith("/api/ai/chat") && req.method === "POST") {
           res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -172,6 +195,75 @@ export function openrouterDevApiPlugin() {
               JSON.stringify({
                 error: "server_error",
                 message: e && e.message ? String(e.message) : "error",
+              }),
+            );
+          }
+          return;
+        }
+
+        if (rawUrl.startsWith("/api/storage/upload") && req.method === "POST") {
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          if (!storageBucket || !storageAccessKeyId || !storageSecretAccessKey) {
+            res.statusCode = 503;
+            res.end(
+              JSON.stringify({
+                error: "storage_env_missing",
+                message:
+                  "Задайте в .env: YC_STORAGE_BUCKET, YC_STORAGE_ACCESS_KEY_ID, YC_STORAGE_SECRET_ACCESS_KEY.",
+              }),
+            );
+            return;
+          }
+          try {
+            const body = await readBodyJson(req, 12_000_000);
+            const fileName = sanitizeFileName(body.fileName);
+            const contentType = String(body.contentType || "image/jpeg").slice(0, 80);
+            const base64 = String(body.base64 || "");
+            const ownerId = String(body.ownerId || "anon").replace(/[^\w\-]+/g, "_").slice(0, 64);
+            if (!base64) {
+              res.statusCode = 400;
+              res.end(JSON.stringify({ error: "missing_file_data" }));
+              return;
+            }
+            const bytes = Buffer.from(base64, "base64");
+            if (!bytes.length || bytes.length > 10 * 1024 * 1024) {
+              res.statusCode = 400;
+              res.end(JSON.stringify({ error: "invalid_or_too_large_file" }));
+              return;
+            }
+
+            const ext = inferExt(contentType, fileName);
+            const objectKey = `${ownerId}/property-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const client = new S3Client({
+              region: storageRegion,
+              endpoint: storageEndpoint,
+              forcePathStyle: true,
+              credentials: {
+                accessKeyId: storageAccessKeyId,
+                secretAccessKey: storageSecretAccessKey,
+              },
+            });
+            await client.send(
+              new PutObjectCommand({
+                Bucket: storageBucket,
+                Key: objectKey,
+                Body: bytes,
+                ContentType: contentType,
+                ACL: "public-read",
+              }),
+            );
+            const publicUrl = `${storageEndpoint.replace(/\/$/, "")}/${encodeURIComponent(storageBucket)}/${objectKey
+              .split("/")
+              .map((x) => encodeURIComponent(x))
+              .join("/")}`;
+            res.statusCode = 200;
+            res.end(JSON.stringify({ url: publicUrl, key: objectKey }));
+          } catch (e) {
+            res.statusCode = 500;
+            res.end(
+              JSON.stringify({
+                error: "storage_upload_failed",
+                message: e && e.message ? String(e.message) : "upload_error",
               }),
             );
           }

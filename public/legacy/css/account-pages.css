@@ -1189,8 +1189,20 @@ body.profile-body-inter #profile-edit-modal .btn.btn-primary:hover {
 
 .favorites-grid-wrap .favorites-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .favorites-grid-wrap .favorites-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1280px) {
+    .favorites-grid-wrap .favorites-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 /* Профиль: Inter на всей странице (шапка, подвал, контент) */

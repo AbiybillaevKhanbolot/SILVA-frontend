@@ -77,36 +77,43 @@
 
     async function uploadOwnerPropertyImage(file) {
         var auth = global.silvaSupabaseAuth;
-        if (!auth || typeof auth.ensureClient !== 'function') {
-            throw new Error('Supabase не подключен на странице.');
+        if (!auth || typeof auth.getSessionUser !== 'function') {
+            throw new Error('Клиент авторизации не подключен на странице.');
         }
-        var sb = auth.ensureClient();
-        if (!sb) throw new Error('Supabase client не инициализирован.');
         var user = await auth.getSessionUser();
         if (!user || !user.id) throw new Error('Сессия не найдена. Войдите заново.');
-
-        var ext = fileExt(file.name);
-        var safeExt = /^[a-z0-9]+$/.test(ext) ? ext : 'jpg';
-        var path =
-            user.id +
-            '/property-' +
-            Date.now() +
-            '-' +
-            Math.random().toString(36).slice(2, 8) +
-            '.' +
-            safeExt;
-
-        var up = await sb.storage.from('property-images').upload(path, file, {
-            upsert: false,
-            contentType: file.type || 'image/jpeg'
+        var uploadUrl =
+            (global.SILVA_UPLOAD_API_URL && String(global.SILVA_UPLOAD_API_URL).trim()) ||
+            '/api/storage/upload';
+        var b64 = await new Promise(function (resolve, reject) {
+            var r = new FileReader();
+            r.onload = function () {
+                var s = typeof r.result === 'string' ? r.result : '';
+                var idx = s.indexOf(',');
+                resolve(idx >= 0 ? s.slice(idx + 1) : s);
+            };
+            r.onerror = function () {
+                reject(new Error('Не удалось прочитать файл'));
+            };
+            r.readAsDataURL(file);
         });
-        if (up.error) throw up.error;
-
-        var pub = sb.storage.from('property-images').getPublicUrl(path);
-        if (!pub || !pub.data || !pub.data.publicUrl) {
-            throw new Error('Не удалось получить URL загруженного фото.');
+        var resp = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ownerId: user.id,
+                fileName: file.name || ('image.' + fileExt(file.name)),
+                contentType: file.type || 'image/jpeg',
+                base64: b64
+            })
+        });
+        var data = await resp.json().catch(function () { return {}; });
+        if (!resp.ok || !data || !data.url) {
+            throw new Error(
+                (data && data.message) || 'Не удалось загрузить фото. Проверьте /api/storage/upload и ключи хранилища.'
+            );
         }
-        return pub.data.publicUrl;
+        return data.url;
     }
 
     function visaOptionsHtml() {
@@ -541,7 +548,7 @@
                     showBanner(
                         banner,
                         (err && err.message ? err.message : 'Не удалось загрузить фото в хранилище.') +
-                            ' Проверьте bucket property-images и policies.',
+                            ' Проверьте настройки Yandex Object Storage и ключи в .env.',
                         true
                     );
                 } finally {
@@ -677,10 +684,16 @@
 
                 if (addr && typeof geocodeSilvaAddress === 'function') {
                     geocodeSilvaAddress(addr, regionVal).then(function (coords) {
-                        if (coords) {
-                            listing.map_lat = coords.lat;
-                            listing.map_lng = coords.lng;
+                        if (!coords) {
+                            showBanner(
+                                banner,
+                                'Не удалось определить координаты по этому адресу. Уточните адрес (улица, дом) и сохраните снова.',
+                                true
+                            );
+                            return;
                         }
+                        listing.map_lat = coords.lat;
+                        listing.map_lng = coords.lng;
                         persistListing();
                     });
                 } else {

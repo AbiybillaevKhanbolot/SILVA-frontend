@@ -17,7 +17,9 @@
     }
 
     function normalizeOwnerVerificationStatus(raw) {
-        if (raw === 'verified' || raw === 'rejected') return raw;
+        var s = String(raw || '').trim().toLowerCase();
+        if (s === 'verified' || s === 'approved') return 'verified';
+        if (s === 'rejected' || s === 'denied') return 'rejected';
         return 'pending';
     }
 
