@@ -380,9 +380,9 @@
 
     async function fetchFavorites() {
         await ensureFirebase();
-        var user = auth.currentUser;
+        var user = await getSessionUser();
         if (!user) return [];
-        var q = await db.collection('favorites').where('user_id', '==', user.uid).orderBy('created_at', 'desc').get();
+        var q = await db.collection('favorites').where('user_id', '==', user.id).orderBy('created_at', 'desc').get();
         var ids = [];
         q.forEach(function (d) {
             var row = d.data() || {};
@@ -396,14 +396,14 @@
 
     async function setFavorite(propertyId, isFavorite) {
         await ensureFirebase();
-        var user = auth.currentUser;
+        var user = await getSessionUser();
         if (!user) throw new Error('Нужна авторизация');
         var pid = normalizeAnyId(propertyId);
         if (!pid) throw new Error('Некорректный объект');
-        var id = user.uid + '__' + pid;
+        var id = user.id + '__' + pid;
         if (isFavorite) {
             await db.collection('favorites').doc(id).set({
-                user_id: user.uid,
+                user_id: user.id,
                 property_id: pid,
                 created_at: nowIso()
             });
@@ -498,13 +498,13 @@
 
     async function createBooking(payload) {
         await ensureFirebase();
-        var user = auth.currentUser;
-        if (!user) throw new Error('Нужна авторизация для бронирования');
+        var user = await getSessionUser();
+        if (!user || !user.id) throw new Error('Нужна авторизация для бронирования');
         var pid = normalizeAnyId(payload.propertyId);
         if (!pid) throw new Error('Не указан объект для бронирования');
         var row = {
-            user_id: user.uid,
-            guest_id: user.uid,
+            user_id: user.id,
+            guest_id: user.id,
             property_id: pid,
             check_in: payload.checkIn,
             check_out: payload.checkOut,
@@ -522,9 +522,9 @@
 
     async function fetchMyBookings() {
         await ensureFirebase();
-        var user = auth.currentUser;
+        var user = await getSessionUser();
         if (!user) return [];
-        var q = await db.collection('bookings').where('user_id', '==', user.uid).orderBy('created_at', 'desc').get();
+        var q = await db.collection('bookings').where('user_id', '==', user.id).orderBy('created_at', 'desc').get();
         var out = [];
         q.forEach(function (d) {
             var row = d.data() || {};
@@ -602,26 +602,26 @@
 
     async function fetchLoyaltyPoints() {
         await ensureFirebase();
-        var user = auth.currentUser;
+        var user = await getSessionUser();
         if (!user) return 0;
-        var doc = await db.collection('loyalty_accounts').doc(user.uid).get();
+        var doc = await db.collection('loyalty_accounts').doc(user.id).get();
         if (!doc.exists) return 0;
         return Number((doc.data() || {}).points) || 0;
     }
 
     async function incrementLoyaltyPointsAfterPayment(delta, reason, bookingRowId) {
         await ensureFirebase();
-        var user = auth.currentUser;
-        if (!user) throw new Error('Нет сессии');
+        var user = await getSessionUser();
+        if (!user || !user.id) throw new Error('Нет сессии');
         var d = Math.floor(Number(delta));
         if (!isFinite(d) || d < 1) return;
-        var ref = db.collection('loyalty_accounts').doc(user.uid);
+        var ref = db.collection('loyalty_accounts').doc(user.id);
         var cur = await ref.get();
         var current = cur.exists ? Number((cur.data() || {}).points) || 0 : 0;
         var next = current + d;
-        await ref.set({ user_id: user.uid, points: next, updated_at: nowIso() }, { merge: true });
+        await ref.set({ user_id: user.id, points: next, updated_at: nowIso() }, { merge: true });
         await db.collection('loyalty_transactions').add({
-            user_id: user.uid,
+            user_id: user.id,
             amount: d,
             reason: reason || 'Оплата бронирования',
             booking_id: bookingRowId ? String(bookingRowId) : null,
