@@ -186,6 +186,40 @@
         });
     }
 
+    async function uploadFileToStorageApi(file, ownerId, kind) {
+        var uploadUrl =
+            (window.SILVA_UPLOAD_API_URL && String(window.SILVA_UPLOAD_API_URL).trim()) ||
+            '/api/storage/upload';
+        var b64 = await new Promise(function (resolve, reject) {
+            var r = new FileReader();
+            r.onload = function () {
+                var s = typeof r.result === 'string' ? r.result : '';
+                var idx = s.indexOf(',');
+                resolve(idx >= 0 ? s.slice(idx + 1) : s);
+            };
+            r.onerror = function () {
+                reject(new Error('Не удалось прочитать файл'));
+            };
+            r.readAsDataURL(file);
+        });
+        var resp = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ownerId: ownerId,
+                kind: kind || 'avatar',
+                fileName: file.name || 'image.jpg',
+                contentType: file.type || 'image/jpeg',
+                base64: b64
+            })
+        });
+        var data = await resp.json().catch(function () { return {}; });
+        if (!resp.ok || !data || !data.url) {
+            throw new Error((data && data.message) || 'Не удалось загрузить файл в облачное хранилище.');
+        }
+        return data.url;
+    }
+
     function initPersonalGuestStorage(email) {
         var e = normalizeEmail(email);
         if (!e) return;
@@ -889,16 +923,12 @@
 
     async function uploadAvatar(file) {
         await ensureFirebase();
-        var user = auth.currentUser;
-        if (!user) throw new Error('Пользователь не авторизован');
+        var user = await getSessionUser();
+        if (!user || !user.id) throw new Error('Пользователь не авторизован');
         try {
-            var ext = (file.name || '').split('.').pop().toLowerCase() || 'jpg';
-            var path = 'avatars/' + user.uid + '/avatar-' + Date.now() + '.' + ext;
-            var ref = storage.ref().child(path);
-            await ref.put(file, { contentType: file.type || 'image/jpeg' });
-            return await ref.getDownloadURL();
+            return await uploadFileToStorageApi(file, user.id, 'avatar');
         } catch (eStorage) {
-            // Spark-план или отключенный Storage: сохраняем avatar как Data URL в Firestore.
+            // Последний fallback: data URL в Firestore.
             var dataUrl = await fileToDataUrl(file);
             if (!dataUrl) throw new Error('Не удалось загрузить аватар');
             return dataUrl;

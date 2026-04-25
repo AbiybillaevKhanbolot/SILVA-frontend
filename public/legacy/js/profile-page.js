@@ -276,12 +276,16 @@
 
     var modalAvatarDataUrl = null;
     var modalAvatarFile = null;
+    var modalAvatarUploadedUrl = null;
+    var modalAvatarUploading = false;
     var modalAvatarRemoved = false;
 
     function openModal() {
         var u = loadUser();
         modalAvatarDataUrl = u.avatar || null;
         modalAvatarFile = null;
+        modalAvatarUploadedUrl = null;
+        modalAvatarUploading = false;
         modalAvatarRemoved = false;
 
         document.getElementById('modal-name').value = u.name || '';
@@ -416,16 +420,44 @@
                 if (url) {
                     modalAvatarFile = f;
                     modalAvatarDataUrl = url;
+                    modalAvatarUploadedUrl = null;
                     modalAvatarRemoved = false;
                     updateModalPhotoUI();
                 }
                 document.getElementById('modal-avatar-input').value = '';
             });
+            (async function () {
+                var submitBtn = document.querySelector('#profile-modal-form button[type="submit"]');
+                if (!window.silvaSupabaseAuth || typeof window.silvaSupabaseAuth.uploadAvatar !== 'function') return;
+                try {
+                    modalAvatarUploading = true;
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Загружаем фото...';
+                    }
+                    modalAvatarUploadedUrl = await window.silvaSupabaseAuth.uploadAvatar(f);
+                    modalAvatarDataUrl = modalAvatarUploadedUrl;
+                    modalAvatarFile = null;
+                    modalAvatarRemoved = false;
+                    updateModalPhotoUI();
+                } catch (e) {
+                    modalAvatarUploadedUrl = null;
+                    modalAvatarFile = f;
+                    alert(e && e.message ? e.message : 'Не удалось загрузить фото.');
+                } finally {
+                    modalAvatarUploading = false;
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Сохранить';
+                    }
+                }
+            })();
         });
 
         document.getElementById('modal-btn-remove-photo').addEventListener('click', function () {
             modalAvatarFile = null;
             modalAvatarDataUrl = null;
+            modalAvatarUploadedUrl = null;
             modalAvatarRemoved = true;
             updateModalPhotoUI();
         });
@@ -438,7 +470,16 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Сохранение...';
             }
+            if (modalAvatarUploading) {
+                alert('Дождитесь завершения загрузки фото.');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText || 'Сохранить';
+                }
+                return;
+            }
             var prev = loadUser();
+            var saveOk = false;
             var next = Object.assign({}, prev, {
                 name: document.getElementById('modal-name').value.trim(),
                 email: document.getElementById('modal-email').value.trim(),
@@ -452,6 +493,8 @@
                     var avatarUrl;
                     if (modalAvatarRemoved) {
                         avatarUrl = null;
+                    } else if (modalAvatarUploadedUrl) {
+                        avatarUrl = modalAvatarUploadedUrl;
                     } else if (modalAvatarFile) {
                         avatarUrl = await supabase.uploadAvatar(modalAvatarFile);
                     } else if (modalAvatarDataUrl && /^(https?:\/\/|data:image\/)/i.test(modalAvatarDataUrl)) {
@@ -481,12 +524,20 @@
                 if (typeof initHeader === 'function') initHeader();
                 await refreshPage();
                 if (typeof SilvaIcons !== 'undefined' && SilvaIcons.hydrate) SilvaIcons.hydrate(document);
+                saveOk = true;
             } catch (err) {
                 alert(err && err.message ? err.message : 'Не удалось сохранить профиль.');
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
-                    submitBtn.textContent = originalBtnText || 'Сохранить';
+                    if (saveOk && (modalAvatarUploadedUrl || modalAvatarRemoved)) {
+                        submitBtn.textContent = 'Сохранено';
+                        setTimeout(function () {
+                            submitBtn.textContent = originalBtnText || 'Сохранить';
+                        }, 1600);
+                    } else {
+                        submitBtn.textContent = originalBtnText || 'Сохранить';
+                    }
                 }
             }
         });

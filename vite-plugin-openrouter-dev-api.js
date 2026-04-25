@@ -220,6 +220,8 @@ export function openrouterDevApiPlugin() {
             const contentType = String(body.contentType || "image/jpeg").slice(0, 80);
             const base64 = String(body.base64 || "");
             const ownerId = String(body.ownerId || "anon").replace(/[^\w\-]+/g, "_").slice(0, 64);
+            const kindRaw = String(body.kind || "property").toLowerCase();
+            const kind = kindRaw === "avatar" ? "avatar" : "property";
             if (!base64) {
               res.statusCode = 400;
               res.end(JSON.stringify({ error: "missing_file_data" }));
@@ -233,7 +235,8 @@ export function openrouterDevApiPlugin() {
             }
 
             const ext = inferExt(contentType, fileName);
-            const objectKey = `${ownerId}/property-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+            const prefix = kind === "avatar" ? "avatars" : "property";
+            const objectKey = `${ownerId}/${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
             const client = new S3Client({
               region: storageRegion,
               endpoint: storageEndpoint,
