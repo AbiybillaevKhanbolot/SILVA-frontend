@@ -268,17 +268,146 @@ document.addEventListener('DOMContentLoaded', async function() {
         }).join('');
     }
 
-    // Map
-    const propertyMap = document.getElementById('property-map');
-    const mapWrap = document.getElementById('property-map-wrap');
-    if (propertyMap && (property.map_lat != null && property.map_lng != null)) {
-        const lat = property.map_lat;
-        const lng = property.map_lng;
-        propertyMap.src = 'https://yandex.ru/map-widget/v1/?ll=' + encodeURIComponent(lng) + '%2C' + encodeURIComponent(lat) + '&z=15&pt=' + encodeURIComponent(lng) + ',' + encodeURIComponent(lat);
-        propertyMap.style.display = 'block';
-    } else if (mapWrap) {
-        mapWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-gray-500);font-size:0.875rem;">Карта недоступна</div>';
+    // Map: custom black marker + all project objects
+    function parseCoord(value) {
+        var n = Number(value);
+        return isNaN(n) ? null : n;
     }
+
+    function hasValidCoords(lat, lng) {
+        return (
+            typeof lat === 'number' &&
+            typeof lng === 'number' &&
+            !isNaN(lat) &&
+            !isNaN(lng) &&
+            lat >= -90 &&
+            lat <= 90 &&
+            lng >= -180 &&
+            lng <= 180
+        );
+    }
+
+    function ensureMapMarkerStyles() {
+        if (document.getElementById('silva-map-marker-styles')) return;
+        var st = document.createElement('style');
+        st.id = 'silva-map-marker-styles';
+        st.textContent =
+            '.silva-map-pin{width:18px;height:18px;border-radius:50%;background:#111;border:2px solid #111;box-shadow:0 2px 6px rgba(0,0,0,.22);position:relative;box-sizing:border-box;}' +
+            '.silva-map-pin::after{content:\"\";position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);}' +
+            '.silva-map-pin--current{width:20px;height:20px;}';
+        document.head.appendChild(st);
+    }
+
+    function ensureYmapsReady() {
+        if (window.ymaps && typeof window.ymaps.ready === 'function') {
+            return new Promise(function (resolve) {
+                window.ymaps.ready(resolve);
+            });
+        }
+        if (window.__silvaYmapsPromise) return window.__silvaYmapsPromise;
+        window.__silvaYmapsPromise = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = 'https://api-maps.yandex.ru/2.1/?lang=ru_RU';
+            s.async = true;
+            s.onload = function () {
+                if (!window.ymaps || typeof window.ymaps.ready !== 'function') {
+                    reject(new Error('ymaps_unavailable'));
+                    return;
+                }
+                window.ymaps.ready(resolve);
+            };
+            s.onerror = function () {
+                reject(new Error('ymaps_load_failed'));
+            };
+            document.head.appendChild(s);
+        });
+        return window.__silvaYmapsPromise;
+    }
+
+    async function renderObjectMap() {
+        const mapWrap = document.getElementById('property-map-wrap');
+        const propertyMap = document.getElementById('property-map');
+        if (!mapWrap) return;
+
+        var currentLat = parseCoord(property.map_lat);
+        var currentLng = parseCoord(property.map_lng);
+        if (!hasValidCoords(currentLat, currentLng)) {
+            mapWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--color-gray-500);font-size:0.875rem;">Карта недоступна</div>';
+            return;
+        }
+
+        try {
+            await ensureYmapsReady();
+            ensureMapMarkerStyles();
+        } catch (eLoad) {
+            // Fallback to old widget map if API is blocked.
+            if (propertyMap) {
+                propertyMap.src = 'https://yandex.ru/map-widget/v1/?ll=' + encodeURIComponent(currentLng) + '%2C' + encodeURIComponent(currentLat) + '&z=15&pt=' + encodeURIComponent(currentLng) + ',' + encodeURIComponent(currentLat);
+                propertyMap.style.display = 'block';
+            }
+            return;
+        }
+
+        var mapHost = document.createElement('div');
+        mapHost.id = 'property-map-ymaps';
+        mapHost.style.width = '100%';
+        mapHost.style.height = '100%';
+        mapWrap.innerHTML = '';
+        mapWrap.appendChild(mapHost);
+
+        var map = new window.ymaps.Map(mapHost, {
+            center: [currentLat, currentLng],
+            zoom: 14,
+            controls: ['zoomControl', 'geolocationControl']
+        });
+        map.behaviors.disable('scrollZoom');
+
+        var normalLayout = window.ymaps.templateLayoutFactory.createClass('<div class="silva-map-pin"></div>');
+        var currentLayout = window.ymaps.templateLayoutFactory.createClass('<div class="silva-map-pin silva-map-pin--current"></div>');
+
+        var allObjects = typeof mockAPI !== 'undefined' && typeof mockAPI.getProperties === 'function' ? mockAPI.getProperties({}) : [];
+        var points = [];
+        allObjects.forEach(function (obj) {
+            var lat = parseCoord(obj && obj.map_lat);
+            var lng = parseCoord(obj && obj.map_lng);
+            if (!hasValidCoords(lat, lng)) return;
+            points.push({
+                id: obj && obj.id != null ? String(obj.id) : '',
+                coords: [lat, lng],
+                title: (obj && obj.title) || 'Объект'
+            });
+        });
+
+        if (!points.length) {
+            points.push({ id: String(property.id || ''), coords: [currentLat, currentLng], title: property.title || 'Объект' });
+        }
+
+        var boundsPoints = [];
+        points.forEach(function (p) {
+            var isCurrent = String(p.id) === String(property.id);
+            var mark = new window.ymaps.Placemark(
+                p.coords,
+                { hintContent: p.title },
+                {
+                    iconLayout: isCurrent ? currentLayout : normalLayout,
+                    iconShape: { type: 'Circle', coordinates: [10, 10], radius: 10 }
+                }
+            );
+            map.geoObjects.add(mark);
+            boundsPoints.push(p.coords);
+        });
+
+        if (boundsPoints.length > 1) {
+            map.setBounds(window.ymaps.util.bounds.fromPoints(boundsPoints), {
+                checkZoomRange: true,
+                zoomMargin: 30
+            });
+        } else {
+            map.setCenter([currentLat, currentLng], 15);
+        }
+    }
+
+    await renderObjectMap();
 
     // Conditions
     const conditionsEl = document.getElementById('property-conditions');
