@@ -154,15 +154,19 @@
             }
         }
         closeCancelModal();
+        var usedRemoteCancel = false;
         try {
             if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.cancelBooking === 'function') {
+                usedRemoteCancel = true;
                 await window.silvaSupabaseAuth.cancelBooking(id);
             } else {
                 var next = all.filter(function (x) { return String(x.id) !== String(id); });
                 saveBookings(next);
             }
         } catch (e) {}
-        revokeLoyaltyForBooking(removed);
+        if (!usedRemoteCancel) {
+            revokeLoyaltyForBooking(removed);
+        }
         render();
     }
 

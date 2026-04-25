@@ -816,9 +816,54 @@
 
     async function cancelBooking(bookingId) {
         await ensureFirebase();
+        var user = await getSessionUser();
+        if (!user || !user.id) throw new Error('Нужна авторизация');
         var bid = normalizeAnyId(bookingId);
         if (!bid) throw new Error('Некорректный id брони');
-        await db.collection('bookings').doc(bid).delete();
+        var ref = db.collection('bookings').doc(bid);
+        var snap = await ref.get();
+        if (!snap.exists) return { revokedPoints: 0 };
+        var row = snap.data() || {};
+        var ownerId = normalizeAnyId(row.user_id || row.guest_id);
+        if (!ownerId || ownerId !== user.id) {
+            throw new Error('Отменить можно только свою бронь');
+        }
+
+        var revoke = 0;
+        try {
+            var tSnap = await db.collection('loyalty_transactions').where('booking_id', '==', bid).get();
+            tSnap.forEach(function (d) {
+                var tr = d.data() || {};
+                if (normalizeAnyId(tr.user_id) !== user.id) return;
+                var amt = Math.floor(Number(tr.amount) || 0);
+                if (amt > 0) revoke += amt;
+            });
+        } catch (eTx) {}
+        if (revoke <= 0) {
+            var paid = Number(row.total_price || row.total_amount || 0) || 0;
+            revoke = Math.max(0, Math.floor(paid / 100));
+        }
+
+        if (revoke > 0) {
+            var accRef = db.collection('loyalty_accounts').doc(user.id);
+            var accSnap = await accRef.get();
+            var current = accSnap.exists ? Number((accSnap.data() || {}).points) || 0 : 0;
+            var next = Math.max(0, current - revoke);
+            await accRef.set({ user_id: user.id, points: next, updated_at: nowIso() }, { merge: true });
+            await db.collection('loyalty_transactions').add({
+                user_id: user.id,
+                amount: -revoke,
+                reason: 'Отмена бронирования',
+                booking_id: bid,
+                created_at: nowIso()
+            });
+        }
+
+        await ref.delete();
+        try {
+            await refreshPropertyBookedRangesCache(row.property_id);
+        } catch (eCache) {}
+        return { revokedPoints: revoke };
     }
 
     async function fetchBookingsByPropertyIds(propertyIds) {
