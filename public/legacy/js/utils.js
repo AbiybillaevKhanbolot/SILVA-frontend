@@ -425,6 +425,9 @@ const mockAPI = {
         });
         const source = published.length ? published : ownerList;
         return source
+            .filter(function (p) {
+                return (Number(p && p.rating) || 0) === 10;
+            })
             .slice()
             .sort(function (a, b) {
                 var br = Number(b && b.rating) || 0;
@@ -435,7 +438,7 @@ const mockAPI = {
                 if (bc !== ac) return bc - ac;
                 return (Number(b && b.id) || 0) - (Number(a && a.id) || 0);
             })
-            .slice(0, 6);
+            .slice(0, 3);
     },
 
     getOwnerListingsFromStorage: function() {
