@@ -617,6 +617,68 @@
         return ranges;
     }
 
+    function uniqRanges(ranges) {
+        var out = [];
+        var seen = {};
+        var src = Array.isArray(ranges) ? ranges : [];
+        for (var i = 0; i < src.length; i++) {
+            var r = src[i] || {};
+            var a = String(r.check_in == null ? '' : r.check_in).slice(0, 10);
+            var b = String(r.check_out == null ? '' : r.check_out).slice(0, 10);
+            var k = a + '|' + b;
+            if (!a || !b || !(a < b) || seen[k]) continue;
+            seen[k] = true;
+            out.push({ check_in: a, check_out: b });
+        }
+        return out;
+    }
+
+    async function syncAllBookedRangesCachesForSignedUser() {
+        await ensureFirebase();
+        var user = await getSessionUser();
+        if (!user || !user.id) return false;
+        var nowTs = Date.now();
+        var key = 'silva_booked_ranges_cache_sync_at';
+        try {
+            var last = parseInt(localStorage.getItem(key) || '0', 10) || 0;
+            // Avoid heavy full sync too often.
+            if (last > 0 && nowTs - last < 5 * 60 * 1000) return false;
+        } catch (eRead) {}
+
+        try {
+            var q = await db.collection('bookings').get();
+            var byProperty = {};
+            q.forEach(function (d) {
+                var r = d.data() || {};
+                var pid = normalizeAnyId(r.property_id);
+                if (!pid) return;
+                if (!byProperty[pid]) byProperty[pid] = [];
+                byProperty[pid].push({
+                    check_in: r.check_in,
+                    check_out: r.check_out
+                });
+            });
+            var ids = Object.keys(byProperty);
+            for (var i = 0; i < ids.length; i++) {
+                var pid = ids[i];
+                var ranges = uniqRanges(normalizeBookedRangesList(byProperty[pid]));
+                await db.collection('properties').doc(pid).set(
+                    {
+                        booked_ranges_cache: ranges,
+                        booked_ranges_updated_at: nowIso()
+                    },
+                    { merge: true }
+                );
+            }
+            try {
+                localStorage.setItem(key, String(nowTs));
+            } catch (eWrite) {}
+            return true;
+        } catch (eSync) {
+            return false;
+        }
+    }
+
     async function fetchPropertyBookedDateRanges(propertyIdRaw) {
         await ensureFirebase();
         var pid = normalizeAnyId(propertyIdRaw);
@@ -1164,7 +1226,10 @@
         ensureFirebase()
             .then(function () {
                 bindAuthObserver();
-                syncLocalUserFromSupabase();
+                syncLocalUserFromSupabase().then(function () {
+                    // Backfill occupied ranges cache so guests can see blocked dates.
+                    syncAllBookedRangesCachesForSignedUser().catch(function () {});
+                });
             })
             .catch(function (e) {
                 console.warn('[Silva] Firebase init failed:', e && e.message ? e.message : e);
