@@ -1178,6 +1178,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 author = name || 'Гость';
                 avatar = u.avatar || null;
             } catch (e) {}
+            if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.syncLocalUserFromSupabase === 'function') {
+                try {
+                    await window.silvaSupabaseAuth.syncLocalUserFromSupabase();
+                    const u2 = JSON.parse(localStorage.getItem('silva_user') || '{}');
+                    if (u2 && u2.avatar) avatar = u2.avatar;
+                    if (u2 && u2.name && String(u2.name).trim()) author = String(u2.name).trim();
+                } catch (eSync) {}
+            }
             const rating = selectedStars * 2;
 
             var supa = window.silvaSupabaseAuth;

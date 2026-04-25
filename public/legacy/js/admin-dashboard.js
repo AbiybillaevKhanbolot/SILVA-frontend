@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     avatarUrl = null;
                 } else if (modalAvatarFile) {
                     avatarUrl = await window.silvaSupabaseAuth.uploadAvatar(modalAvatarFile);
-                } else if (modalAvatarDataUrl && /^https?:\/\//.test(modalAvatarDataUrl)) {
+                } else if (modalAvatarDataUrl && /^(https?:\/\/|data:image\/)/i.test(modalAvatarDataUrl)) {
                     avatarUrl = modalAvatarDataUrl;
                 }
 

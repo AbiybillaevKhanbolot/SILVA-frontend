@@ -754,11 +754,21 @@
         if (!reviewIdParsed) throw new Error('Ответ доступен только к отзывам из базы');
         var text = payload && payload.text != null ? String(payload.text).trim() : '';
         if (!text) throw new Error('Введите текст ответа');
+        var ownerAvatar =
+            payload && payload.ownerAvatarUrl != null && String(payload.ownerAvatarUrl).trim()
+                ? String(payload.ownerAvatarUrl).trim()
+                : null;
+        if (!ownerAvatar) {
+            try {
+                var p = await fetchProfile(user.uid);
+                ownerAvatar = p && p.avatar_url ? String(p.avatar_url) : null;
+            } catch (eProfile) {}
+        }
         await db.collection('reviews').doc(reviewIdParsed).set(
             {
                 owner_id: user.uid,
                 owner_response_text: text,
-                owner_avatar_url: payload && payload.ownerAvatarUrl ? String(payload.ownerAvatarUrl) : null,
+                owner_avatar_url: ownerAvatar,
                 owner_response_updated_at: nowIso()
             },
             { merge: true }

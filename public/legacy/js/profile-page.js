@@ -454,7 +454,7 @@
                         avatarUrl = null;
                     } else if (modalAvatarFile) {
                         avatarUrl = await supabase.uploadAvatar(modalAvatarFile);
-                    } else if (modalAvatarDataUrl && /^https?:\/\//.test(modalAvatarDataUrl)) {
+                    } else if (modalAvatarDataUrl && /^(https?:\/\/|data:image\/)/i.test(modalAvatarDataUrl)) {
                         avatarUrl = modalAvatarDataUrl;
                     }
                     var saved = await supabase.saveProfile({
