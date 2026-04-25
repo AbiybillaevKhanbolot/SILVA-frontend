@@ -292,9 +292,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         var st = document.createElement('style');
         st.id = 'silva-map-marker-styles';
         st.textContent =
-            '.silva-map-pin{width:18px;height:18px;border-radius:50%;background:#111;border:2px solid #111;box-shadow:0 2px 6px rgba(0,0,0,.22);position:relative;box-sizing:border-box;}' +
-            '.silva-map-pin::after{content:\"\";position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);}' +
-            '.silva-map-pin--current{width:20px;height:20px;}';
+            '.silva-map-pin{position:relative;box-sizing:border-box;filter:drop-shadow(0 2px 5px rgba(0,0,0,.28));}' +
+            '.silva-map-pin--normal{width:28px;height:29px;}' +
+            '.silva-map-pin--current{width:32px;height:35px;}' +
+            '.silva-map-pin-head{background:#111;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;margin:0 auto;}' +
+            '.silva-map-pin--normal .silva-map-pin-head{width:24px;height:20px;border-radius:5px;}' +
+            '.silva-map-pin--current .silva-map-pin-head{width:28px;height:24px;border-radius:6px;}' +
+            '.silva-map-pin-s{color:#fff;font-weight:800;font-style:italic;line-height:1;letter-spacing:-0.06em;font-family:Inter,system-ui,sans-serif;user-select:none;}' +
+            '.silva-map-pin--normal .silva-map-pin-s{font-size:11px;}' +
+            '.silva-map-pin--current .silva-map-pin-s{font-size:13px;}' +
+            '.silva-map-pin-point{width:0;height:0;margin:-1px auto 0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid #111;}' +
+            '.silva-map-pin--current .silva-map-pin-point{border-left-width:8px;border-right-width:8px;border-top-width:12px;}';
         document.head.appendChild(st);
     }
 
@@ -362,8 +370,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
         map.behaviors.disable('scrollZoom');
 
-        var normalLayout = window.ymaps.templateLayoutFactory.createClass('<div class="silva-map-pin"></div>');
-        var currentLayout = window.ymaps.templateLayoutFactory.createClass('<div class="silva-map-pin silva-map-pin--current"></div>');
+        var pinInner =
+            '<div class="silva-map-pin-head"><span class="silva-map-pin-s" aria-hidden="true">S</span></div><div class="silva-map-pin-point"></div>';
+        var normalLayout = window.ymaps.templateLayoutFactory.createClass('<div class="silva-map-pin silva-map-pin--normal">' + pinInner + '</div>');
+        var currentLayout = window.ymaps.templateLayoutFactory.createClass('<div class="silva-map-pin silva-map-pin--current">' + pinInner + '</div>');
 
         var allObjects = typeof mockAPI !== 'undefined' && typeof mockAPI.getProperties === 'function' ? mockAPI.getProperties({}) : [];
         var points = [];
@@ -385,12 +395,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         var boundsPoints = [];
         points.forEach(function (p) {
             var isCurrent = String(p.id) === String(property.id);
+            var w = isCurrent ? 32 : 28;
+            var h = isCurrent ? 35 : 29;
             var mark = new window.ymaps.Placemark(
                 p.coords,
                 { hintContent: p.title },
                 {
                     iconLayout: isCurrent ? currentLayout : normalLayout,
-                    iconShape: { type: 'Circle', coordinates: [10, 10], radius: 10 }
+                    iconOffset: [Math.round(w / 2), h],
+                    iconShape: { type: 'Rectangle', coordinates: [[0, 0], [w, h]] }
                 }
             );
             map.geoObjects.add(mark);
