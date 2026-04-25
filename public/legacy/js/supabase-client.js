@@ -139,6 +139,10 @@
         return s || null;
     }
 
+    function normalizeReviewPropertyId(value) {
+        return normalizeAnyId(value);
+    }
+
     function normalizeOwnerVerificationStatus(raw) {
         var s = String(raw || '').trim().toLowerCase();
         if (s === 'verified' || s === 'approved') return 'approved';
@@ -795,7 +799,13 @@
         await ensureFirebase();
         var pid = normalizeAnyId(propertyId);
         if (!pid) return [];
-        var q = await db.collection('reviews').where('property_id', '==', pid).orderBy('created_at', 'desc').get();
+        var q;
+        try {
+            q = await db.collection('reviews').where('property_id', '==', pid).orderBy('created_at', 'desc').get();
+        } catch (eOrder) {
+            // Fallback if Firestore composite index/order is unavailable yet.
+            q = await db.collection('reviews').where('property_id', '==', pid).get();
+        }
         var out = [];
         q.forEach(function (d) {
             var row = d.data() || {};
@@ -821,6 +831,11 @@
                 categories: {},
                 avatar: row.avatar_url || null
             });
+        });
+        out.sort(function (a, b) {
+            var ta = Date.parse(a && a._createdAt ? a._createdAt : '') || 0;
+            var tb = Date.parse(b && b._createdAt ? b._createdAt : '') || 0;
+            return tb - ta;
         });
         return out;
     }
@@ -1133,6 +1148,7 @@
         updateBookingStatus: updateBookingStatus,
         fetchLoyaltyPoints: fetchLoyaltyPoints,
         incrementLoyaltyPointsAfterPayment: incrementLoyaltyPointsAfterPayment,
+        normalizeReviewPropertyId: normalizeReviewPropertyId,
         fetchReviewsForProperty: fetchReviewsForProperty,
         insertReview: insertReview,
         deleteMyReview: deleteMyReview,
