@@ -363,6 +363,9 @@
 
     function mapPropertyRowToLegacy(id, row) {
         var gallery = Array.isArray(row.gallery_images) ? row.gallery_images.filter(Boolean) : [];
+        var lat = Number(row.map_lat);
+        var lng = Number(row.map_lng);
+        var hasCoords = !isNaN(lat) && !isNaN(lng);
         return {
             id: String(id),
             owner_id: row.owner_id || null,
@@ -389,8 +392,8 @@
             conditions: ['Заезд с 14:00', 'Выезд до 12:00'],
             extra_info: [],
             visa_info: 'Для граждан РФ виза не требуется. Иностранным гостям необходимо иметь действующую визу РФ.',
-            map_lat: 59.9343,
-            map_lng: 30.3356,
+            map_lat: hasCoords ? lat : 59.9343,
+            map_lng: hasCoords ? lng : 30.3356,
             created_at: row.created_at || null
         };
     }
@@ -436,6 +439,9 @@
             );
         }
         var propertyId = normalizeAnyId(payload.id);
+        var lat = Number(payload.map_lat);
+        var lng = Number(payload.map_lng);
+        var hasCoords = !isNaN(lat) && !isNaN(lng);
         var patch = {
             owner_id: user.uid,
             title: payload.title || '',
@@ -451,6 +457,8 @@
             status: payload.status === 'published' ? 'published' : 'draft',
             amenities: Array.isArray(payload.amenities) ? payload.amenities : ['wifi'],
             gallery_images: Array.isArray(payload.gallery_images) ? payload.gallery_images.slice(0, 10) : [],
+            map_lat: hasCoords ? lat : null,
+            map_lng: hasCoords ? lng : null,
             updated_at: nowIso()
         };
         if (!propertyId) {
