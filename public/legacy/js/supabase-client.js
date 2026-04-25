@@ -512,6 +512,10 @@
         if (!user || !user.id) throw new Error('Нужна авторизация для бронирования');
         var pid = normalizeAnyId(payload.propertyId);
         if (!pid) throw new Error('Не указан объект для бронирования');
+        var localUser = readLocalUser() || {};
+        var fallbackName = String(localUser.name || '').trim();
+        var fallbackEmail = String(localUser.email || user.email || '').trim();
+        var fallbackPhone = String(localUser.phone || '').trim();
         var row = {
             user_id: user.id,
             guest_id: user.id,
@@ -523,6 +527,9 @@
             total_price: Number(payload.totalRub) || 0,
             total_amount: Number(payload.totalRub) || 0,
             pay_type: String(payload.payType || 'full') === '30' ? '30' : 'full',
+            guest_name: String(payload.guestName || fallbackName || 'Гость'),
+            guest_email: String(payload.guestEmail || fallbackEmail || ''),
+            guest_phone: String(payload.guestPhone || fallbackPhone || ''),
             status: 'pending',
             created_at: nowIso()
         };
@@ -592,12 +599,17 @@
         var profileById = {};
         var uids = Object.keys(uidMap);
         for (var j = 0; j < uids.length; j++) {
-            var p = await fetchProfile(uids[j]);
-            if (p) profileById[uids[j]] = p;
+            try {
+                var p = await fetchProfile(uids[j]);
+                if (p) profileById[uids[j]] = p;
+            } catch (eProfile) {}
         }
         return rows.map(function (r) {
             var uid = r.user_id || r.guest_id;
             var p = uid ? profileById[uid] : null;
+            var guestName = String(r.guest_name || '').trim();
+            var guestEmail = String(r.guest_email || '').trim();
+            var guestPhone = String(r.guest_phone || '').trim();
             return {
                 id: r.id,
                 propertyId: r.property_id,
@@ -609,9 +621,9 @@
                 totalRub: Number(r.total_price || r.total_amount) || 0,
                 status: r.status || 'pending',
                 payType: r.pay_type,
-                guestName: p && p.full_name ? String(p.full_name) : '—',
-                guestEmail: p && p.email ? String(p.email) : '—',
-                guestPhone: p && p.phone ? String(p.phone) : ''
+                guestName: guestName || (p && p.full_name ? String(p.full_name) : '—'),
+                guestEmail: guestEmail || (p && p.email ? String(p.email) : '—'),
+                guestPhone: guestPhone || (p && p.phone ? String(p.phone) : '')
             };
         });
     }

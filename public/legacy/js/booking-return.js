@@ -157,7 +157,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             guests: Number(pending.guests) || 1,
             children: Number(pending.children) || 0,
             totalRub: expectedRub,
-            payType: pending.payType
+            payType: pending.payType,
+            guestName: pending.guestName || '',
+            guestEmail: pending.guestEmail || ''
         });
 
         var lpAward = Math.floor(Number(pending.loyaltyPointsToAward) || 0);

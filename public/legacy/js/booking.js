@@ -270,7 +270,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 children: children,
                 totalRub: amountToPay,
                 payType: payAmount,
-                loyaltyPointsToAward: loyaltyPointsToAward
+                loyaltyPointsToAward: loyaltyPointsToAward,
+                guestName: name,
+                guestEmail: email
             };
 
             const payResp = await fetch(silvaYookassaCreatePaymentUrl(), {
