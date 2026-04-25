@@ -382,7 +382,17 @@
         await ensureFirebase();
         var user = await getSessionUser();
         if (!user) return [];
-        var q = await db.collection('favorites').where('user_id', '==', user.id).orderBy('created_at', 'desc').get();
+        var q;
+        try {
+            q = await db
+                .collection('favorites')
+                .where('user_id', '==', user.id)
+                .orderBy('created_at', 'desc')
+                .get();
+        } catch (eOrder) {
+            // Fallback for projects where composite index/order is not ready yet.
+            q = await db.collection('favorites').where('user_id', '==', user.id).get();
+        }
         var ids = [];
         q.forEach(function (d) {
             var row = d.data() || {};
@@ -524,12 +534,27 @@
         await ensureFirebase();
         var user = await getSessionUser();
         if (!user) return [];
-        var q = await db.collection('bookings').where('user_id', '==', user.id).orderBy('created_at', 'desc').get();
+        var q;
+        try {
+            q = await db
+                .collection('bookings')
+                .where('user_id', '==', user.id)
+                .orderBy('created_at', 'desc')
+                .get();
+        } catch (eOrder) {
+            // Fallback for projects where composite index/order is not ready yet.
+            q = await db.collection('bookings').where('user_id', '==', user.id).get();
+        }
         var out = [];
         q.forEach(function (d) {
             var row = d.data() || {};
             row.id = d.id;
             out.push(row);
+        });
+        out.sort(function (a, b) {
+            var ta = Date.parse(a && a.created_at ? a.created_at : '') || 0;
+            var tb = Date.parse(b && b.created_at ? b.created_at : '') || 0;
+            return tb - ta;
         });
         return out;
     }
