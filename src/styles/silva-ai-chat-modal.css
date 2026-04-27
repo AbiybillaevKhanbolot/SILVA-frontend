@@ -127,6 +127,23 @@
   word-break: break-word;
 }
 
+.silva-ai-chat-link {
+  color: #0f4ccf;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+
+.silva-ai-chat-link:hover {
+  color: #0b3aa1;
+}
+
+.silva-ai-chat-link:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .silva-ai-chat-msg--assistant {
   align-self: flex-start;
   background: #f3f4f6;
