@@ -20,6 +20,10 @@ function buildApiMessages(list) {
     .map((m) => ({ role: m.role, content: String(m.text || "").slice(0, 12_000) }));
 }
 
+function isOpenRouterEndpoint(endpoint) {
+  return /(^https?:\/\/)?openrouter\.ai\/api\/v1\/chat\/completions\/?$/i.test(String(endpoint || "").trim());
+}
+
 /** Для удаленного эндпоинта можно передать опциональный bearer-токен через VITE_SILVA_AI_CHAT_BEARER. */
 function buildChatRequestHeaders(endpoint) {
   const headers = { "Content-Type": "application/json" };
@@ -29,7 +33,30 @@ function buildChatRequestHeaders(endpoint) {
   if (bearer) {
     headers.Authorization = `Bearer ${bearer}`;
   }
+  if (isOpenRouterEndpoint(endpoint)) {
+    headers["HTTP-Referer"] = window?.location?.origin || "https://silva01.vercel.app";
+    headers["X-Title"] = "Silva";
+  }
   return headers;
+}
+
+function buildChatRequestBody(endpoint, payloadMessages) {
+  if (isOpenRouterEndpoint(endpoint)) {
+    const model = String(import.meta.env.VITE_SILVA_AI_OPENROUTER_MODEL || "openai/gpt-oss-120b:free").trim();
+    return {
+      model: model || "openai/gpt-oss-120b:free",
+      messages: payloadMessages,
+    };
+  }
+  return { messages: payloadMessages };
+}
+
+function extractAssistantContent(endpoint, data) {
+  if (isOpenRouterEndpoint(endpoint)) {
+    const content = data?.choices?.[0]?.message?.content;
+    return typeof content === "string" ? content.trim() : "";
+  }
+  return typeof data?.content === "string" ? data.content.trim() : "";
 }
 
 export default function SilvaAiChatModal({ open, onClose }) {
@@ -108,20 +135,22 @@ export default function SilvaAiChatModal({ open, onClose }) {
       const res = await fetch(endpoint, {
         method: "POST",
         headers: buildChatRequestHeaders(endpoint),
-        body: JSON.stringify({ messages: payloadMessages }),
+        body: JSON.stringify(buildChatRequestBody(endpoint, payloadMessages)),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const msg =
+          (typeof data?.error?.message === "string" && data.error.message) ||
           (typeof data.message === "string" && data.message) ||
           (typeof data.error === "string" && data.error) ||
           `Запрос не удался (${res.status})`;
         throw new Error(msg);
       }
-      if (typeof data.content !== "string" || !data.content.trim()) {
+      const content = extractAssistantContent(endpoint, data);
+      if (!content) {
         throw new Error("Пустой ответ модели");
       }
-      const assistantMsg = { id: nextId(), role: "assistant", text: data.content.trim() };
+      const assistantMsg = { id: nextId(), role: "assistant", text: content };
       const next = [...messagesRef.current, assistantMsg];
       messagesRef.current = next;
       setMessages(next);
