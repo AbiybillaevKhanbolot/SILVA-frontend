@@ -296,16 +296,6 @@ function initHeader() {
         navActive = 'home';
     }
 
-    let isScrolled = false;
-
-    function updateHeader() {
-        const scrolled = window.scrollY > 50;
-        if (scrolled !== isScrolled) {
-            isScrolled = scrolled;
-            renderHeader();
-        }
-    }
-
     function isUserLoggedIn() {
         return !!localStorage.getItem('silva_user');
     }
@@ -328,7 +318,7 @@ function initHeader() {
         const userName = user.name || 'Пользователь';
         const userEmail = user.email || '';
 
-        const headerClass = (isScrolled || !isHomePage) ? 'header-scrolled' : 'header-scrolled';
+        const headerClass = 'header-scrolled';
         const textClass = '';
         const iconClass = '';
         const userClass = '';
@@ -617,7 +607,6 @@ function initHeader() {
         }
     }
 
-    window.addEventListener('scroll', updateHeader);
     renderHeader();
 }
 
