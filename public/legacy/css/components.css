@@ -102,11 +102,7 @@
     align-items: center;
     gap: 0.75rem;
     text-decoration: none;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
-}
-
-.header-logo:hover {
-    transform: translate3d(0, -1px, 0) scale(1.02);
+    transition: filter 0.35s ease;
 }
 
 .header-logo-icon {
@@ -122,8 +118,6 @@
     overflow: hidden;
     line-height: 0;
     isolation: isolate;
-    animation: silva-brand-rise 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 0.05s;
     transition: box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -182,8 +176,6 @@
     font-weight: 600;
     letter-spacing: -0.02em;
     color: var(--color-gray-900);
-    animation: silva-brand-rise 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 0.14s;
     transition: color 0.25s ease, letter-spacing 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -205,10 +197,6 @@
     background-size: 200% 100%;
     background-repeat: no-repeat;
     mix-blend-mode: screen;
-}
-
-.header-logo:hover .header-logo-text {
-    letter-spacing: -0.01em;
 }
 
 .header-logo:hover .header-logo-text::before {
