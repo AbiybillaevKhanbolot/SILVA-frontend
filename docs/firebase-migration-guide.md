@@ -95,6 +95,8 @@
    - `OPENROUTER_API_KEY` (обязательно)
    - `OPENROUTER_MODEL` (опционально, по умолчанию `openai/gpt-oss-120b:free`)
 
+Если хочешь подключаться к OpenRouter напрямую без backend, фронтенд ожидает OpenRouter-формат (`model` + `messages`), иначе будет ошибка `400`.
+
 ## 8) Firestore Rules (минимум для старта)
 
 В **Firestore -> Rules** вставь базовый вариант и опубликуй:
