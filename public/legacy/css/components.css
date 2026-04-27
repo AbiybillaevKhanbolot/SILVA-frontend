@@ -176,6 +176,8 @@
 .header-logo-text {
     position: relative;
     display: inline-block;
+    /* Restrict shine effect inside text bounds. */
+    overflow: hidden;
     font-size: 1.25rem;
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -185,25 +187,34 @@
     transition: color 0.25s ease, letter-spacing 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.header-logo-text::after {
+.header-logo-text::before {
     content: "";
     position: absolute;
-    left: 0;
-    bottom: -0.125rem;
-    width: 0;
-    height: 2px;
-    border-radius: 1px;
-    background: currentColor;
-    opacity: 0.35;
-    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    /* Same sweep highlight style as logo icon hover. */
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        transparent 38%,
+        rgba(255, 255, 255, 0.55) 50%,
+        transparent 62%,
+        transparent 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    mix-blend-mode: screen;
 }
 
 .header-logo:hover .header-logo-text {
     letter-spacing: -0.01em;
 }
 
-.header-logo:hover .header-logo-text::after {
-    width: 100%;
+.header-logo:hover .header-logo-text::before {
+    opacity: 1;
+    /* Trigger one-pass shine on logo hover. */
+    animation: silva-brand-shine 0.85s ease-out forwards;
 }
 
 .header-logo-text-white {
