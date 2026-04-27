@@ -91,6 +91,9 @@
 2. В Vercel добавь переменную:
    - `VITE_SILVA_AI_CHAT_URL=https://europe-west1-<project-id>.cloudfunctions.net/silvaOpenrouterChat`
 3. Сделай redeploy фронтенда в Vercel.
+4. В Firebase Secrets добавь:
+   - `OPENROUTER_API_KEY` (обязательно)
+   - `OPENROUTER_MODEL` (опционально, по умолчанию `openai/gpt-oss-120b:free`)
 
 ## 8) Firestore Rules (минимум для старта)
 
