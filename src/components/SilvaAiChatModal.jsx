@@ -5,6 +5,30 @@ import "../styles/silva-ai-chat-modal.css";
 
 const WELCOME_TEXT =
   "Привет! Я помощник Silva по поиску и бронированию загородного жилья. Спросите что угодно — отвечает модель через OpenRouter.";
+const SILVA_SITE_ORIGIN = "https://silva01.vercel.app";
+const SILVA_CHAT_SYSTEM_PROMPT = `
+Ты — ИИ-помощник только сайта Silva (${SILVA_SITE_ORIGIN}).
+Твоя задача: помогать пользователю пользоваться именно Silva (поиск жилья, каталог, карточка объекта, бронирование, личный кабинет, избранное, отзывы, лояльность, контакты).
+
+Правила:
+1) Отвечай только в контексте сайта Silva. Не представляйся ассистентом OpenAI или иной платформы.
+2) На вопросы вне Silva мягко возвращай к помощи по сайту и предлагай ближайшее действие на сайте.
+3) Давай практические шаги интерфейса ("нажмите", "перейдите", "выберите").
+4) Когда упоминаешь страницу/раздел, всегда добавляй ссылку в формате Markdown [Текст](URL).
+5) Используй только реальные страницы Silva:
+   - Каталог: /legacy/catalog.html
+   - Главная: /legacy/index.html
+   - Вход: /legacy/login.html
+   - Регистрация: /legacy/register.html
+   - Профиль: /legacy/profile.html
+   - Мои бронирования: /legacy/my-bookings.html
+   - Программа лояльности: /legacy/loyalty.html
+   - Контакты: /legacy/contact.html
+   - Карточка объекта: /legacy/property.html?id=<ID>
+6) Не выдумывай несуществующие страницы, функции, цены и данные объектов.
+7) Если данных недостаточно — честно скажи и предложи, куда на сайте перейти дальше.
+8) Отвечай на русском, коротко и по делу.
+`.trim();
 
 function nextId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -41,14 +65,18 @@ function buildChatRequestHeaders(endpoint) {
 }
 
 function buildChatRequestBody(endpoint, payloadMessages) {
+  const withSystem = [
+    { role: "system", content: SILVA_CHAT_SYSTEM_PROMPT },
+    ...payloadMessages.filter((m) => m.role !== "system"),
+  ];
   if (isOpenRouterEndpoint(endpoint)) {
     const model = String(import.meta.env.VITE_SILVA_AI_OPENROUTER_MODEL || "openai/gpt-oss-120b:free").trim();
     return {
       model: model || "openai/gpt-oss-120b:free",
-      messages: payloadMessages,
+      messages: withSystem,
     };
   }
-  return { messages: payloadMessages };
+  return { messages: withSystem };
 }
 
 function extractAssistantContent(endpoint, data) {
@@ -57,6 +85,63 @@ function extractAssistantContent(endpoint, data) {
     return typeof content === "string" ? content.trim() : "";
   }
   return typeof data?.content === "string" ? data.content.trim() : "";
+}
+
+function normalizeSilvaHref(rawHref) {
+  const href = String(rawHref || "").trim();
+  if (!href) return null;
+  if (/^https?:\/\//i.test(href)) return href;
+  if (href.startsWith("/")) return href;
+  if (/^[a-z0-9-]+\.html(\?|#|$)/i.test(href)) {
+    return `/legacy/${href}`;
+  }
+  if (/^(catalog|index|login|register|profile|my-bookings|loyalty|contact)\.html(\?|#|$)/i.test(href)) {
+    return `/legacy/${href}`;
+  }
+  return null;
+}
+
+function renderAssistantTextWithLinks(text) {
+  const source = String(text || "");
+  const parts = [];
+  const markdownOrUrl = /\[([^\]\n]{1,80})\]\(([^)\s]{1,300})\)|(https?:\/\/[^\s)]+|\/legacy\/[^\s)]+|[a-z0-9-]+\.html(?:\?[^\s)]*)?)/gi;
+  let lastIndex = 0;
+  let matchIndex = 0;
+  let m;
+  while ((m = markdownOrUrl.exec(source)) !== null) {
+    const start = m.index;
+    const end = m.index + m[0].length;
+    if (start > lastIndex) {
+      parts.push(source.slice(lastIndex, start));
+    }
+    const markdownLabel = m[1];
+    const markdownHref = m[2];
+    const plainUrl = m[3];
+    const href = normalizeSilvaHref(markdownHref || plainUrl);
+    if (href) {
+      const label = markdownLabel || plainUrl;
+      const isExternal = /^https?:\/\//i.test(href);
+      parts.push(
+        <a
+          key={`link-${start}-${matchIndex}`}
+          href={href}
+          className="silva-ai-chat-link"
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noopener noreferrer" : undefined}
+        >
+          {label}
+        </a>,
+      );
+      matchIndex += 1;
+    } else {
+      parts.push(m[0]);
+    }
+    lastIndex = end;
+  }
+  if (lastIndex < source.length) {
+    parts.push(source.slice(lastIndex));
+  }
+  return parts;
 }
 
 export default function SilvaAiChatModal({ open, onClose }) {
@@ -207,7 +292,7 @@ export default function SilvaAiChatModal({ open, onClose }) {
               key={msg.id}
               className={`silva-ai-chat-msg silva-ai-chat-msg--${msg.role === "user" ? "user" : "assistant"}`}
             >
-              {msg.text}
+              {msg.role === "assistant" ? renderAssistantTextWithLinks(msg.text) : msg.text}
             </div>
           ))}
           {pending ? (
