@@ -85,11 +85,12 @@
 
 ## 7) Чат AI в проде
 
-Если у тебя есть backend endpoint для чата:
+Рекомендуемый вариант (безопасный): Firebase Function `silvaOpenrouterChat`.
 
-1. В `.env` добавь `VITE_SILVA_AI_CHAT_URL=<полный URL>`.
-2. Если endpoint защищен bearer-токеном:
-   - `VITE_SILVA_AI_CHAT_BEARER=<token>`
+1. Деплой функцию в Firebase: `silvaOpenrouterChat`.
+2. В Vercel добавь переменную:
+   - `VITE_SILVA_AI_CHAT_URL=https://europe-west1-<project-id>.cloudfunctions.net/silvaOpenrouterChat`
+3. Сделай redeploy фронтенда в Vercel.
 
 ## 8) Firestore Rules (минимум для старта)
 
