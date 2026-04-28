@@ -263,6 +263,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             const checkOutStr = toDateStr || formatDateYMD(checkOut);
             const pendingBooking = {
                 propertyId: String(propertyId),
+                propertyTitle: String(property.title || 'Объект'),
+                propertyRegion: String(property.region || ''),
+                propertyMainImage: String(
+                    property.main_image || (Array.isArray(property.gallery_images) && property.gallery_images[0]) || ''
+                ),
                 checkIn: checkInStr,
                 checkOut: checkOutStr,
                 guests: adults + children,

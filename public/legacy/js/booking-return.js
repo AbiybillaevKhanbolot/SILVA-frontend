@@ -152,6 +152,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         var newBookingId = await window.silvaSupabaseAuth.createBooking({
             propertyId: pending.propertyId,
+            propertyTitle: pending.propertyTitle || '',
+            propertyRegion: pending.propertyRegion || '',
+            propertyMainImage: pending.propertyMainImage || '',
             checkIn: pending.checkIn,
             checkOut: pending.checkOut,
             guests: Number(pending.guests) || 1,

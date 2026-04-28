@@ -100,12 +100,15 @@
                 return (rows || []).map(function (r) {
                     var pid = String(r && r.property_id ? r.property_id : '').trim();
                     var p = propertyMap[pid] || null;
+                    var rowTitle = String(r && r.property_title ? r.property_title : '').trim();
+                    var rowRegion = String(r && r.property_region ? r.property_region : '').trim();
+                    var rowImage = String(r && r.property_main_image ? r.property_main_image : '').trim();
                     return {
                         id: r.id,
                         propertyId: pid,
-                        propertyTitle: p && p.title ? p.title : 'Объект',
-                        propertyRegion: p && p.region ? p.region : '',
-                        mainImage: p && p.main_image ? p.main_image : '',
+                        propertyTitle: (p && p.title) || rowTitle || 'Объект',
+                        propertyRegion: (p && p.region) || rowRegion || '',
+                        mainImage: (p && p.main_image) || rowImage || '',
                         checkIn: r.check_in,
                         checkOut: r.check_out,
                         nights: Math.max(1, Math.ceil((parseYMD(r.check_out) - parseYMD(r.check_in)) / (1000 * 60 * 60 * 24))),
