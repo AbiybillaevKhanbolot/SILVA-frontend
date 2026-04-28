@@ -463,9 +463,17 @@ document.addEventListener('DOMContentLoaded', function() {
         for (let i = startingDayOfWeek - 1; i >= 0; i--) {
             const day = daysInPrevMonth - i;
             const date = new Date(year, month - 1, day);
+            date.setHours(0, 0, 0, 0);
             const dayEl = document.createElement('div');
             dayEl.className = 'calendar-day other-month';
             dayEl.textContent = day;
+            dayEl.dataset.date = date.toISOString();
+            if (selectedDate && date.getTime() === selectedDate.getTime()) {
+                dayEl.classList.add('selected');
+            }
+            if (minDate && date < minDate) {
+                dayEl.classList.add('disabled');
+            }
             daysEl.appendChild(dayEl);
         }
         
@@ -500,9 +508,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalCells = startingDayOfWeek + daysInMonth;
         const remainingCells = 42 - totalCells; // 6 rows * 7 days
         for (let day = 1; day <= remainingCells && day <= 14; day++) {
+            const date = new Date(year, month + 1, day);
+            date.setHours(0, 0, 0, 0);
             const dayEl = document.createElement('div');
             dayEl.className = 'calendar-day other-month';
             dayEl.textContent = day;
+            dayEl.dataset.date = date.toISOString();
+            if (selectedDate && date.getTime() === selectedDate.getTime()) {
+                dayEl.classList.add('selected');
+            }
+            if (minDate && date < minDate) {
+                dayEl.classList.add('disabled');
+            }
             daysEl.appendChild(dayEl);
         }
     }
@@ -537,7 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         document.getElementById('checkin-calendar-days').addEventListener('click', (e) => {
-            if (e.target.classList.contains('calendar-day') && !e.target.classList.contains('disabled') && !e.target.classList.contains('other-month')) {
+            if (e.target.classList.contains('calendar-day') && !e.target.classList.contains('disabled')) {
                 const date = new Date(e.target.dataset.date);
                 checkinSelectedDate = date;
                 checkinInput.value = formatDateForInput(date);
@@ -585,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         document.getElementById('checkout-calendar-days').addEventListener('click', (e) => {
-            if (e.target.classList.contains('calendar-day') && !e.target.classList.contains('disabled') && !e.target.classList.contains('other-month')) {
+            if (e.target.classList.contains('calendar-day') && !e.target.classList.contains('disabled')) {
                 const date = new Date(e.target.dataset.date);
                 checkoutSelectedDate = date;
                 checkoutInput.value = formatDateForInput(date);
