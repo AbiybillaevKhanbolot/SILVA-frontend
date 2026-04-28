@@ -75,40 +75,26 @@
         if (window.silvaSupabaseAuth && typeof window.silvaSupabaseAuth.fetchMyBookings === 'function') {
             try {
                 var rows = await window.silvaSupabaseAuth.fetchMyBookings();
-                if (typeof mockAPI !== 'undefined' && typeof mockAPI.refreshPropertiesFromSupabase === 'function') {
-                    try { await mockAPI.refreshPropertiesFromSupabase(); } catch (e) {}
-                }
                 var propertyMap = {};
+                var propertyIds = [];
+                var propertyIdsSeen = {};
                 (rows || []).forEach(function (r) {
                     var pid = String(r && r.property_id ? r.property_id : '').trim();
-                    if (!pid) return;
-                    if (typeof mockAPI !== 'undefined' && typeof mockAPI.getPropertyById === 'function') {
-                        var cached = mockAPI.getPropertyById(pid);
-                        if (cached) propertyMap[pid] = cached;
-                    }
-                });
-                var missingIds = [];
-                var missingSeen = {};
-                (rows || []).forEach(function (r) {
-                    var pid = String(r && r.property_id ? r.property_id : '').trim();
-                    if (!pid || propertyMap[pid] || missingSeen[pid]) return;
-                    missingSeen[pid] = true;
-                    missingIds.push(pid);
+                    if (!pid || propertyIdsSeen[pid]) return;
+                    propertyIdsSeen[pid] = true;
+                    propertyIds.push(pid);
                 });
                 if (
-                    missingIds.length &&
+                    propertyIds.length &&
                     window.silvaSupabaseAuth &&
                     typeof window.silvaSupabaseAuth.fetchPropertiesByIds === 'function'
                 ) {
                     try {
-                        var fetched = await window.silvaSupabaseAuth.fetchPropertiesByIds(missingIds);
+                        var fetched = await window.silvaSupabaseAuth.fetchPropertiesByIds(propertyIds);
                         (fetched || []).forEach(function (p) {
                             var key = String(p && p.id ? p.id : '').trim();
                             if (key) propertyMap[key] = p;
                         });
-                        if (typeof mockAPI !== 'undefined' && typeof mockAPI.appendPropertiesToCache === 'function') {
-                            try { mockAPI.appendPropertiesToCache(fetched || []); } catch (eAppend) {}
-                        }
                     } catch (eFetchProps) {}
                 }
                 return (rows || []).map(function (r) {
