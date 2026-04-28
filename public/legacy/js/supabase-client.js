@@ -1218,11 +1218,38 @@
 
     function queryBuilder(collectionName) {
         var q = db.collection(collectionName);
+        var selectOptions = null;
+        async function execGet() {
+            var snap = await q.get();
+            var wantsExactCount = !!(selectOptions && selectOptions.count === 'exact');
+            if (wantsExactCount && selectOptions.head === true) {
+                return { data: null, error: null, count: snap.size };
+            }
+            var rows = [];
+            snap.forEach(function (d) {
+                var row = d.data() || {};
+                row.id = d.id;
+                rows.push(row);
+            });
+            return {
+                data: rows,
+                error: null,
+                count: wantsExactCount ? snap.size : null
+            };
+        }
         return {
-            select: function () { return this; },
+            select: function (_columns, opts) {
+                selectOptions = opts || null;
+                return this;
+            },
             eq: function (field, value) { q = q.where(field, '==', value); return this; },
             in: function (field, values) { q = q.where(field, 'in', values); return this; },
             order: function (field, opts) { q = q.orderBy(field, opts && opts.ascending === false ? 'desc' : 'asc'); return this; },
+            limit: function (value) {
+                var n = Number(value);
+                if (isFinite(n) && n > 0) q = q.limit(Math.floor(n));
+                return this;
+            },
             maybeSingle: async function () {
                 var snap = await q.limit(1).get();
                 if (snap.empty) return { data: null, error: null };
@@ -1258,14 +1285,13 @@
                 return { data: null, error: null };
             },
             get: async function () {
-                var snap = await q.get();
-                var rows = [];
-                snap.forEach(function (d) {
-                    var row = d.data() || {};
-                    row.id = d.id;
-                    rows.push(row);
-                });
-                return { data: rows, error: null };
+                return execGet();
+            },
+            then: function (resolve, reject) {
+                return execGet().then(resolve, reject);
+            },
+            catch: function (reject) {
+                return execGet().catch(reject);
             }
         };
     }
