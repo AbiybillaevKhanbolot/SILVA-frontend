@@ -245,6 +245,8 @@
                         '<div style="display:flex;align-items:center;justify-content:center;height:100%;">' +
                         ic('image', 40, 40, { strokeWidth: 1.5, extraAttrs: ' style="color:var(--color-gray-400)"' }) +
                         '</div>';
+                var propertyHref = b.propertyId ? 'property.html?id=' + encodeURIComponent(b.propertyId) : 'catalog.html';
+                var propertyLabel = b.propertyTitle || 'Объект';
 
                 return (
                     '<article class="booking-card" data-booking-id="' +
@@ -254,10 +256,10 @@
                     img +
                     '</div>' +
                     '<div class="booking-card-body">' +
-                    '<h3><a href="property.html?id=' +
-                    encodeURIComponent(b.propertyId) +
+                    '<h3><a href="' +
+                    propertyHref +
                     '">' +
-                    escapeHtml(b.propertyTitle || 'Объект') +
+                    escapeHtml(propertyLabel) +
                     '</a></h3>' +
                     '<div class="booking-card-meta">' +
                     '<span>' +
@@ -277,8 +279,8 @@
                     '</span>' +
                     '</div>' +
                     '<div class="booking-actions">' +
-                    '<a href="property.html?id=' +
-                    encodeURIComponent(b.propertyId) +
+                    '<a href="' +
+                    propertyHref +
                     '" class="btn booking-card-property-btn">Объект</a>' +
                     '<button type="button" class="booking-cancel-btn" data-id="' +
                     String(b.id).replace(/"/g, '') +
