@@ -88,9 +88,11 @@
                     }
                 });
                 var missingIds = [];
+                var missingSeen = {};
                 (rows || []).forEach(function (r) {
                     var pid = String(r && r.property_id ? r.property_id : '').trim();
-                    if (!pid || propertyMap[pid]) return;
+                    if (!pid || propertyMap[pid] || missingSeen[pid]) return;
+                    missingSeen[pid] = true;
                     missingIds.push(pid);
                 });
                 if (
